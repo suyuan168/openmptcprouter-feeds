@@ -60,6 +60,7 @@ pinger_binary=fping
 # and the remaining 2 reflectors in the list will be used in the event any of the first 4 go bad
 # a bad reflector will go to the back of the queue on reflector rotation
 reflectors=(
+"1.1.1.1" "1.0.0.1"  # Cloudflare
 "223.5.5.5" "223.6.6.6"  # aliyun
 "114.114.114.114" "114.114.115.115"  # 114dns
 "101.226.4.6" "218.30.118.6" "123.125.81.6" "140.207.198.6" # dnspai
