@@ -37,7 +37,7 @@ for pinghost in $HOSTLST; do
 		HOST=$pinghost
 	fi
 done
-fi
+
 
 [ -z "$HOST" ] && HOST="https://mirrors.huaweicloud.com/debian-cd/12.2.0/amd64/iso-dvd/debian-12.2.0-amd64-DVD-1.iso"
 
