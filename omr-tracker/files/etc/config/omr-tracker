@@ -40,7 +40,7 @@ config defaults 'defaults'
 
 config proxy 'proxy'
 	option enabled '1'
-	list hosts '212.27.48.10'
+	list hosts '140.205.60.46'
 	list hosts '198.27.92.1'
 	list hosts '151.101.129.164'
 	list hosts '77.88.55.77'
