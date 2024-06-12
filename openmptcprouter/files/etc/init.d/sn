@@ -1,0 +1,112 @@
+#!/bin/sh /etc/rc.common
+
+START=90
+
+SN_FILE="/etc/config/date.txt"
+RTTY_CONFIG="/etc/config/rtty"
+FRPC_CONFIG="/etc/config/frpc"
+
+start() {
+    # 检查新序列号文件是否存在
+    if [ ! -f "$SN_FILE" ]; then
+        echo "序列号文件不存在: $SN_FILE"
+        logger -t serial_update "序列号文件不存在: $SN_FILE"
+        exit 1
+    fi
+
+    # 读取新的序列号
+    new_sn=$(cat "$SN_FILE")
+
+    # 确保新的序列号非空
+    if [ -z "$new_sn" ]; then
+        echo "序列号文件为空，请检查: $SN_FILE"
+        logger -t serial_update "序列号文件为空，请检查: $SN_FILE"
+        exit 1
+    fi
+
+    # 确保新序列号只包含数字
+    if ! [[ "$new_sn" =~ ^[0-9]+$ ]]; then
+        echo "新的序列号不合法: $new_sn"
+        logger -t serial_update "新的序列号不合法: $new_sn"
+        exit 1
+    fi
+
+    echo "新的序列号为: $new_sn"
+    logger -t serial_update "新的序列号为: $new_sn"
+
+    # 提取两个配置文件中的所有数字串，并存储在数组中
+    rtty_sn=$(grep -oE '[0-9]+' "$RTTY_CONFIG" | sort | uniq)
+    frpc_sn=$(grep -oE '[0-9]+' "$FRPC_CONFIG" | sort | uniq)
+
+    # 找出两个配置文件中共有的数字串并找出最长的
+    original_sn=""
+    for sn in $rtty_sn; do
+        if echo "$frpc_sn" | grep -q "$sn"; then
+            if [ ${#sn} -gt ${#original_sn} ]; then
+                original_sn=$sn
+            fi
+        fi
+    done
+
+    # 确保提取到的原始序列号非空
+    if [ -z "$original_sn" ]; then
+        echo "未能从配置文件中检测到公共的原始序列号。"
+        logger -t serial_update "未能从配置文件中检测到公共的原始序列号。"
+        exit 1
+    fi
+
+    echo "原始序列号为: $original_sn"
+    logger -t serial_update "原始序列号为: $original_sn"
+
+    # 检查新序列号是否与原始序列号一致
+    if [ "$new_sn" == "$original_sn" ]; then
+        echo "新的序列号与原始序列号一致，不需要进行替换。"
+        logger -t serial_update "新的序列号与原始序列号一致，不需要进行替换。"
+        exit 0
+    else
+        echo "替换配置文件中的序列号..."
+        logger -t serial_update "替换配置文件中的序列号..."
+
+        # 替换RTTY配置文件中的序列号
+        sed -i "s/$original_sn/$new_sn/g" "$RTTY_CONFIG"
+        if [ $? -eq 0 ]; then
+            echo "RTTY配置文件中的序列号已更新为: $new_sn"
+            logger -t serial_update "RTTY配置文件中的序列号已更新为: $new_sn"
+        else
+            echo "更新RTTY配置文件失败。"
+            logger -t serial_update "更新RTTY配置文件失败。"
+        fi
+
+        # 替换FRPC配置文件中的序列号
+        sed -i "s/$original_sn/$new_sn/g" "$FRPC_CONFIG"
+        if [ $? -eq 0 ]; then
+            echo "FRPC配置文件中的序列号已更新为: $new_sn"
+            logger -t serial_update "FRPC配置文件中的序列号已更新为: $new_sn"
+        else
+            echo "更新FRPC配置文件失败。"
+            logger -t serial_update "更新FRPC配置文件失败。"
+        fi
+
+        # 重启rtty和frpc服务
+        echo "重启rtty和frpc服务..."
+        logger -t serial_update "重启rtty和frpc服务..."
+
+        /etc/init.d/rtty restart
+        if [ $? -eq 0 ]; then
+            echo "rtty服务已成功重启。"
+            logger -t serial_update "rtty服务已成功重启。"
+        else
+            echo "重启rtty服务失败。"
+            logger -t serial_update "重启rtty服务失败。"
+        fi
+
+        /etc/init.d/frpc restart
+        if [ $? -eq 0 ]; then
+            echo "frpc服务已成功重启。"
+            logger -t serial_update "frpc服务已成功重启。"
+        else
+            echo "重启frpc服务失败。"
+            logger -t serial_update "重启frpc服务失败。"
+        fi
+    fi
+}
