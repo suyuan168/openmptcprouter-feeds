@@ -53,6 +53,11 @@ if [ -n "$(uci show openmptcprouter | awk -F= '/password/ { gsub("\047","",$2);p
 		/etc/init.d/dsvpn restart >/dev/null 2>&1
 		sleep 5
 	fi
+	if [ "$(pgrep vpnclient)" = "" ] && [ "$(uci -q get softethervpn.openmptcprouter.enable)" = "1" ] && [ -f /etc/init.d/softethervpnclient ]; then
+		_log "Can't find SoftEther VPN, restart it..."
+		/etc/init.d/softethervpnclient restart >/dev/null 2>&1
+		sleep 5
+	fi
 	if [ "$(pgrep -f v2ray)" = "" ] && [ "$(uci -q get v2ray.main.enabled)" = "1" ] && [ -f /etc/init.d/v2ray ]; then
 		_log "Can't find V2Ray, restart it..."
 		/etc/init.d/v2ray restart >/dev/null 2>&1
@@ -220,6 +225,12 @@ if [ "$(uci -q get openmptcprouter.settings.disable_modemmanager)" != "1" ]; the
 	fi
 	/etc/init.d/modemmanager enable >/dev/null 2>&1
 fi
+
+fw4check="$(fw4 check 2>&1)"
+[ "$(echo $fw4check | grep Error)" ] && [ "$(echo $fw4check | grep bypass)" ] && {
+	_log "Restart OMR-ByPass due to firewall error"
+	/etc/init.d/omr-bypass restart >/dev/null 2>&1
+}
 
 restart_omrtracker() {
 	[ -n "$(pgrep -f $1)" ] && return
