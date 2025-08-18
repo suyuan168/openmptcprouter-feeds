@@ -25,7 +25,7 @@ return network.registerProtocol('modemmanager', {
 		return this._ubus('l3_device') || 'modemmanager-%s'.format(this.sid);
 	},
 
-	getOpkgPackage: function() {
+	getPackageName: function() {
 		return 'modemmanager';
 	},
 
@@ -83,14 +83,13 @@ return network.registerProtocol('modemmanager', {
 		o.datatype = "uinteger";
 
 		o = s.taboption('general', form.DynamicList, 'allowedauth', _('Authentication Type'));
-		o.value('both', _('PAP/CHAP (both)'));
 		o.value('pap', 'PAP');
 		o.value('chap', 'CHAP');
 		o.value('mschap', 'MSCHAP');
 		o.value('mschapv2', 'MSCHAPv2');
 		o.value('eap', 'EAP');
-		o.value('', _('None'));
-		o.default = '';
+		o.value('none', _('None'));
+		o.default = 'none';
 
 		o = s.taboption('general', form.ListValue, 'allowedmode', _('Allowed network technology'),
 			_('Setting the allowed network technology.'));
@@ -132,14 +131,18 @@ return network.registerProtocol('modemmanager', {
 		o.depends('allowedmode','5g|4g|3g|2g');
 
 		o = s.taboption('general', form.Value, 'username', _('PAP/CHAP username'));
-		o.depends('auth', 'pap');
-		o.depends('auth', 'chap');
-		o.depends('auth', 'both');
+		o.depends({'allowedauth': 'pap', '!contains': true });
+		o.depends({'allowedauth': 'chap', '!contains': true });
+		o.depends({'allowedauth': 'mschap', '!contains': true });
+		o.depends({'allowedauth': 'mschapv2', '!contains': true });
+		o.depends({'allowedauth': 'eap', '!contains': true });
 
 		o = s.taboption('general', form.Value, 'password', _('PAP/CHAP password'));
-		o.depends('auth', 'pap');
-		o.depends('auth', 'chap');
-		o.depends('auth', 'both');
+		o.depends({'allowedauth': 'pap', '!contains': true });
+		o.depends({'allowedauth': 'chap', '!contains': true });
+		o.depends({'allowedauth': 'mschap', '!contains': true });
+		o.depends({'allowedauth': 'mschapv2', '!contains': true });
+		o.depends({'allowedauth': 'eap', '!contains': true });
 		o.password = true;
 
 		o = s.taboption('general', form.ListValue, 'iptype', _('IP Type'));
@@ -159,12 +162,58 @@ return network.registerProtocol('modemmanager', {
 		
 		s.taboption('advanced', form.Flag, 'debugmode', _('Enable Debugmode'));
 
+		o = s.taboption('advanced', form.Value, 'delay', _('Modem init timeout'), _('Amount of seconds to wait for the modem to become ready'));
+		o.datatype = 'uinteger';
+		o.placeholder = '120';
+
 		o = s.taboption('advanced', form.ListValue, 'loglevel', _('Log output level'));
 		o.value('ERR', _('Error'))
 		o.value('WARN', _('Warning'));
 		o.value('INFO', _('Info'));
 		o.value('DEBUG', _('Debug'));
 		o.default = 'ERR';
-		
+
+
+		o = s.taboption('general', form.ListValue, 'init_epsbearer', _('Initial EPS Bearer'),
+		_('none: Do not set an initial EPS bearer (default behaviour)') + '<br/>' +
+		_('default: Use the configuration options above (APN, IP Type, ...).') + '<br/>' +
+		_('custom: Use different options when establishing a connection (these options are prefixed with %s).').format('<code>init_</code>'));
+		o.value('', _('none'));
+		o.value('default', 'default');
+		o.value('custom', 'custom');
+		o.default = '';
+		o = s.taboption('general', form.Value, 'init_apn', _('Initial EPS Bearer APN'));
+		o.depends('init_epsbearer', 'custom');
+		o.default = '';
+		o = s.taboption('general', form.ListValue, 'init_allowedauth', _('Initial EPS Bearer Authentication Type'));
+		o.depends('init_epsbearer', 'custom');
+		o.value('pap', 'PAP');
+		o.value('chap', 'CHAP');
+		o.value('mschap', 'MSCHAP');
+		o.value('mschapv2', 'MSCHAPv2');
+		o.value('eap', 'EAP');
+		o.value('', _('None'));
+		o.default = '';
+		o = s.taboption('general', form.Value, 'init_username', _('Initial EPS Bearer Username'));
+		o.depends('init_allowedauth', 'pap');
+		o.depends('init_allowedauth', 'chap');
+		o.depends('init_allowedauth', 'mschap');
+		o.depends('init_allowedauth', 'mschapv2');
+		o.depends('init_allowedauth', 'eap');
+		o.default = '';
+		o = s.taboption('general', form.Value, 'init_password', _('Initial EPS Bearer Password'));
+		o.depends('init_allowedauth', 'pap');
+		o.depends('init_allowedauth', 'chap');
+		o.depends('init_allowedauth', 'mschap');
+		o.depends('init_allowedauth', 'mschapv2');
+		o.depends('init_allowedauth', 'eap');
+		o.default = '';
+		o.password = true;
+		o = s.taboption('general', form.ListValue, 'init_iptype', _('Initial EPS Bearer IP Type'));
+		o.depends('init_epsbearer', 'custom');
+		o.value('ipv4v6', _('IPv4/IPv6 (both - defaults to IPv4)'))
+		o.value('ipv4', _('IPv4 only'));
+		o.value('ipv6', _('IPv6 only'));
+		o.default = 'ipv4v6';
 	}
 });

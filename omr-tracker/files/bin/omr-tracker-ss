@@ -1,6 +1,10 @@
 #!/bin/bash
 # vim: set noexpandtab tabstop=4 shiftwidth=4 softtabstop=4 :
 
+[ -n "$1" ] || exit
+
+. /lib/functions.sh
+
 basename="$(basename $0)"
 
 if [ -e /usr/sbin/iptables-nft ]; then
@@ -22,15 +26,26 @@ _log() {
 }
 
 _post_tracking() {
-	[ ! -d /usr/share/omr/ss-post-tracking.d ] && return
-	for tracker_bin in /usr/share/omr/ss-post-tracking.d/*; do
-		[ -x "$tracker_bin" ] && (
-			_log() {
-				logger -t "ss-post-tracking-${tracker_bin##*/}" "$*"
-			}
-			. "$tracker_bin" 2>&1
-		)
-	done
+	[ -d /usr/share/omr/ss-post-tracking.d ] && {
+		for tracker_bin in /usr/share/omr/ss-post-tracking.d/*; do
+			[ -x "$tracker_bin" ] && (
+				_log() {
+					logger -t "ss-post-tracking-${tracker_bin##*/}" "$*"
+				}
+				. "$tracker_bin" 2>&1
+			)
+		done
+	}
+	[ -d /usr/share/omr/proxy-post-tracking.d ] && {
+		for tracker_bin in /usr/share/omr/proxy-post-tracking.d/*; do
+			[ -x "$tracker_bin" ] && (
+				_log() {
+					logger -t "proxy-post-tracking-${tracker_bin##*/}" "$*"
+				}
+				. "$tracker_bin" 2>&1
+			)
+		done
+	}
 }
 
 _ping_server() {
@@ -39,7 +54,7 @@ _ping_server() {
 	    -w "$OMR_TRACKER_TIMEOUT" \
 	    -c 1 \
 	    -q \
-	    "${host}"
+	    "${host}" 2>&1
 	) && echo "$ret" | grep -sq " 0% packet loss" && {
 		server_ping=true
 	}
@@ -97,6 +112,13 @@ while true; do
 	[ "$host" = "$hosts" ] || {
 		hosts="${hosts#* } $host"
 	}
+	#if [ -n "$host6" ]; then
+	#	host6="${hosts6%% *}"
+	#	[ "$host6" = "$hosts6" ] || {
+	#		hosts6="${hosts6#* } $host6"
+	#	}
+	#fi
+	#if [ "$(curl -s -I -w %{http_code} --socks5 "${proxy}" --max-time "${timeout}" "$host" -o /dev/null)" != "000" ] || [ "$(curl -s -I -w %{http_code} --socks5 "${proxy}" --max-time "${timeout}" "$host6" -o /dev/null)" != "000" ]; then
 	if [ "$(curl -s -I -w %{http_code} --socks5 "${proxy}" --max-time "${timeout}" "$host" -o /dev/null)" != "000" ]; then
 		nocontact=""
 		[ "${last}" -ge "${retry}" ] || [ "$(uci -q get openmptcprouter.omr.ss_${server})" != "up" ] && {
@@ -104,6 +126,29 @@ while true; do
 			OMR_TRACKER_STATUS_MSG="Shadowsocks $type ${server} is up (can contact via http ${host})"
 			uci -q set openmptcprouter.omr.ss_${server}="up"
 			uci -q commit openmptcprouter.omr
+			if [ "$type" = "libev" ]; then
+				_remove_rule() {
+					[ "$(uci -q get shadowsocks-libev.$1.server)" != "$2" ] && return
+					uci -q set shadowsocks-libev.$1.disabled=0
+				}
+				config_load shadowsocks-libev
+				config_foreach _remove_rule ss_redir ${server}
+				uci -q commit shadowsocks-libev
+			fi
+			if [ "$type" = "rust" ]; then
+				_remove_rule() {
+					[ "$(uci -q get shadowsocks-rust.$1.server)" != "$2" ] && return
+					uci -q set shadowsocks-rust.$1.disabled=0
+				}
+				config_load shadowsocks-rust
+				config_foreach _remove_rule ss_redir ${server}
+				uci -q commit shadowsocks-rust
+			fi
+			[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev rules_reset 2> /dev/null
+			[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust rules_reset 2> /dev/null
+			#[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev rules_up 2> /dev/null
+			#[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust rules_up 2> /dev/null
+
 			mail_alert="$(uci -q get omr-tracker.proxy.mail_alert)"
 			#[ -z "$mail_alert" ] && mail_alert="$(uci -q get omr-tracker.defaults.mail_alert)"
 			[ "$mail_alert" = "1" ] && [ -n "$(uci -q get mail.default.to)" ] && {
@@ -120,12 +165,13 @@ while true; do
 			}
 			script_alert_up="$(uci -q get omr-tracker.proxy.script_alert_up)"
 			[ -n "$script_alert_up" ] && eval $script_alert_up
+			_get_ip
 		}
-		if [ -z "$($IPTABLESSAVE 2>/dev/null | grep :ssr)" ] && [ -z "$(nft list ruleset 2>/dev/null | grep ss_r)" ] && [ -z "$(nft list ruleset 2>/dev/null | grep ssr_r)" ]; then
+		if [ -z "$($IPTABLESSAVE 2>/dev/null | grep :ssr)" ] && [ -z "$(nft list ruleset 2>/dev/null | grep 'goto ss_rules_forward_tcp')" ]; then
 			if [ "$type" = "libev" ] && [ "$(uci -q get shadowsocks-libev.ss_rules.disabled)" != "1" ] && [ "$(uci -q get shadowsocks-libev.${server}.key)" != "" ] && [ "$(uci -q get shadowsocks-libev.${server}.server)" != "" ] && [ "$(uci -q get shadowsocks-libev.${server}.disabled)" != "1" ]; then
 				_log "Reload Shadowsocks rules"
 				/etc/init.d/shadowsocks-libev rules_up 2> /dev/null
-				if ! /etc/init.d/shadowsocks-libev rules_exist ; then
+				if [ "$(/etc/init.d/shadowsocks-libev rules_exist; echo $?)" -ne 0 ] ; then
 					_log "Rules still not set, restart Shadowsocks"
 					/etc/init.d/shadowsocks-libev restart >/dev/null 2>&1
 				fi
@@ -133,7 +179,7 @@ while true; do
 			elif [ "$type" = "rust" ] && [ "$(uci -q get shadowsocks-rust.ss_rules.disabled)" != "1" ] && [ "$(uci -q get shadowsocks-rust.${server}.password)" != "" ] && [ "$(uci -q get shadowsocks-rust.${server}.server)" != "" ] && [ "$(uci -q get shadowsocks-rust.${server}.disabled)" != "1" ]; then
 				_log "Reload Shadowsocks Rust rules"
 				/etc/init.d/shadowsocks-rust rules_up 2> /dev/null
-				if ! /etc/init.d/shadowsocks-rust rules_exist ; then
+				if [ "$(/etc/init.d/shadowsocks-rust rules_exist; echo $?)" -ne 0 ] ; then
 					_log "Rules still not set, restart Shadowsocks-Rust"
 					/etc/init.d/shadowsocks-rust restart >/dev/null 2>&1
 				fi
@@ -146,25 +192,66 @@ while true; do
 	else
 		last=$((last + 1 ))
 		[ -z "$nocontact" ] && nocontact="$host" || nocontact="$nocontact, $host"
-		[ "${last}" -ge "${retry}" ] && {
-			if [ "$OMR_TRACKER_PREV_STATUS" != "ERROR" ] && { [ -n "$($IPTABLES -w -t nat -L -n 2>/dev/null | grep ssr)" ] || [ -n "$(nft list ruleset 2>/dev/null | grep ss_r)" ] || [ -n "$(nft list ruleset 2>/dev/null | grep ssr_r)" ]; }; then
+		if [ "$type" = "libev" ]; then
+			serverip="$(uci -q get shadowsocks-libev.${server}.server)"
+			disabled="$(uci -q get shadowsocks-libev.${server}.disabled)"
+		elif [ "$type" = "rust" ]; then
+			serverip="$(uci -q get shadowsocks-rust.${server}.server)"
+			disabled="$(uci -q get shadowsocks-rust.${server}.disabled)"
+			config_foreach shadowsocks-rust ${server}
+		fi
+		ssredir=0
+		if [ "$type" = "libev" ]; then
+			_remove_rule() {
+				[ "$(uci -q get shadowsocks-libev.$1.server)" = "$2" ] && ssredir=$((ssredir + 1))
+			}
+			config_foreach _remove_rule ss_redir ${server}
+			uci -q commit shadowsocks-libev
+		fi
+		if [ "$type" = "rust" ]; then
+			_remove_rule() {
+				[ "$(uci -q get shadowsocks-rust.$1.server)" = "$2" ] && ssredir=$((ssredir + 1))
+			}
+			config_foreach _remove_rule ss_redir ${server}
+			uci -q commit shadowsocks-rust
+		fi
+
+		[ "${last}" -ge "${retry}" ] && [ "$ssredir" -ge 1 ] && {
+			#if [ "$OMR_TRACKER_PREV_STATUS" != "ERROR" ] && { [ -n "$($IPTABLES -w -t nat -L -n 2>/dev/null | grep ssr)" ] || [ -n "$(nft list ruleset 2>/dev/null | grep ss_r)" ] || [ -n "$(nft list ruleset 2>/dev/null | grep ssr_r)" ]; }; then
+			if [ -n "$(nft list ruleset | grep $serverip)" ] && [ -n "$(nft list ruleset 2>/dev/null | grep 'goto ss_rules_forward_tcp')" ]; then
 				_log "Shadowsocks $type ${server} is down (can't contact via http ${nocontact})"
 				OMR_TRACKER_STATUS_MSG="Shadowsocks $type ${server} is down (can't contact via http ${nocontact})"
 				uci -q set openmptcprouter.omr.ss_${server}="down"
 				uci -q commit openmptcprouter.omr
-				if [ "$(uci show openmptcprouter.omr | grep ss_ | grep up)" = "" ]; then
-					[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev rules_down 2> /dev/null
-					[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust rules_down 2> /dev/null
+
+#				if [ "$(nft list ruleset | grep 'tcp redirect to :' | wc -l)" = "1" ] || [ "$type" = "libev" ]; then
+#				#if [ -z "$(uci show openmptcprouter.omr | grep ss_ | grep up)" ]; then
+#					[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev rules_down 2> /dev/null
+#					[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust rules_down 2> /dev/null
+#				#fi
+#				else
+				if [ "$type" = "libev" ]; then
+					_remove_rule() {
+						[ "$(uci -q get shadowsocks-libev.$1.server)" != "$2" ] && return
+						uci -q set shadowsocks-libev.$1.disabled=1
+					}
+					config_foreach _remove_rule ss_redir ${server}
+					uci -q commit shadowsocks-libev
 				fi
+				if [ "$type" = "rust" ]; then
+					_remove_rule() {
+						[ "$(uci -q get shadowsocks-rust.$1.server)" != "$2" ] && return
+						uci -q set shadowsocks-rust.$1.disabled=1
+					}
+					config_foreach _remove_rule ss_redir ${server}
+					uci -q commit shadowsocks-rust
+				fi
+#				[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev reload 2> /dev/null
+#				[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust reload 2> /dev/null
+				[ "$type" = "libev" ] && /etc/init.d/shadowsocks-libev rules_reset 2> /dev/null
+				[ "$type" = "rust" ] && /etc/init.d/shadowsocks-rust rules_reset 2> /dev/null
 				_get_ip
 				server_ping=false
-				if [ "$type" = "libev" ]; then
-					serverip="$(uci -q get shadowsocks-libev.${server}.server)"
-					disabled="$(uci -q get shadowsocks-libev.${server}.disabled)"
-				elif [ "$type" = "rust" ]; then
-					serverip="$(uci -q get shadowsocks-rust.${server}.server)"
-					disabled="$(uci -q get shadowsocks-rust.${server}.disabled)"
-				fi
 				_ping_server $serverip
 				if [ "$server_ping" = false ]; then
 					_log "Server $server ($serverip) seems down, no answer to ping"
@@ -186,7 +273,6 @@ while true; do
 				}
 				script_alert_down="$(uci -q get omr-tracker.proxy.script_alert_down)"
 				[ -n "$script_alert_down" ] && eval $script_alert_down
-
 				if [ "$disabled" != "1" ] && [ "$serverip" != "1" ]; then
 					if [ "$type" = "libev" ] && [ "$(pgrep ss-redir)" = "" ] && [ "$(uci -q get shadowsocks-libev.${server}.key)" != "" ]; then
 						_log "Can't find shadowsocks, restart it..."

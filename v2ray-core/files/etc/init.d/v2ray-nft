@@ -57,7 +57,7 @@ _err() {
 
 version_over_5_4() {
 	MAJOR_VERSION=$(uname -r | awk -F '.' '{print $1}')
-	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}')
+	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}' | awk -F '-' '{print $1}')
 	if [ $MAJOR_VERSION -ge 5 ] && [ $MINOR_VERSION -gt 13 ] || [ $MAJOR_VERSION -gt 5 ] ; then
 		return 0
 	else
@@ -447,6 +447,7 @@ add_v2ray_redirect_rules() {
 
 	local port="$TRANSPARENT_PROXY_PORT"
 	local addition="$TRANSPARENT_PROXY_ADDITION"
+	local tproxy="$TRANSPARENT_PROXY_USE_TPROXY"
 	local ipset_src_direct="$IPSET_SRC_DIRECT_V4"
 	local ipset_dst_direct="$IPSET_DST_DIRECT_V4"
 
@@ -473,12 +474,14 @@ add_v2ray_redirect_rules() {
 
 	[ "$(uci -q get v2ray.main_transparent_proxy.redirect_udp)" = "1" ] && [ "$(uci -q get v2ray.omrout.protocol)" != "socks" ] && portudp="$port"
 	ifnames="$(uci -q get shadowsocks-libev.ss_rules.ifnames)"
+	[ -z "$ifnames" ] && ifnames="$(uci -q get shadowsocks-rust.ss_rules.ifnames)"
 
 	local tmp="/tmp/v2rrules"
 	json_init
 	json_add_string o_remote_servers "$remote_servers"
 	json_add_int o_redir_tcp_port "$port"
 	json_add_int o_redir_udp_port "$portudp"
+	json_add_int o_tproxy "$tproxy"
 	json_add_string o_ifnames "$ifnames"
 	json_add_string o_local_default "forward"
 	json_add_string o_src_bypass "$src_ips_bypass"
@@ -499,7 +502,7 @@ add_v2ray_redirect_rules() {
 		echo "table inet chk {include \"$tmp.nft\";}" >"$tmp.nft.chk"
 		if nft -f "$tmp.nft.chk" -c; then
 			mv "$tmp.nft" "$v2rrules_nft"
-			fw4 -q restart
+			fw4 -q reload
 		fi
 		rm -f "$tmp.nft.chk"
 	fi
@@ -2087,7 +2090,7 @@ clear_transparent_proxy() {
 	if [ -f "${v2rrules_nft}" ] || [ -f "${v2rrules_nft}.down" ]; then
 		rm -f "$v2rrules_nft"
 		rm -f "${v2rrules_nft}.down"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 
 	#v2ray-rules -f
@@ -2239,6 +2242,7 @@ start_instance() {
 	fi
 
 	procd_set_param file "$temp_config"
+	procd_set_param nice 10
 	procd_set_param stderr 1 # forward stderr of the command to logd
 	procd_set_param stdout 1
 	procd_set_param pidfile "/var/run/${NAME}.${section}.pid"
@@ -2257,14 +2261,14 @@ rules_exist() {
 rules_up() {
 	if [ -f "${v2rrules_nft}.down" ]; then
 		mv -f "${v2rrules_nft}.down" "$v2rrules_nft"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 }
 
 rules_down() {
 	if [ -f "${v2rrules_nft}" ]; then
 		mv -f "$v2rrules_nft" "${v2rrules_nft}.down"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 }
 

@@ -7,7 +7,9 @@ uci -q batch <<-EOF
     add ucitrack openmptcprouter
     set ucitrack.@openmptcprouter[-1].init=openmptcprouter
     commit ucitrack
+    set openmptcprouter.settings=settings
 EOF
+
 if [ "$(uci -q get qos.serverin)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set qos.serverin=classify
@@ -50,18 +52,18 @@ if [ "$(uci -q get openmptcprouter.omr)" != "router" ]; then
 		commit openmptcprouter
 	EOF
 fi
-if [ "$(uci -q get openmptcprouter.settings.master)" = "dynamic" ]; then
-	uci -q batch <<-EOF >/dev/null
-		set openmptcprouter.settings.master='change'
-		commit openmptcprouter
-	EOF
-fi
-if [ "$(uci -q get openmptcprouter.settings.master)" = "redundant" ] || [ "$(uci -q get openmptcprouter.settings.master)" = "" ]; then
-	uci -q batch <<-EOF >/dev/null
-		set openmptcprouter.settings.master='balancing'
-		commit openmptcprouter
-	EOF
-fi
+#if [ "$(uci -q get openmptcprouter.settings.master)" = "dynamic" ]; then
+#	uci -q batch <<-EOF >/dev/null
+#		set openmptcprouter.settings.master='change'
+#		commit openmptcprouter
+#	EOF
+#fi
+#if [ "$(uci -q get openmptcprouter.settings.master)" = "redundant" ] || [ "$(uci -q get openmptcprouter.settings.master)" = "" ]; then
+#	uci -q batch <<-EOF >/dev/null
+#		set openmptcprouter.settings.master='balancing'
+#		commit openmptcprouter
+#	EOF
+#fi
 if [ "$(uci -q get openmptcprouter.vps.port)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set openmptcprouter.vps.port='65500'
@@ -86,15 +88,21 @@ if [ "$(uci -q get openmptcprouter.settings.check_ipv6_website)" = "" ]; then
 		commit openmptcprouter
 	EOF
 fi
-if [ "$(uci -q get openmptcprouter.settings.status_vps_timeout)" = "" ] || [ "$(uci -q get openmptcprouter.settings.status_vps_timeout)" = "1" ]; then
+if [ "$(uci -q get openmptcprouter.settings.status_vps_timeout)" = "" ] || [ "$(uci -q get openmptcprouter.settings.status_vps_timeout)" = "1" ] || [ "$(uci -q get openmptcprouter.settings.status_vps_timeout)" = "3" ]; then
 	uci -q batch <<-EOF >/dev/null
-		set openmptcprouter.settings.status_vps_timeout=3
+		set openmptcprouter.settings.status_vps_timeout=10
 		commit openmptcprouter
 	EOF
 fi
 if [ "$(uci -q get openmptcprouter.settings.status_getip_timeout)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set openmptcprouter.settings.status_getip_timeout=1
+		commit openmptcprouter
+	EOF
+fi
+if [ "$(uci -q get openmptcprouter.settings.status_whois_timeout)" = "" ]; then
+	uci -q batch <<-EOF >/dev/null
+		set openmptcprouter.settings.status_whois_timeout=2
 		commit openmptcprouter
 	EOF
 fi
@@ -145,6 +153,12 @@ _set_omr_ip() {
 
 config_load openmptcprouter
 config_foreach _set_omr_ip server
+
+uci -q batch <<-EOF >/dev/null
+	set openmptcprouter.settings.master='balancing'
+	commit openmptcprouter
+EOF
+
 
 sed -i 's/net.ipv4.tcp_retries2=3$/net.ipv4.tcp_retries2=15/' /etc/sysctl.d/zzz_openmptcprouter.conf
 

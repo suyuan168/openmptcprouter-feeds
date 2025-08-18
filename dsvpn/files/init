@@ -31,7 +31,7 @@ validate_section() {
 
 version_over_5_4() {
 	MAJOR_VERSION=$(uname -r | awk -F '.' '{print $1}')
-	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}')
+	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}' | awk -F '-' '{print $1}')
 	if [ $MAJOR_VERSION -ge 5 ] && [ $MINOR_VERSION -gt 13 ] || [ $MAJOR_VERSION -gt 5 ] ; then
 		return 0
 	else
@@ -86,6 +86,7 @@ start_instance() {
 
 
 	procd_set_param respawn 0 30 5
+	procd_set_param nice 10
 	procd_set_param file /tmp/${PROG_NAME}-${1}.key
 
 	procd_set_param stdout 1

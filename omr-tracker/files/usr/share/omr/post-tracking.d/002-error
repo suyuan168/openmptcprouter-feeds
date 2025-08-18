@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (C) 2018-2024 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
+# Copyright (C) 2018-2025 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -9,6 +9,13 @@
 
 
 interface_up=$(ifstatus "$OMR_TRACKER_INTERFACE" 2>/dev/null | jsonfilter -q -e '@["up"]')
+
+. /usr/share/omr/lib/common-post-tracking.sh
+
+if [ "$OMR_TRACKER_STATUS" = "ERROR" ] && [ "$(uci -q get openmptcprouter.$OMR_TRACKER_INTERFACE.state)" != "down" ]; then
+	uci -q set openmptcprouter.$OMR_TRACKER_INTERFACE.state='down'
+	uci -q commit openmptcprouter
+fi
 
 # An interface in error will never be used in MPTCP
 if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvpn" ] && [ "$interface_up" != "true" ]; }; then
@@ -27,7 +34,7 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 	#	ifup $OMR_TRACKER_INTERFACE
 	#	sleep 30
 	#if [ -n "$OMR_TRACKER_INTERFACE" ] && [ -n "$OMR_TRACKER_DEVICE" ] && [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.proto)" = "modemmanager" ] && [ "$interface_up" = "false" ] && [ "$interface_available" = "false" ] && [ "$interface_pending" = "false" ] && [ "$interface_autostart" = "true" ]; then
-	if [ -n "$OMR_TRACKER_INTERFACE" ] && [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.proto)" = "modemmanager" ]; then
+	if [ -n "$OMR_TRACKER_INTERFACE" ] && [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.proto)" = "modemmanager" ] && [ "$(uci -q get openmptcprouter.settings.disable_modemmanager)" != "1" ]; then
 		modemfind="0"
 		device="$(uci -q get network.$OMR_TRACKER_INTERFACE.device)"
 		. /usr/share/ModemManager/modemmanager.common
@@ -41,7 +48,7 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 				if [ "$mm_state_failed" = "unknown-capabilities" ]; then
 					_log "Interface $OMR_TRACKER_INTERFACE in failed state in ModemManager, reset modem..."
 					/usr/bin/mmcli -m ${modem} -r >/dev/null 2>&1
-					sleep 30
+				sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
 				elif false && [ "$mm_state_failed" = "sim-missing" ]; then
 					_log "Interface $OMR_TRACKER_INTERFACE in failed state in ModemManager, reset modem..."
 					/usr/bin/mmcli -m ${modem} -r >/dev/null 2>&1
@@ -49,46 +56,49 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 					#mm_primary_port=$(modemmanager_get_field "${MODEM_STATUS}" "modem.generic.primary-port")
 					#mbimcli -p -d /dev/$mm_primary_port --ms-device-reset >/dev/null 2>&1
 				fi
-			elif [ "$mm_state" = "connected" ] || [ "$mm_state" = "enabled" ]; then
+			elif [ "$mm_state" = "enabled" ] || [ "$mm_state" = "connected" ]; then
 				_log "No answer from $OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE), restart interface"
 				_log "Set $OMR_TRACKER_INTERFACE down"
 				ifdown $OMR_TRACKER_INTERFACE
 				sleep 5
 				_log "Set $OMR_TRACKER_INTERFACE up"
 				ifup $OMR_TRACKER_INTERFACE
-				sleep 30
-			elif [ "$mm_state" = "disabled" ]; then
+				sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
+				uci -q set openmptcprouter.$OMR_TRACKER_INTERFACE.restart_intf=1
+				uci -q commit openmptcprouter
+			elif [ "$mm_state" = "disabled" ] && [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.force_link)" = "1" ]; then
 			# [ -n "$(echo $modeminfo | grep 'modem.3gpp.registration-state ' | grep home)" ]; then
 				_log "Interface $OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE) disabled, set it up"
 				/usr/bin/mmcli -m ${modem} -e >/dev/null 2>&1
 				ifup $OMR_TRACKER_INTERFACE
-				sleep 30
+				sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
 			elif [ "$mm_state" = "registered" ]; then
 				_log "Interface $OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE) registered, reset it"
-				#ifup $OMR_TRACKER_INTERFACE
-				/usr/bin/mmcli -m ${modem} -r >/dev/null 2>&1
-				sleep 30
+				ifup $OMR_TRACKER_INTERFACE
+				#/usr/bin/mmcli -m ${modem} -r >/dev/null 2>&1
+				sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
 			elif [ "$mm_state" = "locked" ]; then
 				mm_unlock_required=$(modemmanager_get_field "${MODEM_STATUS}" "modem.generic.unlock-required")
 				mm_generic_sim=$(modemmanager_get_field "${MODEM_STATUS}" "modem.generic.sim")
 				#mm_primary_port=$(modemmanager_get_field "${MODEM_STATUS}" "modem.generic.primary-port")
 				#mm_drivers=$(modemmanager_get_multivalue_field "${MODEM_STATUS}" "modem.generic.drivers")
 				mm_unlock_retries=$(modemmanager_get_multivalue_field "${MODEM_STATUS}" "modem.generic.unlock-retries" | awk '{print substr($2,2,length($2)-2)}')
+				#'
 				if [ "$mm_unlock_required" = "sim-pin" ]; then
 					# Sometimes PIN is not correctly sent to modem
 					if [ -n "$(uci -q get network.$OMR_TRACKER_INTERFACE.pincode)" ]; then
 						if [ "$mm_unlock_retries" -gt "1" ] && [ -n "$(uci -q get network.$OMR_TRACKER_INTERFACE.pincode)" ]; then
 							_log "Interface $OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE) locked, set PIN"
 							mmcli -a -m ${modem} -i $mm_generic_sim --pin=$(uci -q get network.$OMR_TRACKER_INTERFACE.pincode) >/dev/null 2>&1
-							sleep 20
+							sleep 30
 							ifup $OMR_TRACKER_INTERFACE
 						fi
 					fi
 				elif [ "$mm_unlock_required" = "sim-puk" ] && [ "$mm_unlock_retries" -gt "1" ] && [ -n "$(uci -q get network.$OMR_TRACKER_INTERFACE.pukcode)" ] && [ -n "$(uci -q get network.$OMR_TRACKER_INTERFACE.pincode)" ]; then
 					_log "Interface $OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE) locked, set PUK"
 					mmcli -i $mm_generic_sim --puk=$(uci -q get network.$OMR_TRACKER_INTERFACE.pukcode) --pin=$(uci -q get network.$OMR_TRACKER_INTERFACE.pincode) >/dev/null 2>&1
-					sleep 30
 				fi
+				sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
 			fi
 		fi
 		if [ "$modemfind" = "0" ]; then
@@ -97,7 +107,7 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 			#_log "Can't find $OMR_TRACKER_INTERFACE in ModemManager, restart modemmanager..."
 			_log "Can't find $OMR_TRACKER_INTERFACE in ModemManager"
 			#/etc/init.d/modemmanager restart
-			sleep 30
+			sleep $(uci -q get network.$OMR_TRACKER_INTERFACE.delay || echo '120')
 		fi
 	fi
 	#elif [ -n "$OMR_TRACKER_INTERFACE" ] && [ -n "$OMR_TRACKER_DEVICE" ] && [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.proto)" = "modemmanager" ] && [ "$interface_available" = "false" ]; then
@@ -122,6 +132,8 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 	fi
 	. /lib/functions/network.sh
 
+	[ -z "$OMR_TRACKER_DEVICE" ] && OMR_TRACKER_DEVICE="$OMR_TRACKER_PREV_DEVICE"
+
 	# Get the current multipath status
 	multipath_status="off"
 #	[ "$OMR_TRACKER_INTERFACE" = "omrvpn" ] && multipath $OMR_TRACKER_DEVICE off >/dev/null 2>&1
@@ -142,15 +154,18 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 		fi
 		if [ -n "$OMR_TRACKER_INTERFACE" ]; then
 			uci -q set openmptcprouter.$OMR_TRACKER_INTERFACE.state='down'
+			env -i ACTION="disconnecting" INTERFACE="$OMR_TRACKER_INTERFACE" DEVICE="$OMR_TRACKER_DEVICE" /sbin/hotplug-call iface
 		fi
 		#if [ "$(sysctl -n net.mptcp.mptcp_enabled | tr -d '\n')" = "1" ]; then
-		#	multipath "$OMR_TRACKER_DEVICE" off > /dev/null 2>&1
+		multipath "$OMR_TRACKER_DEVICE" off > /dev/null 2>&1
 		#fi
-		if [ -n "$OMR_TRACKER_DEVICE_IP" ]; then
-			glorytun-udp path addr "$OMR_TRACKER_DEVICE_IP" dev tun0 set down > /dev/null 2>&1
-		fi
-		if [ -n "$OMR_TRACKER_DEVICE_IP6" ]; then
-			glorytun-udp path addr "$OMR_TRACKER_DEVICE_IP6" dev tun0 set down > /dev/null 2>&1
+		if [ "$(uci -q get glorytun-udp.vpn.enable)" = "1" ] && [ "$OMR_TRACKER_TYPE" != "glorytun" ]; then
+			if [ -n "$OMR_TRACKER_DEVICE_IP" ]; then
+				glorytun-udp path addr "$OMR_TRACKER_DEVICE_IP" dev tun0 set down > /dev/null 2>&1
+			fi
+			if [ -n "$OMR_TRACKER_DEVICE_IP6" ]; then
+				glorytun-udp path addr "$OMR_TRACKER_DEVICE_IP6" dev tun0 set down > /dev/null 2>&1
+			fi
 		fi
 		if [ -n "$OMR_TRACKER_INTERFACE" ] && [ "$(uci -q get openmptcprouter.$OMR_TRACKER_INTERFACE.vpn)" = "1" ] && [ "$(uci -q get openmptcprouter.settings.mptcpovervpn)" = "openvpn" ]; then
 			VPN_BASE_INTF="$(uci -q get openmptcprouter.$OMR_TRACKER_INTERFACE.baseintf)"
@@ -179,9 +194,11 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 				config_foreach set_route6 interface $OMR_TRACKER_INTERFACE
 				[ "$(uci -q get openmptcprouter.settings.debug)" = "true" ] && _log "New routes $(ip r)"
 			elif [ "$(uci -q get network.$OMR_TRACKER_INTERFACE.multipath)" = "master" ]; then
+				[ "$(uci -q get openmptcprouter.settings.debug)" = "true" ] && _log "Default gw: $default_gw - Set routes (current: $(ip r) )"
 				config_load network
 				config_foreach set_route interface $OMR_TRACKER_INTERFACE "no"
 				config_foreach set_route6 interface $OMR_TRACKER_INTERFACE "no"
+				[ "$(uci -q get openmptcprouter.settings.debug)" = "true" ] && _log "New routes $(ip r)"
 			elif [ -n "$OMR_TRACKER_DEVICE" ] && [ -n "$(ip r show table 991337 | grep "$OMR_TRACKER_DEVICE ")" ]; then
 				config_load network
 				config_foreach set_route interface $OMR_TRACKER_INTERFACE "no"
@@ -219,18 +236,6 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 	fi
 	[ -n "$script_alert_down" ] && eval $script_alert_down
 
-	restart_down=""
-	if [ -n "$OMR_TRACKER_INTERFACE" ]; then
-		restart_down="$(uci -q get omr-tracker.$OMR_TRACKER_INTERFACE.restart_down)"
-	fi
-	[ -z "$restart_down" ] && restart_down="$(uci -q get omr-tracker.defaults.restart_down)"
-	[ "$restart_down" = "1" ] && {
-		_log "Restart $OMR_TRACKER_INTERFACE"
-		ifdown $OMR_TRACKER_INTERFACE >/dev/null 2>&1
-		sleep 5
-		ifup $OMR_TRACKER_INTERFACE >/dev/null 2>&1
-	}
-
 	if [ "$OMR_TRACKER_INTERFACE" = "glorytun" ] || [ "$OMR_TRACKER_INTERFACE" = "omrvpn" ] || [ "$OMR_TRACKER_INTERFACE" = "omr6in4" ]; then
 		if [ "$OMR_TRACKER_STATUS_MSG" = "" ]; then
 			_log "$OMR_TRACKER_INTERFACE down"
@@ -241,6 +246,7 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 			uci -q set openmptcprouter.omr.vpn='down'
 		fi
 		if [ "$(uci -q get openmptcprouter.settings.defaultgw)" != "0" ]; then
+			del_default_route
 			config_load network
 			config_foreach set_route interface $OMR_TRACKER_INTERFACE
 			config_foreach set_route6 interface $OMR_TRACKER_INTERFACE
@@ -275,14 +281,30 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 			_log "OpenVPN down, restart it"
 			/etc/init.d/openvpn restart omr >/dev/null 2>&1
 		fi
+		if [ "$(uci -q get ethersoftvpn.openmptcprouter.enable)" = "1" ]; then
+			_log "SoftEther VPN down, restart it"
+			/etc/init.d/softethervpnclient restart >/dev/null 2>&1
+		fi
 		config_load openmptcprouter
-		config_foreach disable_pihole server
+		[ "$(uci -q get openmptcprouter.settings.pihole_auto_conf)" != "0" ] && config_foreach disable_pihole server
 		#if [ "$(uci -q get openmptcprouter.settings.master)" != "balancing" ] || [ "$(uci -q get openmptcprouter.settings.vpn)" = "mlvpn" ]; then
 		if [ "$(uci -q get openmptcprouter.settings.master)" != "balancing" ]; then
 			config_foreach set_server_default_route server
 			config_foreach set_server_default_route6 server
 		fi
 	fi
+	restart_down=""
+	if [ -n "$OMR_TRACKER_INTERFACE" ]; then
+		restart_down="$(uci -q get omr-tracker.$OMR_TRACKER_INTERFACE.restart_down)"
+	fi
+	[ -z "$restart_down" ] && restart_down="$(uci -q get omr-tracker.defaults.restart_down)"
+	[ "$restart_down" = "1" ] && {
+		_log "Restart $OMR_TRACKER_INTERFACE"
+		ifdown $OMR_TRACKER_INTERFACE >/dev/null 2>&1
+		sleep 5
+		ifup $OMR_TRACKER_INTERFACE >/dev/null 2>&1
+	}
+
 	dns_flush
 	if [ -n "$OMR_TRACKER_INTERFACE" ]; then
 		uci -q delete openmptcprouter.$OMR_TRACKER_INTERFACE.lc

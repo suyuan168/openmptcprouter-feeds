@@ -2,9 +2,9 @@
 
 # Set REJECT as default rule if an interface is not in a zone
 uci -q batch <<-EOF >/dev/null
-	set firewall.@defaults[0].input='ACCEPT'
-	set firewall.@defaults[0].output='ACCEPT'
-	set firewall.@defaults[0].forward='ACCEPT'
+	set firewall.@defaults[0].input='REJECT'
+	set firewall.@defaults[0].output='REJECT'
+	set firewall.@defaults[0].forward='REJECT'
 	set firewall.@defaults[0].flow_offloading='0'
 	set firewall.@defaults[0].flow_offloading_hw='0'
 EOF
@@ -155,6 +155,17 @@ if [ "$(uci -q get firewall.ttl)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set firewall.ttl=include
 		set firewall.ttl.path=/etc/firewall.ttl
+		set firewall.ttl.type='script'
+		set firewall.ttl.fw4_compatible='1'
+		commit firewall
+	EOF
+fi
+if [ "$(uci -q get firewall.upnp)" = "" ] && [ -e /etc/init.d/miniupnpd ]; then
+	uci -q batch <<-EOF >/dev/null
+		set firewall.upnp=include
+		set firewall.upnp.path='/etc/firewall.upnp'
+		set firewall.upnp.type='script'
+		set firewall.upnp.fw4_compatible='1'
 		commit firewall
 	EOF
 fi
@@ -271,8 +282,19 @@ uci -q batch <<-EOF >/dev/null
 	del firewall.omr_server.reload
 	del firewall.gre_tunnel.reload
 	del firewall.ttl.reload
+	commit firewall
 EOF
 
+if [ -z "$(uci -q get firewall.user)" ]; then
+	uci -q batch <<-EOF >/dev/null
+		set firewall.user=include
+		set firewall.user.path='/etc/firewall.user'
+		set firewall.user.enabled='1'
+		set firewall.user.type='script'
+		set firewall.user.fw4_compatible='1'
+		commit firewall
+	EOF
+fi
 rm -f /tmp/luci-indexcache
 
 exit 0

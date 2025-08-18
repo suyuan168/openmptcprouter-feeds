@@ -1,19 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # Copyright (C) 2021-2022 ImmortalWrt.org
+# Copyright (C) 2022-2025 Ycarus (Yannick Chabanois) for OpenMPTCProuter.com (contact@openmptcprouter.com)
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=v2ray-core
-PKG_VERSION:=5.7.0
+PKG_VERSION:=5.32.0
 PKG_RELEASE:=1
 
-#PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-#PKG_SOURCE_URL:=https://codeload.github.com/v2fly/v2ray-core/tar.gz/v$(PKG_VERSION)?
-#PKG_HASH:=599fcd264537e39178b6008a11af68816dfd1609e19a9cf8adc8b2a4240ee370
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/v2fly/v2ray-core.git
-PKG_SOURCE_VERSION:=8de2f27043b00612986d96f37975cd4aa98b49c3
+PKG_SOURCE_VERSION:=a4f28a2f6f01e871916fef06f2919b41880da78b
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE

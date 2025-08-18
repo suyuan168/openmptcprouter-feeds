@@ -9,7 +9,7 @@
 USE_PROCD=1
 START=99
 
-EXTRA_COMMANDS="rules_up rules_down rules_exist"
+EXTRA_COMMANDS="rules_up rules_down rules_exist rules_reset"
 
 . /usr/lib/unbound/iptools.sh
 
@@ -55,15 +55,26 @@ ss_mkjson_ss_server_conf() {
 
 ss_mkjson_ss_tunnel_conf() {
 	ss_mkjson_server_conf || return 1
-	[ -n "$tunnel_address" ] || return 1
-	json_add_string tunnel_address "$tunnel_address"
+	json_add_array "locals"
+	json_add_object ""
+	json_add_string protocol "${cfgtype/ss_/}"
+	[ -z "$forward_address" ] || json_add_string forward_address "$forward_address"
+	[ -z "$forward_port" ] || json_add_int forward_port "$forward_port"
+	[ -z "$local_address" ] || json_add_string local_address "$local_address"
+	[ -z "$local_port" ] || json_add_int local_port "$local_port"
+	json_close_object
+	json_close_array
 }
 
 ss_xxx() {
 	local cfg="$1"
 	local cfgtype="$2"
 #	local bin="$ss_bindir/${cfgtype/_/-}"
-	local bin="$ss_bindir/sslocal"
+	if [ "$cfgtype" = "ss_server" ]; then
+		local bin="$ss_bindir/ssserver"
+	else
+		local bin="$ss_bindir/sslocal"
+	fi
 	local confjson="$ss_confdir/$cfgtype.$cfg.json"
 
 	[ -x "$bin" ] || return
@@ -79,14 +90,18 @@ ss_xxx() {
 	json_add_boolean reuse_port "$reuse_port"
 	json_add_boolean no_delay "$no_delay"
 	json_add_boolean mptcp "$mptcp"
-	[ "$cfgtype" != "ss_local" ] && json_add_string protocol "${cfgtype/ss_/}"
-	[ -z "$local_address" ] || json_add_string local_address "$local_address"
-	[ -z "$local_port" ] || json_add_int local_port "$local_port"
-	[ -z "$local_ipv4_address" ] || json_add_string local_ipv4_address "$local_ipv4_address"
-	[ -z "$local_ipv6_address" ] || json_add_string local_ipv6_address "$local_ipv6_address"
+	#[ "$cfgtype" != "ss_local" ] && json_add_string protocol "${cfgtype/ss_/}"
+	if [ "$cfgtype" != "ss_tunnel" ]; then
+		[ "$cfgtype" != "ss_local" ] && json_add_string protocol "${cfgtype/ss_/}"
+		[ -z "$local_address" ] || json_add_string local_address "$local_address"
+		[ -z "$local_port" ] || json_add_int local_port "$local_port"
+		[ -z "$local_ipv4_address" ] || json_add_string local_ipv4_address "$local_ipv4_address"
+		[ -z "$local_ipv6_address" ] || json_add_string local_ipv6_address "$local_ipv6_address"
+	fi
 	[ -z "$mode" ] || json_add_string mode "$mode"
 	[ -z "$mtu" ] || json_add_int mtu "$mtu"
 	[ -z "$timeout" ] || json_add_int timeout "$timeout"
+	[ -z "$keep_alive" ] || json_add_int keep_alive "$keep_alive"
 	[ -z "$user" ] || json_add_string user "$user"
 	[ -z "$acl" ] || json_add_string acl "$acl"
 	json_dump -i >"$confjson"
@@ -98,6 +113,7 @@ ss_xxx() {
 		echo "$cfgtype $cfg: uci option bind_address deprecated, please switch to local_address" >&2
 		procd_append_param command -b "$bind_address"
 	fi
+	procd_set_param nice 10
 	procd_set_param file "$confjson"
 	procd_set_param respawn
 	procd_close_instance
@@ -203,6 +219,7 @@ ss_rules_nft_gen() {
 	json_add_string o_redir_tcp_port "$local_port_tcp"
 	json_add_string o_redir_udp_port "$local_port_udp"
 	json_add_string o_ifnames "$ifnames"
+	json_add_string o_tproxy "$tproxy"
 	json_add_string o_local_default "$local_default"
 	json_add_string o_src_bypass "$src_ips_bypass"
 	json_add_string o_src_forward "$src_ips_forward"
@@ -215,6 +232,7 @@ ss_rules_nft_gen() {
 	json_add_string o_dst_default "$dst_default"
 	json_add_string o_nft_tcp_extra "$nft_tcp_extra"
 	json_add_string o_nft_udp_extra "$nft_udp_extra"
+	json_add_string o_tun "$tun_mode"
 	json_dump -i >"$tmp.json"
 
 	if utpl -S -F "$tmp.json" "$ssrules_uc" >"$tmp.nft" \
@@ -234,7 +252,7 @@ ss_rules_nft_reset() {
 	if [ -f "$ssrules_nft" ] || [ -f "${ssrules_nft}.down" ]; then
 		rm -f "$ssrules_nft"
 		rm -f "${ssrules_nft}.down"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 }
 
@@ -247,26 +265,28 @@ ss_rules() {
 rules_up() {
 	if [ -f "${ssrules_nft}.down" ]; then
 		mv -f "${ssrules_nft}.down" "$ssrules_nft"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 }
 
 rules_down() {
 	if [ -f "${ssrules_nft}" ]; then
 		mv -f "$ssrules_nft" "${ssrules_nft}.down"
-		fw4 -q restart
+		fw4 -q reload
 	fi
 }
 
 rules_exist() {
 	if [ -f "$ssrules_nft" ]; then
-		return 0
+		exit 0
 	else
-		return 1
+		exit 1
 	fi
 }
 
-
+rules_reset() {
+	ss_rules
+}
 
 start_service() {
 	local cfgtype
@@ -369,6 +389,7 @@ validate_common_options_() {
 		'mode:or("tcp_only", "udp_only", "tcp_and_udp"):tcp_only' \
 		'mtu:uinteger' \
 		'timeout:uinteger' \
+		'keep_alive:uinteger' \
 		'user:string'
 }
 
@@ -402,7 +423,9 @@ validate_ss_rules_section() {
 		'local_default:or("bypass", "forward", "checkdst"):bypass' \
 		'nft_tcp_extra:string' \
 		'nft_udp_extra:string' \
-		'ifnames:maxlength(15)'
+		'ifnames:maxlength(15)' \
+		'tun_mode:string' \
+		'tproxy:bool:0'
 }
 
 validate_ss_server_section() {
@@ -419,5 +442,6 @@ validate_ss_server_section() {
 validate_ss_tunnel_section() {
 	validate_common_client_options_ ss_tunnel "$1" \
 		"$2" \
-		'tunnel_address:regex(".+\:[0-9]+")'
+		'forward_address:host' \
+		'forward_port:uinteger'
 }

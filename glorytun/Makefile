@@ -9,12 +9,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=glorytun
-PKG_RELEASE:=6
+PKG_RELEASE:=9
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=0c3b03cf0215e0896fd8e7e91be92efa77f6a2d1
+PKG_SOURCE_VERSION:=8aebb3efb3b108b1276aa74679e200e003f298de
 PKG_SOURCE:=glorytun-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/Ysurac/glorytun.git
-PKG_VERSION:=0.0.35-$(PKG_SOURCE_VERSION)
+PKG_VERSION:=0.0.35
 PKG_LICENSE:=BSD-2-Clause
 PKG_LICENSE_FILES:=LICENSE
 PKG_FIXUP:=autoreconf
@@ -30,6 +30,10 @@ URL:=https://github.com/angt/glorytun
 SUBMENU:=VPN
 endef
 
+define Package/$(PKG_NAME)/description
+ A small, simple and secure VPN
+endef
+
 TARGET_CFLAGS += -std=c99 -D_GNU_SOURCE
 
 define Package/$(PKG_NAME)/conffiles
@@ -39,10 +43,13 @@ endef
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/glorytun $(1)/usr/sbin/$(PKG_NAME)
+	$(INSTALL_BIN) files/glorytun-irq-affinity.sh $(1)/usr/sbin/glorytun-irq-affinity.sh
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) init $(1)/etc/init.d/$(PKG_NAME)
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) glorytun.config $(1)/etc/config/glorytun
+	$(INSTALL_DIR) $(1)/etc/glorytun
+	$(INSTALL_DATA) files/glorytun-sysctl.conf $(1)/etc/glorytun/glorytun-sysctl.conf
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))

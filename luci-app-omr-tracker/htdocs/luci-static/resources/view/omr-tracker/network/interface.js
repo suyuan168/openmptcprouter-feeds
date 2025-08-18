@@ -11,9 +11,11 @@ return view.extend({
 		return Promise.all([
 			L.resolveDefault(fs.stat('/usr/bin/httping'), {}),
 			L.resolveDefault(fs.stat('/usr/bin/dig'), {}),
+			L.resolveDefault(fs.stat('/usr/sbin/glorytun-udp'), {}),
 //			L.resolveDefault(fs.stat('/usr/bin/nping'), {}),
 //			L.resolveDefault(fs.stat('/usr/bin/arping'), {}),
-			uci.load('network')
+			uci.load('network'),
+			uci.load('omr-tracker')
 		]);
 	},
 
@@ -59,19 +61,44 @@ return view.extend({
 		o.value('ipv4ipv6', _('IPv4 & IPv6'));
 		o.modalonly = true;
 
-		o = s.option(form.DynamicList, 'hosts', _('Tracking hostname or IP address'),
-			_('This hostname or IP address will be pinged to determine if the link is up or down. Leave blank to use defaults settings.'));
-		//o.datatype = 'hosts';
+		o = s.option(form.ListValue, 'country', _('Country'));
+		o.default = 'world';
 		o.modalonly = true;
-		o.rmempty = false;
 
-		o = s.option(form.DynamicList, 'hosts6', _('Tracking hostname or IP address for IPv6'),
-			_('This hostname or IP address will be pinged to determine if the link is up or down. Leave blank to use defaults settings.'));
-		//o.datatype = 'hosts';
-		o.modalonly = true;
-		o.depends('family', 'ipv4ipv6');
-		o.depends('family', 'ipv6');
-		o.rmempty = false;
+		const hostSections = uci.sections('omr-tracker').filter(s => s['.type'] === 'hosts_defaults');
+		const countryData = {};
+
+		hostSections.forEach(s => {
+			const name = s['.name'];
+			countryData[name] = {
+				hosts: s.hosts || [],
+				hosts6: s.hosts6 || []
+			};
+			o.value(name, _(name));
+		});
+
+		hostSections.forEach(country => {
+			const cname = country['.name'];
+			let o4 = s.option(form.DynamicList, `_hosts_${cname}`, _('IPv4 Hosts (%s)').format(cname),_('This hostname or IP address will be pinged to determine if the link is up or down. Leave blank to use defaults settings.'));
+			o4.modalonly = true;
+			o4.depends('country', cname);
+			o4.cfgvalue = function (section_id) {
+				return countryData[cname].hosts;
+			};
+			o4.write = function (section_id, formvalue) {
+				uci.set('omr-tracker', cname, 'hosts', formvalue);
+			};
+
+			let o6 = s.option(form.DynamicList, `_hosts6_${cname}`, _('IPv6 Hosts (%s)').format(cname),_('This hostname or IP address will be pinged to determine if the link is up or down. Leave blank to use defaults settings.'));
+			o6.modalonly = true;
+			o6.depends('country', cname);
+			o6.cfgvalue = function (section_id) {
+				return countryData[cname].hosts6;
+			};
+			o6.write = function (section_id, formvalue) {
+				uci.set('omr-tracker', cname, 'hosts6', formvalue);
+			};
+		});
 
 		o = s.option(form.ListValue, 'type', _('Tracking method'),_('Always ping gateway, then test connection by ping, httping or dns. None mode only ping gateway.'));
 		o.default = 'ping';
@@ -83,19 +110,27 @@ return view.extend({
 		if (stats[1].type === 'file') {
 			o.value('dns');
 		}
-		/*
 		if (stats[2].type === 'file') {
+			o.value('glorytun-udp');
+		}
+		/*
+		if (stats[3].type === 'file') {
 			o.value('nping-tcp');
 			o.value('nping-udp');
 			o.value('nping-icmp');
 			o.value('nping-arp');
 		}
-		if (stats[3].type === 'file') {
+		if (stats[4].type === 'file') {
 			o.value('arping');
 		}
 		*/
 		o = s.option(form.Flag, 'server_http_test', _('Server http test'),
-			_('Check if connection work with http by sending a request to server'));
+			_('Check if connection work with http by sending a request to server API'));
+		o.rmempty = false;
+		o.modalonly = true;
+
+		o = s.option(form.Flag, 'server_test', _('Server test'),
+			_('Check if connection work by sending a ping or http request to server over all interfaces, failed if only current interface is not able to.'));
 		o.rmempty = false;
 		o.modalonly = true;
 
@@ -117,8 +152,24 @@ return view.extend({
 		o.datatype = 'range(1, 100)';
 		o.default = '1';
 		*/
+		/*
+		o = s.option(form.ListValue, 'glorytun_down', _('Consider path down since'));
+		o.depends('type', 'glorytun-udp');
+		o.default = 'running';
+		o.value('deleting', _('deleting');
+		o.value('probing', _('probing');
+		o.value('degregated', _('degregated');
+		o.value('lossy', _('lossy');
+		o.value('waiting', _('waiting');
+		o.value('ready', _('ready');
+		o.value('running', _('running');
+		o.modalonly = true;
+		*/
 
 		o = s.option(form.ListValue, 'count', _('Ping count'));
+		o.depends('type', 'ping');
+		o.depends('type', 'httping');
+		o.depends('type', 'dns');
 		o.default = '1';
 		o.value('1');
 		o.value('2');
@@ -128,8 +179,8 @@ return view.extend({
 		o.modalonly = true;
 
 		o = s.option(form.Value, 'size', _('Ping size'));
-		o.default = '56';
 		o.depends('type', 'ping');
+		o.default = '56';
 		o.value('8');
 		o.value('24');
 		o.value('56');

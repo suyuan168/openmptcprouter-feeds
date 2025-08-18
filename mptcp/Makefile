@@ -54,7 +54,11 @@ define Package/mptcp
       CONFIG_TCP_CONG_OLIA=y \
       CONFIG_TCP_CONG_WVEGAS=y \
       CONFIG_TCP_CONG_BBR=y \
-      CONFIG_DEFAULT_TCP_CONG="olia"
+      CONFIG_DEFAULT_TCP_CONG="olia" \
+      CONFIG_INET_MPTCP_DIAG=y \
+      CONFIG_INET_DIAG=y \
+      CONFIG_IPV6=y \
+      CONFIG_MPTCP_IPV6=y
 
   PKGARCH:=all
 endef

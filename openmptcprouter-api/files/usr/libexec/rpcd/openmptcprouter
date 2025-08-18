@@ -814,7 +814,7 @@ function interfaces_status()
 	local timeout = uci:get("openmptcprouter","settings","status_getip_timeout") or "1"
 	local dns_test =  ""
 	if uci:get("openmptcprouter","settings","external_check") ~= "0" then
-		dns_test = sys.exec("dig +timeout=" .. timeout .. " +tries=1 openmptcprouter.com | grep 'ANSWER: 0'")
+		dns_test = sys.exec("dig +timeout=" .. timeout .. " +tries=1 openmptcprouter.com | grep -e 'ANSWER: 0' -e 'no servers could be reached'")
 	end
 	if dns_test == "" then
 		mArray.openmptcprouter["dns"] = true
@@ -1043,7 +1043,7 @@ function interfaces_status()
 	mArray.openmptcprouter["tun_service"] = false
 	mArray.openmptcprouter["tun_state"] = "DOWN"
 	mArray.openmptcprouter["tun6_state"] = "DOWN"
-	if string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?glorytun(-udp)?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?dsvpn?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?mlvpn?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?openvpn?$'"), "%d+") then
+	if string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?glorytun(-udp)?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?dsvpn?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?mlvpn?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/usr/sbin/)?openvpn?$'"), "%d+") or string.find(sys.exec("/usr/bin/pgrep '^(/var/softethervpn/)?vpnclient?$'"), "%d+") then
 		mArray.openmptcprouter["tun_service"] = true
 		mArray.openmptcprouter["tun_ip"] = get_ip("omrvpn")
 		local tun_dev = uci:get("network","omrvpn","device")
@@ -1098,10 +1098,10 @@ function interfaces_status()
 	mArray.openmptcprouter["multi_vpn"] = false
 	if uci:get("openmptcprouter","settings","vpn") ~= "none" then
 		current_vpn = uci:get("openmptcprouter","settings","vpn")
-		if uci:get("glorytun","vpn","enable") == "1" and uci:get("glorytun","vpn","proto") == "tcp" and current_vpn ~= "glorytun_tcp" then
+		if uci:get("glorytun","vpn","enable") == "1" and current_vpn ~= "glorytun_tcp" then
 			mArray.openmptcprouter["multi_vpn"] = true
 		end
-		if uci:get("glorytun","vpn","enable") == "1" and uci:get("glorytun","vpn","proto") == "udp" and current_vpn ~= "glorytun_udp" then
+		if uci:get("glorytun-udp","vpn","enable") == "1" and current_vpn ~= "glorytun_udp" then
 			mArray.openmptcprouter["multi_vpn"] = true
 		end
 		if uci:get("dsvpn","vpn","enable") == "1" and current_vpn ~= "dsvpn" then
@@ -1111,6 +1111,9 @@ function interfaces_status()
 			mArray.openmptcprouter["multi_vpn"] = true
 		end
 		if uci:get("openvpn","omr","enabled") == "1" and current_vpn ~= "openvpn" then
+			mArray.openmptcprouter["multi_vpn"] = true
+		end
+		if uci:get("softethervpn","openmptcprouter","enable") == "1" and current_vpn ~= "softether" then
 			mArray.openmptcprouter["multi_vpn"] = true
 		end
 	end
@@ -1273,6 +1276,7 @@ function interfaces_status()
 	    local mac = section ["macaddr"] or ""
 	    local itype = section ["type"] or ""
 	    local state = uci:get("openmptcprouter", interface, "state") or ""
+	    local connectivity = "OK"
 
 	    --if not ipaddr or not gateway then return end
 	    -- Don't show if0 in the overview
@@ -1311,7 +1315,7 @@ function interfaces_status()
 	    
 	    if enabled == "0" then return end
 
-	    local connectivity = "OK"
+	    --local connectivity = "OK"
 	    if ipaddr == "" and ifname ~= nil and ifname ~= "" and proto ~= "dhcpv6" then
 		    ipaddr = ut.trim(sys.exec("ip -4 -br addr ls dev " .. ifname .. " | awk -F'[ /]+' '{print $3}' | tr -d '\n'"))
 	    end
@@ -1584,7 +1588,7 @@ function interfaces_status()
 
 	    local multipath_available = ""
 	    local multipath_available_state = ""
-	    if connectivity ~= "ERROR" and mArray.openmptcprouter["dns"] == true and ifname ~= nil and ifname ~= "" and (gateway ~= "" or gateway6 ~= "") and (gw_ping == "UP" or gw_ping6 == "UP") then
+	    if connectivity ~= "ERROR" and mArray.openmptcprouter["dns"] == true and ifname ~= nil and ifname ~= "" and (gateway ~= "" or gateway6 ~= "") and (gw_ping == "UP" or gw_ping6 == "UP") and uci:get("openmptcprouter", "settings", "disablemultipathtest") ~= "1" then
 		    -- Test if multipath can work on the connection
 		    local multipath_available_state = uci:get("openmptcprouter",interface,"mptcp_status") or ""
 		    if multipath_available_state == "" then

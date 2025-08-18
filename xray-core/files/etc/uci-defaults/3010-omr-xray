@@ -13,6 +13,7 @@ if [ -z "$(uci -q get xray.main)" ]; then
 		set xray.main.outbounds='omrout'
 		set xray.main.inbounds='omr'
 		add_list xray.main.inbounds='omrtest'
+		add_list xray.main.inbounds='omr6'
 		set xray.main_dns=dns
 		set xray.main_dns.hosts='example.com|127.0.0.1'
 		set xray.main_dns.enabled='0'
@@ -31,7 +32,7 @@ if [ -z "$(uci -q get xray.main)" ]; then
 		set xray.main_transparent_proxy.apnic_delegated_mirror='apnic'
 		set xray.main_transparent_proxy.gfwlist_mirror='github'
 		set xray.main_transparent_proxy.redirect_udp='0'
-		set xray.main_transparent_proxy.redirect_port='1897'
+		set xray.main_transparent_proxy.redirect_port='1100'
 		set xray.omrout=outbound
 		set xray.omrout.tag='omrout_tunnel'
 		set xray.omrout.protocol='vless'
@@ -69,9 +70,9 @@ if [ -z "$(uci -q get xray.main)" ]; then
 		set xray.omrout.mux_concurrency='8'
 		set xray.omrout.ss_sockopt_mptcp='1'
 		set xray.omr=inbound
-		set xray.omr.tag='omrtunnel'
+		set xray.omr.tag='omr'
 		set xray.omr.listen='0.0.0.0'
-		set xray.omr.port='1897'
+		set xray.omr.port='1100'
 		set xray.omr.protocol='dokodemo-door'
 		set xray.omr.s_dokodemo_door_network='tcp'
 		add_list xray.omr.s_dokodemo_door_network='udp'
@@ -80,9 +81,9 @@ if [ -z "$(uci -q get xray.main)" ]; then
 		set xray.omr.ss_sockopt_mptcp='1'
 		set xray.omr.s_dokodemo_door_follow_redirect='1'
 		set xray.omr6=inbound
-		set xray.omr6.tag='omrtunnel6'
+		set xray.omr6.tag='omr6'
 		set xray.omr6.listen='::'
-		set xray.omr6.port='1898'
+		set xray.omr6.port='1101'
 		set xray.omr6.protocol='dokodemo-door'
 		set xray.omr6.s_dokodemo_door_network='tcp'
 		add_list xray.omr6.s_dokodemo_door_network='udp'
@@ -109,7 +110,6 @@ if [ "$(uci -q get firewall.xray)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set firewall.xray=include
 		set firewall.xray.path=/etc/firewall.xray-rules
-		set firewall.xray.reload=0
 		commit firewall
 	EOF
 fi
@@ -222,6 +222,15 @@ fi
 if [ "$(uci -q get xray.omrout.ss_sockopt_mptcp)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
 		set xray.omrout.ss_sockopt_mptcp='1'
+		commit xray
+	EOF
+fi
+
+if [ "$(uci -q get xray.omr.port)" = "1897" ]; then
+	uci -q batch <<-EOF >/dev/null
+		set xray.omr.port='1100'
+		set xray.omr6.port='1101'
+		set xray.main_transparent_proxy.redirect_port='1100'
 		commit xray
 	EOF
 fi

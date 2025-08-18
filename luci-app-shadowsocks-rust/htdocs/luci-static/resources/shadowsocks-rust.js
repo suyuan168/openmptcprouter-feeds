@@ -28,6 +28,7 @@ var names_options_common = [
 	'mode',
 	'mtu',
 	'timeout',
+	'keep_alive',
 	'user',
 	'mptcp',
 ];
@@ -157,6 +158,8 @@ return L.Class.extend({
 		o.datatype = 'uinteger';
 		o = s.taboption(tab, form.Value, 'timeout', _('Timeout (sec)'));
 		o.datatype = 'uinteger';
+		o = s.taboption(tab, form.Value, 'keep_alive', _('Keep Alive (sec)'));
+		o.datatype = 'uinteger';
 		s.taboption(tab, form.Value, 'user', _('Run as'));
 
 		s.taboption(tab, form.Flag, 'verbose', _('Verbose'));
@@ -180,7 +183,8 @@ return L.Class.extend({
 		} else if (stype === 'ss_local' || stype === 'ss_redir' || stype === 'ss_tunnel') {
 			this.cfgvalue_overview_(sdata, lines, names_options_client);
 			if (stype === 'ss_tunnel') {
-				this.cfgvalue_overview_(sdata, lines, ['tunnel_address']);
+				this.cfgvalue_overview_(sdata, lines, ['forward_address']);
+				this.cfgvalue_overview_(sdata, lines, ['forward_port']);
 			}
 			this.cfgvalue_overview_(sdata, lines, names_options_common);
 		} else {
@@ -209,6 +213,7 @@ return L.Class.extend({
 			}
 		});
 	},
+	/*
 	option_install_package: function(s, tab) {
 		var bin = s.sectiontype.replace('_', '-'),
 			opkg_package = 'shadowsocks-rust-' + bin, o;
@@ -225,6 +230,7 @@ return L.Class.extend({
 				'?query=' + opkg_package, '_blank', 'noopener');
 		};
 	},
+	*/
 	parse_uri: function(uri) {
 		var scheme = 'ss://';
 		if (uri && uri.indexOf(scheme) === 0) {

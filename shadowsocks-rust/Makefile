@@ -2,14 +2,14 @@
 #
 # Copyright (C) 2017-2020 Yousong Zhou <yszhou4tech@gmail.com>
 # Copyright (C) 2021-2023 ImmortalWrt.org
-# Copyright (C) 2023-2024 Yannick Chabanois (Ycarus) for OpenMPTCProuter
+# Copyright (C) 2023-2025 Yannick Chabanois (Ycarus) for OpenMPTCProuter
 
 include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=shadowsocks-rust
-PKG_VERSION:=1.20.4
-PKG_HASH:=cf064ad157974b3e396aab3bb60aab380dbc4e11b736603bfbc8e7a138f6bb26
+PKG_VERSION:=1.23.5
+PKG_HASH:=edeef2408ae54108fa176b4e59cb04b4ef4dbe62da96d2459d9821b238ad94e8
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -20,7 +20,7 @@ PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
 
 PKG_BUILD_DEPENDS:=rust/host
-
+PKG_BUILD_PARALLEL:=0
 RUST_PKG_FEATURES:=local-redir
 
 include $(INCLUDE_DIR)/package.mk

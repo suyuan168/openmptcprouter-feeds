@@ -76,9 +76,11 @@ return L.view.extend({
 					s.tab('advanced', _('Advanced Settings'));
 					s.taboption('general', form.Value, 'label', _('Label'));
 					s.taboption('general', form.Flag, 'disabled', _('Disable'));
+					/*
 					if (!res[0]) {
 						ss.option_install_package(s, 'general');
 					}
+					*/
 					ss.options_common(s, 'advanced');
 
 					if (stype === 'ss_server') {
@@ -92,10 +94,13 @@ return L.view.extend({
 					} else {
 						ss.options_client(s, 'general', res[1]);
 						if (stype === 'ss_tunnel') {
-							o = s.taboption('general', form.Value, 'tunnel_address',
+							o = s.taboption('general', form.Value, 'forward_address',
 								_('Tunnel address'),
 								_('The address ss-tunnel will forward traffic to'));
-							o.datatype = 'hostport';
+							o.datatype = 'host';
+							o = s.taboption('general', form.Value, 'forward_port',
+								_('Tunnel port'),
+								_('The port ss-tunnel will forward traffic to'));
 						}
 					}
 				}, this));

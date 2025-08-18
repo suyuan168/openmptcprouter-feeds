@@ -1,7 +1,7 @@
 #!/bin/sh /etc/rc.common
 #
 # Copyright 2019-2020 Xingwang Liao <kuoruan@gmail.com>
-# Copyright 2020-2022 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
+# Copyright 2020-2025 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
 # Licensed to the public under the MIT License.
 #
 
@@ -57,7 +57,7 @@ _err() {
 
 version_over_5_4() {
 	MAJOR_VERSION=$(uname -r | awk -F '.' '{print $1}')
-	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}')
+	MINOR_VERSION=$(uname -r | awk -F '.' '{print $2}' | awk -F '-' '{print $1}')
 	if [ $MAJOR_VERSION -ge 5 ] && [ $MINOR_VERSION -gt 13 ] || [ $MAJOR_VERSION -gt 5 ] ; then
 		return 0
 	else
@@ -456,9 +456,11 @@ add_xray_redirect_rules() {
 	local ext_args="$1"
 	local lan_devices="$2"
 	local lan_ipaddrs="$3"
+	local tag="$4"
 
 	local port="$TRANSPARENT_PROXY_PORT"
 	local addition="$TRANSPARENT_PROXY_ADDITION"
+	local tproxy="$TRANSPARENT_PROXY_USE_TPROXY"
 	local ipset_src_direct="$IPSET_SRC_DIRECT_V4"
 	local ipset_dst_direct="$IPSET_DST_DIRECT_V4"
 
@@ -485,12 +487,19 @@ add_xray_redirect_rules() {
 
 	[ "$(uci -q get xray.main_transparent_proxy.redirect_udp)" = "1" ] && [ "$(uci -q get xray.omrout.protocol)" != "socks" ] && portudp="$port"
 	ifnames="$(uci -q get shadowsocks-libev.ss_rules.ifnames)"
+	[ -z "$ifnames" ] && ifnames="$(uci -q get shadowsocks-rust.ss_rules.ifnames)"
 
 	local tmp="/tmp/xrrules"
 	json_init
 	json_add_string o_remote_servers "$remote_servers"
 	json_add_int o_redir_tcp_port "$port"
 	json_add_int o_redir_udp_port "$portudp"
+	json_add_string o_tproxy "$tproxy"
+	if [ "$tag" != "omr" ] && [ "$tag" != "main_transparent_proxy" ]; then
+		json_add_string o_oip_rules_name "$tag"
+	else
+		json_add_string o_oip_rules_name ""
+	fi
 	json_add_string o_ifnames "$ifnames"
 	json_add_string o_local_default "forward"
 	json_add_string o_src_bypass "$src_ips_bypass"
@@ -510,8 +519,12 @@ add_xray_redirect_rules() {
 		&& ! cmp -s "$tmp.nft" "$xrrules_nft"; then
 		echo "table inet chk {include \"$tmp.nft\";}" >"$tmp.nft.chk"
 		if nft -f "$tmp.nft.chk" -c; then
-			mv "$tmp.nft" "$xrrules_nft"
-			fw4 -q restart
+			if [ "$tag" == "omr" ] || [ "$tag" == "" ]; then
+				mv "$tmp.nft" "$xrrules_nft"
+			else
+				mv "$tmp.nft" "$xrrules_nft.$tag.nft"
+			fi
+			fw4 -q reload
 		fi
 		rm -f "$tmp.nft.chk"
 	fi
@@ -1982,7 +1995,8 @@ add_outbound_setting() {
 }
 
 init_transparent_proxy() {
-	local tp_cfg="main_transparent_proxy"
+	#local tp_cfg="main_transparent_proxy"
+	local tp_cfg="$1"
 	local redirect_port use_tproxy redirect_udp redirect_dns
 
 	config_get redirect_port "$tp_cfg" "redirect_port"
@@ -2010,7 +2024,7 @@ init_transparent_proxy() {
 
 setup_transparent_proxy() {
 	if [ -z "$TRANSPARENT_PROXY_PORT" ] ; then
-		#_info "Transparent proxy disabled."
+		_info "Transparent proxy disabled."
 		return 0
 	fi
 
@@ -2021,7 +2035,8 @@ setup_transparent_proxy() {
 
 	_info "Setting transparent proxy on port: $TRANSPARENT_PROXY_PORT"
 
-	local tp_cfg="main_transparent_proxy"
+	#local tp_cfg="main_transparent_proxy"
+	local tp_cfg="$1"
 	local lan_ifaces only_privileged_ports proxy_mode direct_list_dns proxy_list_dns
 
 	config_get lan_ifaces "$tp_cfg" "lan_ifaces"
@@ -2139,14 +2154,19 @@ setup_transparent_proxy() {
 	fi
 
 	logger -t "xray" "add rules"
-	add_xray_redirect_rules "$ext_args" "$lan_devices" "$lan_ipaddrs"
+	if [ "$tp_cfg" != "main_transparent_proxy" ]; then
+		add_xray_redirect_rules "$ext_args" "$lan_devices" "$lan_ipaddrs" "$tp_cfg"
+	else
+		add_xray_redirect_rules "$ext_args" "$lan_devices" "$lan_ipaddrs"
+	fi
 }
 
 clear_transparent_proxy() {
 	if [ -f "${xrrules_nft}" ] || [ -f "${xrrules_nft}.down" ]; then
-		rm -f "$xrrules_nft"
-		rm -f "$xrrules_nft.down"
-		fw4 -q restart
+		for f in $xrrules_nft*; do
+			rm -f $f
+		done
+		fw4 -q reload
 	fi
 
 
@@ -2293,6 +2313,7 @@ start_instance() {
 	fi
 
 	procd_set_param file "$temp_config"
+	procd_set_param nice 10
 	procd_set_param stderr 1 # forward stderr of the command to logd
 	procd_set_param stdout 1
 	procd_set_param pidfile "/var/run/${NAME}.${section}.pid"
@@ -2310,15 +2331,19 @@ rules_exist() {
 
 rules_up() {
 	if [ -f "${xrrules_nft}.down" ]; then
-		mv -f "${xrrules_nft}.down" "$xrrules_nft"
-		fw4 -q restart
+		for f in $xrrules_nft*.down; do
+			mv -f "$f" "$(echo "$f" | sed 's/.down//g')"
+		done
+		fw4 -q reload
 	fi
 }
 
 rules_down() {
 	if [ -f "${xrrules_nft}" ]; then
-		mv -f "$xrrules_nft" "${xrrules_nft}.down"
-		fw4 -q restart
+		for f in $xrrules_nft*; do
+			mv -f "$f" "${f}.down"
+		done
+		fw4 -q reload
 	fi
 }
 
@@ -2339,7 +2364,13 @@ start_service() {
 
 	config_foreach start_instance "xray"
 
-	setup_transparent_proxy
+	#setup_transparent_proxy
+	_setup_firewall() {
+		init_transparent_proxy $1
+		setup_transparent_proxy $1
+	}
+	config_foreach _setup_firewall transparent_proxy
+	#config_foreach setup_transparent_proxy transparent_proxy
 	gracefully_restart_dnsmasq
 	rules_up
 

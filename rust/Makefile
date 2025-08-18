@@ -5,14 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rust
-
-PKG_VERSION:=1.78.0
-
-PKG_RELEASE:=2
+PKG_VERSION:=1.87.0
+PKG_RELEASE:=1
 
 PKG_SOURCE:=rustc-$(PKG_VERSION)-src.tar.gz
 PKG_SOURCE_URL:=https://static.rust-lang.org/dist/
-PKG_HASH:=ff544823a5cb27f2738128577f1e7e00ee8f4c83f2a348781ae4fc355e91d5a9
+PKG_HASH:=149bb9fd29be592da4e87900fc68f0629a37bf6850b46339dd44434c04fd8e76
 HOST_BUILD_DIR:=$(BUILD_DIR)/host/rustc-$(PKG_VERSION)-src
 
 PKG_MAINTAINER:=Luca Barbato <lu_zero@luminem.org>
@@ -21,6 +19,8 @@ PKG_LICENSE_FILES:=LICENSE-APACHE LICENSE-MIT
 
 PKG_HOST_ONLY:=1
 PKG_BUILD_FLAGS:=no-mips16
+
+HOST_BUILD_PARALLEL:=0
 
 include $(INCLUDE_DIR)/host-build.mk
 include $(INCLUDE_DIR)/package.mk
@@ -32,7 +32,7 @@ define Package/rust
   SUBMENU:=Rust
   TITLE:=Rust Programming Language Compiler
   URL:=https://www.rust-lang.org/
-  DEPENDS:=$(RUST_ARCH_DEPENDS) @!(LINUX_5_4)
+  DEPENDS:=$(RUST_ARCH_DEPENDS)
 endef
 
 define Package/rust/description
@@ -56,7 +56,7 @@ TARGET_CONFIGURE_ARGS = \
 	--set=target.$(RUSTC_TARGET_ARCH).linker=$(TARGET_CC_NOCACHE) \
 	--set=target.$(RUSTC_TARGET_ARCH).ranlib=$(TARGET_RANLIB) \
 	--set=target.$(RUSTC_TARGET_ARCH).crt-static=false \
-	$(if $(CONFIG_USE_MUSL),--set=target.$(RUSTC_TARGET_ARCH).musl-root=$(TOOLCHAIN_DIR))
+	$(if $(CONFIG_USE_MUSL),--set=target.$(RUSTC_TARGET_ARCH).musl-root=$(TOOLCHAIN_ROOT_DIR))
 
 # CARGO_HOME is an environmental
 HOST_CONFIGURE_VARS += CARGO_HOME="$(CARGO_HOME)"
@@ -90,11 +90,10 @@ define Host/Compile
 	$(RUST_SCCACHE_VARS) \
 	CARGO_HOME=$(CARGO_HOME) \
 	TARGET_CFLAGS="$(TARGET_CFLAGS)" \
-	OPENWRT_RUSTC_BOOTSTRAP_CACHE=$(DL_DIR)/rustc \
 	$(PYTHON) $(HOST_BUILD_DIR)/x.py \
+		--ci false \
 		--build-dir $(HOST_BUILD_DIR)/build \
-		--config $(HOST_BUILD_DIR)/config.toml \
-		dist build-manifest cargo llvm-tools rustc rust-std rust-src
+		dist build-manifest rustc rust-std cargo llvm-tools rust-src
 endef
 
 define Host/Install

@@ -1,6 +1,6 @@
 #
 # Copyright (C) 2021 Jianhui Zhao <zhaojh329@gmail.com>
-# Copyright (C) 2023 Yannick Chabanois (Ycarus) <contact@openmptcprouter.com> for OpenMPTCProuter
+# Copyright (C) 2023-2025 Yannick Chabanois (Ycarus) <contact@openmptcprouter.com> for OpenMPTCProuter
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -10,13 +10,13 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=ovpn-dco
-PKG_VERSION:=0.2.20240320
+PKG_VERSION:=0.2.20241216
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/OpenVPN/ovpn-dco.git
-PKG_SOURCE_VERSION:=2aa7f931803f81d2745b0cefafb63654a35cc3d5
+PKG_SOURCE_VERSION:=46c77df6987fdfbf2046f938636239fcd014c717
 
 PKG_MAINTAINER:=Yannick Chabanois <contact@openmptcprouter.com>
 PKG_LICENSE:=GPL-2.0-only
@@ -27,7 +27,7 @@ include $(INCLUDE_DIR)/package.mk
 define KernelPackage/ovpn-dco-v2
   SUBMENU:=Network Support
   TITLE:=OpenVPN data channel offload
-  DEPENDS:=+kmod-crypto-aead +kmod-udptunnel4 +IPV6:kmod-udptunnel6 @!LINUX_6_10
+  DEPENDS:=+kmod-crypto-aead +kmod-udptunnel4 +IPV6:kmod-udptunnel6
   FILES:=$(PKG_BUILD_DIR)/drivers/net/ovpn-dco/ovpn-dco-v2.ko
   AUTOLOAD:=$(call AutoLoad,30,ovpn-dco-v2)
 endef

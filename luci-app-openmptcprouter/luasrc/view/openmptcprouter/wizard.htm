@@ -10,8 +10,16 @@
 	local ifaces = sys.net:devices()
 	local ifttyu = nixio.fs.glob("/dev/ttyUSB*")
 	local ifttyc = nixio.fs.glob("/dev/cdc-wdm*")
-	local sqm = luci.sys.exec("opkg list-installed | grep -q luci-app-sqm && echo -n '1' || echo -n '0'")
-	local qos = luci.sys.exec("opkg list-installed | grep -q luci-app-qos && echo -n '1' || echo -n '0'")
+	if nixio.fs.stat('/usr/bin/apk', 'type') == 'reg' then
+		sqm = luci.sys.exec("apk list 2>/dev/null | grep installed | grep -q luci-app-sqm && echo -n '1' || echo -n '0'")
+	else
+		sqm = luci.sys.exec("opkg list-installed | grep -q luci-app-sqm && echo -n '1' || echo -n '0'")
+	end
+	if nixio.fs.stat('/usr/bin/apk', 'type') == 'reg' then
+		qos = luci.sys.exec("apk list 2>/dev/null | grep installed | grep -q luci-app-qos && echo -n '1' || echo -n '0'")
+	else
+		qos = luci.sys.exec("opkg list-installed | grep -q luci-app-qos && echo -n '1' || echo -n '0'")
+	end
 	menuentry = uci:get("openmptcprouter","settings","menu") or "openmptcprouter"
 	function device_notvirtual(dev)
 		if dev:match("^eth.*") or dev:match("^wwan.*") or dev:match("^tun.*") or dev:match("/") then
@@ -71,7 +79,7 @@
 	}
 </script>
 <% if stderr and #stderr > 0 then %><pre class="error"><%=pcdata(stderr)%></pre><% end %>
-<form class="inline" method="post" action="<%=url('admin/system/' .. menuentry:lower() .. '/wizard_add')%>" enctype="multipart/form-data" onkeydown="return event.key != 'Enter';">
+<form class="inline" method="post" action="<%=url('admin/system/' .. menuentry:lower() .. '/wizard_add')%>" enctype="multipart/form-data" onkeydown="return event.key != 'Enter';" autocomplete="off">
     <div class="cbi-map">
 	<h2 name="content"><%:Wizard%></h2>
 	<fieldset class="cbi-section" id="server">
@@ -321,17 +329,41 @@
 		</div>
 	    </div>
 	    <% end %>
-	    <% if nixio.fs.access("/etc/init.d/v2ray") or nixio.fs.access("/etc/init.d/xray") then %>
+	    <% if nixio.fs.access("/etc/init.d/v2ray") then %>
 	    <div class="cbi-value">
-		<label class="cbi-value-title"><%:V2Ray/XRay user id%></label>
+		<label class="cbi-value-title"><%:V2Ray user id%></label>
 		<div class="cbi-value-field">
 		    <input type="text" name="v2ray_user" placeholder="<%:V2Ray user%>" class="cbi-input-text" value="<%=uci:get("v2ray","omrout","s_vmess_user_id")%>" />
 		    <br />
 		    <div class="cbi-value-description">
-		        <%:Key is retrieved from server API by default.%> <%:V2Ray is used for TCP and UDP.%>
+		        <%:Key is retrieved from server API by default.%>
 		    </div>
 		</div>
 	    </div>
+	    <% end %>
+	    <% if nixio.fs.access("/etc/init.d/xray") then %>
+	    <div class="cbi-value">
+		<label class="cbi-value-title"><%:XRay user id%></label>
+		<div class="cbi-value-field">
+		    <input type="text" name="xray_user" placeholder="<%:XRay user%>" class="cbi-input-text" value="<%=uci:get("xray","omrout","s_vmess_user_id")%>" />
+		    <br />
+		    <div class="cbi-value-description">
+		        <%:Key is retrieved from server API by default.%>
+		    </div>
+		</div>
+	    </div>
+	    <% end %>
+	    <% if nixio.fs.access("/etc/init.d/xray") or nixio.fs.access("/etc/init.d/v2ray") then %>
+	    <div class="cbi-value">
+		<label class="cbi-value-title"><%:V2Ray/XRay UDP%></label>
+		<div class="cbi-value-field">
+		    <input type="checkbox" name="v2rayudp" class="cbi-input-checkbox" value="1" <% if luci.model.uci.cursor():get("v2ray","main_transparent_proxy","redirect_udp") == "1" or luci.model.uci.cursor():get("xray","main_transparent_proxy","redirect_udp") == "1" then %>checked<% end %>>
+		    <br />
+		    <div class="cbi-value-description">
+			<%:When proxy V2Ray/XRay VLESS, VMESS or Trojan is used, use it for UDP%>
+		    </div>
+		</div>
+    	    </div>
 	    <% end %>
 	    <div class="cbi-value">
 		<label class="cbi-value-title"><%:Encryption%></label>
@@ -417,6 +449,18 @@
 		</div>
 	    </div>
 	    <% end %>
+	    <% if nixio.fs.access("/etc/init.d/softethervpnclient") then %>
+	    <div class="cbi-value">
+		<label class="cbi-value-title"><%:SoftEther VPN password%></label>
+		<div class="cbi-value-field">
+		    <input type="text" name="softethervpn_password" placeholder="<%:SoftEther VPN password%>" class="cbi-input-text" value="<%=uci:get("softethervpn","openmptcprouter","password")%>">
+		    <br />
+		    <div class="cbi-value-description">
+		        <%:Key is retrieved from server API by default.%>
+		    </div>
+		</div>
+	    </div>
+	    <% end %>
 	    <div class="cbi-value">
 		<label class="cbi-value-title"><%:Default VPN%></label>
 		<div class="cbi-value-field">
@@ -443,6 +487,8 @@
 					<% if nixio.fs.access("/etc/init.d/openvpn") then %><option value="openvpn" <% if uci:get("openmptcprouter","settings","vpn") == "openvpn" then %>selected="selected"<% end %>>OpenVPN TCP</option><% end %>
 				<% elseif vpn == "openvpn_bonding" then %>
 					<% if nixio.fs.access("/etc/init.d/openvpnbonding") then %><option value="openvpn_bonding" <% if uci:get("openmptcprouter","settings","vpn") == "openvpn_bonding" then %>selected="selected"<% end %>>OpenVPN Bonding</option><% end %>
+				<% elseif vpn == "softether" then %>
+					<% if nixio.fs.access("/etc/init.d/softethervpnclient") then %><option value="softether" <% if uci:get("openmptcprouter","settings","vpn") == "softether" then %>selected="selected"<% end %>>SoftEther VPN</option><% end %>
 				<%
 				end
 			end
@@ -457,6 +503,7 @@
 			<% if nixio.fs.access("/usr/sbin/mlvpn") then %><option value="mlvpn" <% if uci:get("openmptcprouter","settings","vpn") == "mlvpn" then %>selected="selected"<% end %>>MLVPN</option><% end %>
 			<% if nixio.fs.access("/usr/sbin/ubond") then %><option value="ubond" <% if uci:get("openmptcprouter","settings","vpn") == "ubond" then %>selected="selected"<% end %>>UBOND</option><% end %>
 			<% if nixio.fs.access("/etc/init.d/openvpn") then %><option value="openvpn" <% if uci:get("openmptcprouter","settings","vpn") == "openvpn" then %>selected="selected"<% end %>>OpenVPN TCP</option><% end %>
+			<!-- <% if nixio.fs.access("/etc/init.d/softethervpnvlient") then %><option value="softether" <% if uci:get("openmptcprouter","settings","vpn") == "softether" then %>selected="selected"<% end %>>SoftEther VPN</option><% end %> -->
 			<!-- <% if nixio.fs.access("/etc/init.d/openvpnbonding") then %><option value="openvpn_bonding" <% if uci:get("openmptcprouter","settings","vpn") == "openvpn_bonding" then %>selected="selected"<% end %>>OpenVPN Bonding</option><% end %> -->
 			<option value="none" <% if uci:get("openmptcprouter","settings","vpn") == "none" then %>selected="selected"<% end %>>None</option>
 		<%
@@ -494,9 +541,11 @@
 		<label class="cbi-value-title"><%:Country%></label>
 		<div class="cbi-value-field">
 		    <select class="cbi-input-select" name="country" size="1">
-			<option value="" <% if uci:get("openmptcprouter","settings","country") == nil then %>selected="selected"<% end %>><%:None%></option>
 			<option value="world" <% if uci:get("openmptcprouter","settings","country") == "world" then %>selected="selected"<% end %>><%:World%></option>
 			<option value="china" <% if uci:get("openmptcprouter","settings","country") == "china" then %>selected="selected"<% end %>><%:China%></option>
+			<option value="europe" <% if uci:get("openmptcprouter","settings","country") == "europe" then %>selected="selected"<% end %>><%:Europe%></option>
+			<option value="usa" <% if uci:get("openmptcprouter","settings","country") == "usa" then %>selected="selected"<% end %>><%:USA%></option>
+			<option value="custom" <% if uci:get("openmptcprouter","settings","country") == "custom" then %>selected="selected"<% end %>><%:Custom%></option>
 		    </select>
 		    <br />
 		    <div class="cbi-value-description">
