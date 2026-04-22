@@ -157,6 +157,7 @@ if [ "$(uci -q get openvpn.omr.proto)" != "tcp-client" ] || [ -z "$(uci -q get o
 		set openvpn.omr.ping_restart=60
 		set openvpn.omr.tun_mtu=1420
 		set openvpn.omr.passtos=1
+		set openvpn.omr.no_delay=1
 		delete openvpn.omr.secret
 		delete openvpn.omr.ncp_disable=0
 		commit openvpn
@@ -184,6 +185,7 @@ if [ "$NBCPU" -gt 1 ] && [ -z "$(uci -q get openvpn.omr2)" ]; then
 			set openvpn.omr$c.ping_restart=60
 			set openvpn.omr$c.tun_mtu=1420
 			set openvpn.omr$c.passtos=1
+			set openvpn.omr$c.no_delay=1
 		EOF
 		[ -z "$(uci -q get firewall.zone_vpn.device | grep tun$((c-1)))" ] && add_list firewall.zone_vpn.device=tun$((c-1))
 

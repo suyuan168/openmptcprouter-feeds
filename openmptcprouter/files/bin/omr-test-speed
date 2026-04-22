@@ -10,15 +10,21 @@
 
 FORCEVPS=false
 FASTTEST=false
-if [ "$1" = "forcevps" ]; then
-	FORCEVPS=true
-fi
-if [ "$1" = "fasttest" ]; then
-	FASTTEST=true
-fi
-for i in $@; do :; done
-INTERFACE="$i"
-[ "$INTERFACE" = "forcevps" ] || [ "$INTERFACE" = "fasttest" ] && INTERFACE=""
+INTERFACE=""
+for arg in "$@"; do
+	case "$arg" in
+		forcevps)
+			FORCEVPS=true
+			;;
+		fasttest)
+			FASTTEST=true
+			;;
+		*)
+			# Keep the last non-flag argument as interface name.
+			INTERFACE="$arg"
+			;;
+	esac
+done
 
 IPV6=false
 if [ "$(basename $0)" = "omr-test-speedv6" ]; then
@@ -27,15 +33,21 @@ fi
 
 [ -n "$INTERFACE" ] && [ ! -d "/sys/class/net/$INTERFACE" ] && {
 	echo "You must use a real interface. You wan find them using 'ip a' for example (not $INTERFACE)"
-	exit 0
+	exit 1
 }
 
-HOSTLST="http://scaleway.testdebit.info/10G.iso http://appliwave.testdebit.info/10G/10G.iso http://speedtest.frankfurt.linode.com/garbage.php?ckSize=10000 http://speedtest.tokyo2.linode.com/garbage.php?ckSize=10000 http://speedtest.singapore.linode.com/garbage.php?ckSize=10000 http://speedtest.newark.linode.com/garbage.php?ckSize=10000 http://speedtest.atlanta.linode.com/garbage.php?ckSize=10000 http://speedtest.dallas.linode.com/garbage.php?ckSize=10000 http://speedtest.fremont.linode.com/garbage.php?ckSize=10000 http://par.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://ams.download.datapacket.com/10000mb.bin http://fra.download.datapacket.com/10000mb.bin http://lon.download.datapacket.com/10000mb.bin http://mad.download.datapacket.com/10000mb.bin http://prg.download.datapacket.com/10000mb.bin http://sto.download.datapacket.com/10000mb.bin http://vie.download.datapacket.com/10000mb.bin http://war.download.datapacket.com/10000mb.bin http://atl.download.datapacket.com/10000mb.bin http://chi.download.datapacket.com/10000mb.bin http://lax.download.datapacket.com/10000mb.bin http://mia.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://speedtest.milkywan.fr/files/10G.iso https://rbx.proof.ovh.net/files/10Gb.dat https://gra.proof.ovh.net/files/10Gb.dat https://sbg.proof.ovh.net/files/10Gb.dat https://bhs.proof.ovh.ca/files/10Gb.dat https://vin.proof.ovh.us/files/10Gb.dat https://hil.proof.ovh.us/files/10Gb.dat http://speedtest.tele2.net/10GB.zip https://la.speedtest.clouvider.net/10g.bin https://atl.speedtest.clouvider.net/10g.bin https://nyc.speedtest.clouvider.net/10g.bin https://lon.speedtest.clouvider.net/10g.bin https://man.speedtest.clouvider.net/10g.bin https://ams.speedtest.clouvider.net/10g.bin https://fra.speedtest.clouvider.net/10g.bin https://dal.speedtest.clouvider.net/10g.bin https://ash.speedtest.clouvider.net/10g.bin https://phx.speedtest.clouvider.net/10g.bin https://chi.speedtest.clouvider.net/10g.bin https://akl.download.datapacket.com/10000mb.bin https://syd.download.datapacket.com/10000mb.bin http://speedtest.sydney.linode.com/garbage.php?ckSize=10000"
-HOSTLST6="http://scaleway.testdebit.info/10G.iso http://appliwave.testdebit.info/10G/10G.iso http://speedtest.frankfurt.linode.com/garbage.php?ckSize=10000 http://speedtest.tokyo2.linode.com/garbage.php?ckSize=10000 http://speedtest.singapore.linode.com/garbage.php?ckSize=10000 http://speedtest.newark.linode.com/garbage.php?ckSize=10000 http://speedtest.atlanta.linode.com/garbage.php?ckSize=10000 http://speedtest.dallas.linode.com/garbage.php?ckSize=10000 http://speedtest.fremont.linode.com/garbage.php?ckSize=10000 http://par.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://ams.download.datapacket.com/10000mb.bin http://fra.download.datapacket.com/10000mb.bin http://lon.download.datapacket.com/10000mb.bin http://mad.download.datapacket.com/10000mb.bin http://prg.download.datapacket.com/10000mb.bin http://sto.download.datapacket.com/10000mb.bin http://vie.download.datapacket.com/10000mb.bin http://war.download.datapacket.com/10000mb.bin http://atl.download.datapacket.com/10000mb.bin http://chi.download.datapacket.com/10000mb.bin http://lax.download.datapacket.com/10000mb.bin http://mia.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://speedtest.milkywan.fr/files/10G.iso https://rbx.proof.ovh.net/files/10Gb.dat https://gra.proof.ovh.net/files/10Gb.dat https://sbg.proof.ovh.net/files/10Gb.dat https://bhs.proof.ovh.ca/files/10Gb.dat https://vin.proof.ovh.us/files/10Gb.dat https://hil.proof.ovh.us/files/10Gb.dat http://speedtest.tele2.net/10GB.zip https://la.speedtest.clouvider.net/10g.bin https://atl.speedtest.clouvider.net/10g.bin https://nyc.speedtest.clouvider.net/10g.bin https://lon.speedtest.clouvider.net/10g.bin https://man.speedtest.clouvider.net/10g.bin https://ams.speedtest.clouvider.net/10g.bin https://fra.speedtest.clouvider.net/10g.bin https://dal.speedtest.clouvider.net/10g.bin https://ash.speedtest.clouvider.net/10g.bin https://phx.speedtest.clouvider.net/10g.bin https://chi.speedtest.clouvider.net/10g.bin https://akl.download.datapacket.com/10000mb.bin https://syd.download.datapacket.com/10000mb.bin http://speedtest.sydney.linode.com/garbage.php?ckSize=10000"
+_DEFAULT_HOSTLST="http://scaleway.testdebit.info/10G.iso http://appliwave.testdebit.info/10G/10G.iso http://speedtest.frankfurt.linode.com/garbage.php?ckSize=10000 http://speedtest.tokyo2.linode.com/garbage.php?ckSize=10000 http://speedtest.singapore.linode.com/garbage.php?ckSize=10000 http://speedtest.newark.linode.com/garbage.php?ckSize=10000 http://speedtest.atlanta.linode.com/garbage.php?ckSize=10000 http://speedtest.dallas.linode.com/garbage.php?ckSize=10000 http://speedtest.fremont.linode.com/garbage.php?ckSize=10000 http://par.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://ams.download.datapacket.com/10000mb.bin http://fra.download.datapacket.com/10000mb.bin http://lon.download.datapacket.com/10000mb.bin http://mad.download.datapacket.com/10000mb.bin http://prg.download.datapacket.com/10000mb.bin http://sto.download.datapacket.com/10000mb.bin http://vie.download.datapacket.com/10000mb.bin http://war.download.datapacket.com/10000mb.bin http://atl.download.datapacket.com/10000mb.bin http://chi.download.datapacket.com/10000mb.bin http://lax.download.datapacket.com/10000mb.bin http://mia.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://speedtest.milkywan.fr/files/10G.iso https://rbx.proof.ovh.net/files/10Gb.dat https://gra.proof.ovh.net/files/10Gb.dat https://sbg.proof.ovh.net/files/10Gb.dat https://bhs.proof.ovh.ca/files/10Gb.dat https://vin.proof.ovh.us/files/10Gb.dat https://hil.proof.ovh.us/files/10Gb.dat http://speedtest.tele2.net/10GB.zip https://la.speedtest.clouvider.net/10g.bin https://atl.speedtest.clouvider.net/10g.bin https://nyc.speedtest.clouvider.net/10g.bin https://lon.speedtest.clouvider.net/10g.bin https://man.speedtest.clouvider.net/10g.bin https://ams.speedtest.clouvider.net/10g.bin https://fra.speedtest.clouvider.net/10g.bin https://dal.speedtest.clouvider.net/10g.bin https://ash.speedtest.clouvider.net/10g.bin https://phx.speedtest.clouvider.net/10g.bin https://chi.speedtest.clouvider.net/10g.bin https://akl.download.datapacket.com/10000mb.bin https://syd.download.datapacket.com/10000mb.bin http://speedtest.sydney.linode.com/garbage.php?ckSize=10000"
+_DEFAULT_HOSTLST6="http://scaleway.testdebit.info/10G.iso http://appliwave.testdebit.info/10G/10G.iso http://speedtest.frankfurt.linode.com/garbage.php?ckSize=10000 http://speedtest.tokyo2.linode.com/garbage.php?ckSize=10000 http://speedtest.singapore.linode.com/garbage.php?ckSize=10000 http://speedtest.newark.linode.com/garbage.php?ckSize=10000 http://speedtest.atlanta.linode.com/garbage.php?ckSize=10000 http://speedtest.dallas.linode.com/garbage.php?ckSize=10000 http://speedtest.fremont.linode.com/garbage.php?ckSize=10000 http://par.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://ams.download.datapacket.com/10000mb.bin http://fra.download.datapacket.com/10000mb.bin http://lon.download.datapacket.com/10000mb.bin http://mad.download.datapacket.com/10000mb.bin http://prg.download.datapacket.com/10000mb.bin http://sto.download.datapacket.com/10000mb.bin http://vie.download.datapacket.com/10000mb.bin http://war.download.datapacket.com/10000mb.bin http://atl.download.datapacket.com/10000mb.bin http://chi.download.datapacket.com/10000mb.bin http://lax.download.datapacket.com/10000mb.bin http://mia.download.datapacket.com/10000mb.bin http://nyc.download.datapacket.com/10000mb.bin http://speedtest.milkywan.fr/files/10G.iso https://rbx.proof.ovh.net/files/10Gb.dat https://gra.proof.ovh.net/files/10Gb.dat https://sbg.proof.ovh.net/files/10Gb.dat https://bhs.proof.ovh.ca/files/10Gb.dat https://vin.proof.ovh.us/files/10Gb.dat https://hil.proof.ovh.us/files/10Gb.dat http://speedtest.tele2.net/10GB.zip https://la.speedtest.clouvider.net/10g.bin https://atl.speedtest.clouvider.net/10g.bin https://nyc.speedtest.clouvider.net/10g.bin https://lon.speedtest.clouvider.net/10g.bin https://man.speedtest.clouvider.net/10g.bin https://ams.speedtest.clouvider.net/10g.bin https://fra.speedtest.clouvider.net/10g.bin https://dal.speedtest.clouvider.net/10g.bin https://ash.speedtest.clouvider.net/10g.bin https://phx.speedtest.clouvider.net/10g.bin https://chi.speedtest.clouvider.net/10g.bin https://akl.download.datapacket.com/10000mb.bin https://syd.download.datapacket.com/10000mb.bin http://speedtest.sydney.linode.com/garbage.php?ckSize=10000"
+
+HOSTLST=$(uci -q get omr-speedtest.urls.download 2>/dev/null | tr '\n' ' ')
+[ -z "$HOSTLST" ] && HOSTLST="$_DEFAULT_HOSTLST"
+HOSTLST6=$(uci -q get omr-speedtest.urls.download6 2>/dev/null | tr '\n' ' ')
+[ -z "$HOSTLST6" ] && HOSTLST6="$_DEFAULT_HOSTLST6"
 
 select_server() {
 	[ "$FASTTEST" = true ] || echo "Select best test server..."
 	bestping="9999"
+	HOST=""
 	if [ "$IPV6" = true ]; then
 		for pinghost in $HOSTLST6; do
 			domain=$(echo $pinghost | awk -F/ '{print $3}')
@@ -89,7 +101,11 @@ get_speed_global_fast() {
 bypass_host_enable() {
 	INTERFACE=$1
 	HOST=$2
-	[ -n "$(tc qdisc show dev $INTERFACE | grep ingress)" ] && /etc/init.d/sqm stop $INTERFACE
+	SQM_STOPPED=false
+	if tc qdisc show dev "$INTERFACE" | grep -q ingress; then
+		/etc/init.d/sqm stop "$INTERFACE"
+		SQM_STOPPED=true
+	fi
 	domain=$(echo $HOST | awk -F/ '{print $3}')
 	if [ "$IPV6" = true ]; then
 		hostip=$(dig +nocmd +noall +answer AAAA $domain | grep -v CNAME | awk '{print $5}' | tr '\n' ' ')
@@ -148,7 +164,7 @@ bypass_host_disable() {
 			done
 		fi
 	fi
-	/etc/init.d/sqm start $INTERFACE
+	[ "$SQM_STOPPED" = true ] && /etc/init.d/sqm start "$INTERFACE"
 }
 
 get_speed_interface() {
@@ -182,10 +198,10 @@ while [ "$response" = "000" ] && [ "$try" -le 3 ]; do
 	select_server
 	if [ "$IPV6" = true ]; then
 		response=$(curl -6 --write-out '%{http_code}' --silent --head --insecure -IL  --connect-timeout 5 --output /dev/null $HOST)
-		HOSTLST6=$(echo $HOSTLST6 | tr ' ' '\n' | grep -v "$HOST" | xargs)
+		[ -n "$HOST" ] && HOSTLST6=$(echo $HOSTLST6 | tr ' ' '\n' | grep -v "$HOST" | xargs)
 	else
 		response=$(curl -4 --write-out '%{http_code}' --silent --head --insecure -IL  --connect-timeout 5 --output /dev/null $HOST)
-		HOSTLST=$(echo $HOSTLST | tr ' ' '\n' | grep -v "$HOST" | xargs)
+		[ -n "$HOST" ] && HOSTLST=$(echo $HOSTLST | tr ' ' '\n' | grep -v "$HOST" | xargs)
 	fi
 	try=$((try+1))
 	if [ "$response" = "000" ] && [ "$FASTTEST" != true ]; then

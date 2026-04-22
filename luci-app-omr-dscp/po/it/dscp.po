@@ -1,0 +1,156 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-omr-dscp\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
+"Last-Translator: Deleted User <noreply+28@weblate.org>\n"
+"Language-Team: Italian\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: root/usr/share/luci/menu.d/luci-app-omr-dscp.json
+msgid "OMR-DSCP"
+msgstr "OMR-DSCP"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Differentiated services"
+msgstr "Servizi differenziati"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid ""
+"Traffic may be classified by many different parameters, such as source "
+"address, destination address or traffic type and assigned to a specific "
+"traffic class."
+msgstr ""
+"Il traffico può essere classificato in base a molti parametri diversi, come "
+"indirizzo di origine, indirizzo di destinazione o tipo di traffico e "
+"assegnato a una classe di traffico specifica."
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Classification Rules"
+msgstr "Regole di classificazione"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Direction"
+msgstr "Direzione"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "upload"
+msgstr "Carica"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "download"
+msgstr "Scarica"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "both"
+msgstr "Entrambi"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Protocol"
+msgstr "Protocollo"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Source host"
+msgstr "Host di origine"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "all"
+msgstr "Tutti"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Source ports"
+msgstr "Porte di origine"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Destination host"
+msgstr "Host di destinazione"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Destination ports"
+msgstr "Porte di destinazione"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Class"
+msgstr "Classe"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS0 - Normal/Best Effort"
+msgstr "CS0 - Normale / Miglior sforzo"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS1 - Low priority"
+msgstr "CS1 - Priorità bassa"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS2 - High priority"
+msgstr "CS2 - Alta priorità"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS3 - SIP"
+msgstr "CS3 - SIP"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS4 - Real-Time Interactive"
+msgstr "CS4 - Interattivo in tempo reale"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "CS5 - Broadcast Video"
+msgstr "CS5 - Video broadcast"
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS5 - Broadcast video"
+msgstr "CS5 - Video broadcast"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS6 - Network routing"
+msgstr "CS6 - Routing di rete"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS7 - Latency sensitive"
+msgstr "CS7 - Sensibile alla latenza"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "EF - Voice"
+msgstr "EF - Voce"
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "EF Voice"
+msgstr "EF - Voce"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Comment"
+msgstr "Commento"
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "DSCP by domain"
+msgstr "DSCP per dominio"
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Set DSCP by domains."
+msgstr "Imposta DSCP per domini."
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Domains"
+msgstr "Domini"
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Domain"
+msgstr "Dominio"
+
+#: root/usr/share/rpcd/acl.d/luci-app-omr-dscp.json
+msgid "Grant UCI access for luci-app-dscp"
+msgstr "Concedi accesso UCI per luci-app-dscp"

@@ -1,0 +1,1173 @@
+'use strict';
+'require view';
+'require form';
+'require uci';
+'require rpc';
+'require network';
+'require fs';
+'require ui';
+'require dom';
+
+var callFileExec = rpc.declare({
+	object: 'file', method: 'exec',
+	params: ['command', 'params'], expect: { stdout: '' }
+});
+var callFileStat = rpc.declare({
+	object: 'file', method: 'stat',
+	params: ['path'], expect: { '': {} }
+});
+var callOMRWizardAdd = rpc.declare({
+	object: 'openmptcprouter', method: 'wizardadd',
+	params: [
+		'interfaces', 'servers',
+		'delete_intfs', 'delete_servers',
+		'add_interface', 'add_interface_ifname',
+		'add_server_name',
+		'disableipv6', 'ula',
+		'default_vpn', 'default_proxy',
+		'encryption',
+		'shadowsocks_key', 'shadowsocks2022_key',
+		'glorytun_key', 'dsvpn_key',
+		'mlvpn_password', 'softethervpn_password', 'ubond_password',
+		'v2ray_user', 'xray_user', 'xray_transport',
+		'v2rayudp', 'forceretrieve',
+		'mptcpovervpn_vpn', 'country', 'dns64',
+		'master'
+	],
+	expect: { '': {} }
+});
+
+function callOMRWizardAddCompat(payload) {
+	return callOMRWizardAdd(
+		payload.interfaces,
+		payload.servers,
+		payload.delete_intfs,
+		payload.delete_servers,
+		payload.add_interface,
+		payload.add_interface_ifname,
+		payload.add_server_name,
+		payload.disableipv6,
+		payload.ula,
+		payload.default_vpn,
+		payload.default_proxy,
+		payload.encryption,
+		payload.shadowsocks_key,
+		payload.shadowsocks2022_key,
+		payload.glorytun_key,
+		payload.dsvpn_key,
+		payload.mlvpn_password,
+		payload.softethervpn_password,
+		payload.ubond_password,
+		payload.v2ray_user,
+		payload.xray_user,
+		payload.xray_transport,
+		payload.v2rayudp,
+		payload.forceretrieve,
+		payload.mptcpovervpn_vpn,
+		payload.country,
+		payload.dns64,
+		payload.master
+	).catch(function(err) {
+		var msg = (err && (err.message || err.toString())) || '';
+		if (msg.indexOf('Object not found') === -1)
+			throw err;
+
+		/* Fallback for session ACL/object lookup edge-cases: invoke ubus through file.exec */
+		return callFileExec('/bin/ubus', [
+			'call',
+			'openmptcprouter',
+			'wizardadd',
+			JSON.stringify({
+				interfaces: payload.interfaces,
+				servers: payload.servers,
+				delete_intfs: payload.delete_intfs,
+				delete_servers: payload.delete_servers,
+				add_interface: payload.add_interface,
+				add_interface_ifname: payload.add_interface_ifname,
+				add_server_name: payload.add_server_name,
+				disableipv6: payload.disableipv6,
+				ula: payload.ula,
+				default_vpn: payload.default_vpn,
+				default_proxy: payload.default_proxy,
+				encryption: payload.encryption,
+				shadowsocks_key: payload.shadowsocks_key,
+				shadowsocks2022_key: payload.shadowsocks2022_key,
+				glorytun_key: payload.glorytun_key,
+				dsvpn_key: payload.dsvpn_key,
+				mlvpn_password: payload.mlvpn_password,
+				softethervpn_password: payload.softethervpn_password,
+				ubond_password: payload.ubond_password,
+				v2ray_user: payload.v2ray_user,
+				xray_user: payload.xray_user,
+				xray_transport: payload.xray_transport,
+				v2rayudp: payload.v2rayudp,
+				forceretrieve: payload.forceretrieve,
+				mptcpovervpn_vpn: payload.mptcpovervpn_vpn,
+				country: payload.country,
+				dns64: payload.dns64,
+				master: payload.master
+			})
+		]).then(function(res) {
+			var out = (res && res.stdout) ? res.stdout.trim() : '';
+			if (!out)
+				return { status: 'ok' };
+			try {
+				return JSON.parse(out);
+			} catch (e) {
+				return { status: 'ok' };
+			}
+		});
+	});
+}
+
+function fileExists(path) {
+	return callFileStat(path).then(function(s) {
+		return s && s.type === 'file';
+	}).catch(function() { return false; });
+}
+
+function splitDeviceAndVlan(device) {
+	var d = device || '';
+	if (!d || d.indexOf('/') !== -1)
+		return { ifname: d, vlan: '' };
+
+	var idx = d.lastIndexOf('.');
+	if (idx <= 0)
+		return { ifname: d, vlan: '' };
+
+	return {
+		ifname: d.substring(0, idx),
+		vlan: d.substring(idx + 1)
+	};
+}
+
+function uniqueValues(list) {
+	var seen = {};
+	return L.toArray(list).filter(function(v) {
+		var s = String(v == null ? '' : v).trim();
+		if (!s || seen[s])
+			return false;
+		seen[s] = true;
+		return true;
+	});
+}
+
+var excludeRe = /^(lo|6in4-omr6in4|mlvpn0|ifb|sit|gre|ip6|teql|erspan|tun|bond)/;
+
+function ensureWizardCSSLoaded() {
+	if (document.getElementById('omr-wizard-css'))
+		return;
+
+	document.head.appendChild(E('link', {
+		id: 'omr-wizard-css',
+		rel: 'stylesheet',
+		type: 'text/css',
+		href: L.resource('openmptcprouter/css/wizard.css')
+	}));
+}
+
+return view.extend({
+	load: function() {
+		return Promise.all([
+			uci.load('openmptcprouter'), uci.load('network'), uci.load('firewall'),
+			uci.load('shadowsocks-libev').catch(function(){}),
+			uci.load('shadowsocks-rust').catch(function(){}),
+			uci.load('v2ray').catch(function(){}),
+			uci.load('xray').catch(function(){}),
+			uci.load('glorytun').catch(function(){}),
+			uci.load('dsvpn').catch(function(){}),
+			uci.load('mlvpn').catch(function(){}),
+			uci.load('ubond').catch(function(){}),
+			uci.load('softethervpn').catch(function(){}),
+			uci.load('sqm').catch(function(){}),
+			uci.load('qos').catch(function(){}),
+			network.getNetworks(),
+			network.getDevices(),
+			fileExists('/etc/init.d/shadowsocks-libev'),
+			fileExists('/etc/init.d/shadowsocks-rust'),
+			fileExists('/etc/init.d/v2ray'),
+			fileExists('/etc/init.d/xray'),
+			fileExists('/usr/sbin/glorytun'),
+			fileExists('/usr/sbin/glorytun-udp'),
+			fileExists('/usr/sbin/dsvpn'),
+			fileExists('/usr/sbin/mlvpn'),
+			fileExists('/usr/sbin/ubond'),
+			fileExists('/etc/init.d/openvpn'),
+			fileExists('/etc/init.d/openvpnbonding'),
+			fileExists('/etc/init.d/softethervpnclient'),
+			fileExists('/usr/bin/wg'),
+			callFileExec('/bin/sh', ['-c', '[ -x /usr/bin/apk ] && { apk list 2>/dev/null | grep installed | grep -q luci-app-sqm && echo -n 1 || echo -n 0; } || { opkg list-installed | grep -q luci-app-sqm && echo -n 1 || echo -n 0; }']),
+			callFileExec('/bin/sh', ['-c', '[ -x /usr/bin/apk ] && { apk list 2>/dev/null | grep installed | grep -q luci-app-qos && echo -n 1 || echo -n 0; } || { opkg list-installed | grep -q luci-app-qos && echo -n 1 || echo -n 0; }']),
+			callFileExec('/bin/sh', ['-c', 'grep -q aes /proc/cpuinfo && echo -n 1 || echo -n 0']),
+			callFileExec('/bin/sh', ['-c', 'ls /dev/ttyUSB* 2>/dev/null || true']),
+			callFileExec('/bin/sh', ['-c', 'ls /dev/cdc-wdm* 2>/dev/null || true']),
+			callFileExec('/bin/sh', ['-c', 'timeout 1 /usr/bin/mmcli -L 2>/dev/null || true']),
+		uci.load('mqvpn').catch(function(){}),
+		fileExists('/usr/sbin/mqvpn')
+		]);
+	},
+
+	render: function(data) {
+		var nets = data[14], devs = data[15];
+		var has = {
+			ssLibev: data[16], ssRust: data[17], v2ray: data[18], xray: data[19],
+			glorytun: data[20], glorytunUdp: data[21], dsvpn: data[22],
+			mlvpn: data[23], ubond: data[24], openvpn: data[25],
+			openvpnBond: data[26], softether: data[27], wg: data[28],
+			sqm: (data[29]||'').trim() === '1',
+			qos: (data[30]||'').trim() === '1',
+			aes: (data[31]||'').trim() === '1',
+			mqvpn: data[36]
+		};
+		var ttyUSB = (data[32]||'').trim().split('\n').filter(Boolean);
+		var ttyCdc = (data[33]||'').trim().split('\n').filter(Boolean);
+		var ttyAll = ttyUSB.concat(ttyCdc);
+		var alltty = [];
+		(data[34]||'').split('\n').forEach(function(l) {
+			var mt = l.match(/\/(\d+)\s/);
+			if (mt) alltty.push('/sys/devices/modem' + mt[1]);
+		});
+
+		var physDevs = [];
+		(devs || []).forEach(function(d) {
+			var n = d.getName();
+			if (n && !excludeRe.test(n)) {
+				var skip = nets.some(function(net) {
+					return uci.get('network', net.getName(), 'device') === n &&
+						(uci.get('network', net.getName(), 'type') === 'macvlan' ||
+						 uci.get('network', net.getName(), 'proto') === '6in4');
+				});
+				if (!skip) physDevs.push(n);
+			}
+		});
+
+		var zoneLan = L.toArray(uci.get('firewall', 'zone_lan', 'network'));
+		var zoneWan = L.toArray(uci.get('firewall', 'zone_wan', 'network'));
+
+		function buildWizardPayload() {
+			var allIntfs = {};
+			zoneLan.forEach(function(i) { allIntfs[i] = true; });
+			zoneWan.forEach(function(i) { allIntfs[i] = true; });
+
+			var interfaces = [];
+			Object.keys(allIntfs).forEach(function(intf) {
+				if (!uci.get('network', intf))
+					return;
+
+				var proto = uci.get('network', intf, 'proto') || 'static';
+				var typeintf = uci.get('network', intf, 'type') || '';
+				var device = uci.get('network', intf, 'device') || '';
+				var dev = splitDeviceAndVlan(device);
+
+				interfaces.push({
+					name: intf,
+					label: uci.get('network', intf, 'label') || '',
+					proto: proto,
+					type: typeintf,
+					masterintf: uci.get('network', intf, 'masterintf') || '',
+					ifname: dev.ifname,
+					vlan: dev.vlan,
+					device_ncm: proto === 'ncm' ? device : '',
+					device_qmi: proto === 'qmi' ? device : '',
+					device_modemmanager: proto === 'modemmanager' ? device : '',
+					ipaddr: uci.get('network', intf, 'ipaddr') || '',
+					ip6addr: uci.get('network', intf, 'ip6addr') || '',
+					netmask: uci.get('network', intf, 'netmask') || '',
+					gateway: uci.get('network', intf, 'gateway') || '',
+					ip6gw: uci.get('network', intf, 'ip6gw') || '',
+					ipv6: uci.get('network', intf, 'ipv6') || '0',
+					apn: uci.get('network', intf, 'apn') || '',
+					pincode: uci.get('network', intf, 'pincode') || '',
+					delay: uci.get('network', intf, 'delay') || '',
+					username: uci.get('network', intf, 'username') || '',
+					password: uci.get('network', intf, 'password') || '',
+					auth: uci.get('network', intf, 'auth') || '',
+					mode: uci.get('network', intf, 'mode') || '',
+					sqmenabled: uci.get('sqm', intf, 'enabled') || '0',
+					sqmautorate: uci.get('sqm', intf, 'autorate') || '0',
+					qosenabled: uci.get('qos', intf, 'enabled') || '0',
+					multipath: uci.get('network', intf, 'multipath') || 'on',
+					lan: zoneLan.indexOf(intf) !== -1 ? '1' : '0',
+					ttl: uci.get('network', intf + '_dev', 'ttl') || '',
+					downloadspeed: uci.get('network', intf, 'downloadspeed') || '0',
+					uploadspeed: uci.get('network', intf, 'uploadspeed') || '0',
+					testspeed: uci.get('openmptcprouter', intf, 'testspeed') || '0',
+					multipathvpn: uci.get('openmptcprouter', intf, 'multipathvpn') || '0'
+				});
+			});
+
+			var servers = [];
+			var master = '';
+			uci.sections('openmptcprouter', 'server', function(srv) {
+				var sid = srv['.name'];
+				if (!master && (uci.get('openmptcprouter', sid, 'master') === '1'))
+					master = sid;
+
+				servers.push({
+					name: sid,
+					ips: uniqueValues(uci.get('openmptcprouter', sid, 'ip')),
+					password: uci.get('openmptcprouter', sid, 'password') || '',
+					username: uci.get('openmptcprouter', sid, 'username') || 'openmptcprouter',
+					disabled: uci.get('openmptcprouter', sid, 'disabled') || '0'
+				});
+			});
+
+			if (!master && servers.length)
+				master = servers[0].name;
+
+			return {
+				interfaces: JSON.stringify(interfaces),
+				servers: JSON.stringify(servers),
+				delete_intfs: '[]',
+				delete_servers: '[]',
+				add_interface: '',
+				add_interface_ifname: '',
+				add_server_name: '',
+				disableipv6: uci.get('openmptcprouter', 'settings', 'disable_ipv6') || '1',
+				ula: uci.get('network', 'globals', 'ula_prefix') || '',
+				default_vpn: uci.get('openmptcprouter', 'settings', 'vpn') || 'openvpn',
+				default_proxy: uci.get('openmptcprouter', 'settings', 'proxy') || 'shadowsocks-rust',
+				encryption: uci.get('openmptcprouter', 'settings', 'encryption') || 'chacha20-ietf-poly1305',
+				shadowsocks_key: uci.get('shadowsocks-libev', 'sss0', 'key') || '',
+				shadowsocks2022_key: uci.get('shadowsocks-rust', 'sss0', 'password') || '',
+				glorytun_key: uci.get('glorytun', 'vpn', 'key') || '',
+				dsvpn_key: uci.get('dsvpn', 'vpn', 'key') || '',
+				mlvpn_password: uci.get('mlvpn', 'general', 'password') || '',
+				softethervpn_password: uci.get('softethervpn', 'openmptcprouter', 'password') || '',
+				ubond_password: uci.get('ubond', 'general', 'password') || '',
+				v2ray_user: uci.get('v2ray', 'omrout', 's_vmess_user_id') || '',
+				xray_user: uci.get('xray', 'omrout', 's_vmess_user_id') || '',
+				xray_transport: uci.get('xray', 'omrout', 'ss_network') || 'tcp',
+				v2rayudp: (uci.get('v2ray', 'main_transparent_proxy', 'redirect_udp') === '1' ||
+					uci.get('xray', 'main_transparent_proxy', 'redirect_udp') === '1') ? '1' : '0',
+				forceretrieve: uci.get('openmptcprouter', 'settings', 'forceretrieve') === '1' ? '1' : '',
+				mptcpovervpn_vpn: uci.get('openmptcprouter', 'settings', 'mptcpovervpn') || 'wireguard',
+				country: uci.get('openmptcprouter', 'settings', 'country') || 'world',
+				dns64: uci.get('openmptcprouter', 'settings', 'dns64') || '0',
+				master: master
+			};
+		}
+
+		var srvCount = 0;
+		uci.sections('openmptcprouter', 'server', function() { srvCount++; });
+		if (srvCount === 0) uci.add('openmptcprouter', 'server', 'vps');
+
+		var m, s, o;
+		m = new form.Map('openmptcprouter');
+		m.chain('network');
+		m.chain('firewall');
+		if (has.ssLibev) m.chain('shadowsocks-libev');
+		if (has.ssRust)  m.chain('shadowsocks-rust');
+		if (has.v2ray)   m.chain('v2ray');
+		if (has.xray)    m.chain('xray');
+		if (has.glorytun || has.glorytunUdp) m.chain('glorytun');
+		if (has.dsvpn)   m.chain('dsvpn');
+		if (has.mqvpn)   m.chain('mqvpn');
+		if (has.mlvpn)   m.chain('mlvpn');
+		if (has.ubond)   m.chain('ubond');
+		if (has.softether) m.chain('softethervpn');
+		if (has.sqm) m.chain('sqm');
+		if (has.qos) m.chain('qos');
+
+		/* ── Step 1: Servers ───────────────────────────── */
+		s = m.section(form.TypedSection, 'server', _('Server settings'));
+		s.addremove = true;
+		s.anonymous = false;
+		s.addbtntitle = _('Add a new server');
+
+		o = s.option(form.DynamicList, 'ip', _('Server IP'));
+		o.datatype = 'ipaddr';
+		o.description = _('Server IP will be set for proxy and VPN');
+		o.write = function(sid, val) {
+			var ips = uniqueValues(val);
+			uci.unset('openmptcprouter', sid, 'ip');
+			if (ips.length)
+				uci.set('openmptcprouter', sid, 'ip', ips);
+		};
+
+		o = s.option(form.Value, 'username', _('Server username'));
+		o.description = _('API username to retrieve personnalized settings from the server.');
+
+		o = s.option(form.Value, 'password', _('Server key'));
+		o.description = _('Key to configure and retrieve others keys from Server.');
+
+		o = s.option(form.Flag, 'master', _('Set server as master'));
+		o.description = _('Only one server can be master.');
+		o.write = function(sid, val) {
+			uci.sections('openmptcprouter', 'server', function(sec) {
+				if (sec['.name'] !== sid)
+					uci.set('openmptcprouter', sec['.name'], 'master', '0');
+			});
+			uci.set('openmptcprouter', sid, 'master', val);
+		};
+
+		o = s.option(form.Flag, 'disabled', _('Disable server'));
+
+		/* ── Step 2: Settings (tabbed) ─────────────────── */
+		s = m.section(form.NamedSection, 'settings', 'main', _('Settings'));
+		s.tab('general',  _('General'));
+		s.tab('ipv6',     _('IPv6'));
+		s.tab('proxy',    _('Proxy'));
+		s.tab('vpn',      _('VPN'));
+		s.tab('mptcpvpn', _('MPTCP over VPN'));
+		s.tab('country',  _('Country'));
+
+		// ── General ──
+		o = s.taboption('general', form.Flag, '_show_adv', _('Show advanced settings'));
+		o.description = _('Reveal proxy, VPN, IPv6 and country settings.');
+		o.default = '0';
+		o.rmempty = false;
+		o.cfgvalue = function() { return '0'; };
+		o.write = function() {};
+		o.remove = function() {};
+
+		o = s.taboption('general', form.ListValue, 'encryption', _('Encryption'));
+		o.value('none', _('None'));
+		o.value('aes-256-gcm', 'AES-256-GCM');
+		o.value('chacha20-ietf-poly1305', 'chacha20');
+		o.value('other', _('other'));
+		o.default = has.aes ? 'aes-256-gcm' : 'chacha20-ietf-poly1305';
+		o.description = (has.aes
+			? _('AES instruction set detected.')
+			: _('No AES instruction set, you should use chacha20.')) +
+			' ' + _('Used for Shadowsocks, V2Ray/XRay, Glorytun and OpenVPN.');
+		o.depends('_show_adv', '1');
+
+		o = s.taboption('general', form.Flag, '_force_retrieve', _('Force retrieve settings'));
+		o.description = _('Force retrieve all keys from server.');
+		o.depends('_show_adv', '1');
+		o.cfgvalue = function() { return '0'; };
+		o.write = function(sid, val) {
+			if (val === '1') uci.set('openmptcprouter', 'settings', 'forceretrieve', '1');
+		};
+		o.remove = function() {};
+
+		// ── IPv6 ──
+		o = s.taboption('ipv6', form.ListValue, 'disable_ipv6', _('Enable IPv6'));
+		o.value('1', _('Disabled'));
+		o.value('0', _('Enabled'));
+		o.description = _('Disable if server doesn\'t provide IPv6.');
+		o.depends('_show_adv', '1');
+
+		o = s.taboption('ipv6', form.Value, '_ula_prefix', _('IPv6 Prefix'));
+		o.description = _('Public IPv6 prefix only with one server.');
+		o.depends('_show_adv', '1');
+		o.cfgvalue = function() { return uci.get('network', 'globals', 'ula_prefix'); };
+		o.write = function(sid, val) { uci.set('network', 'globals', 'ula_prefix', val); };
+		o.remove = function() {};
+
+		o = s.taboption('ipv6', form.Flag, 'dns64', _('Enable DNS64'));
+		o.description = _('Enable if host supports NAT64.');
+		o.depends('_show_adv', '1');
+
+		// ── Proxy ──
+		o = s.taboption('proxy', form.ListValue, 'proxy', _('Default Proxy'));
+		o.description = _('Proxy for TCP (and UDP for V2Ray/XRay).');
+		o.depends('_show_adv', '1');
+		var availProxy = L.toArray(uci.get('openmptcprouter', 'vps', 'available_proxy'));
+		var proxyDefs = {
+			'shadowsocks':        ['Shadowsocks',           has.ssLibev],
+			'v2ray':              ['V2Ray VLESS',            has.v2ray],
+			'v2ray-vmess':        ['V2Ray VMESS',            has.v2ray],
+			'v2ray-trojan':       ['V2Ray TROJAN',           has.v2ray],
+			'v2ray-socks':        ['V2Ray SOCKS',            has.v2ray],
+			'xray':               ['XRay VLESS',             has.xray],
+			'xray-vless-reality': ['XRay VLESS Reality',     has.xray],
+			'xray-vmess':         ['XRay VMESS',             has.xray],
+			'xray-trojan':        ['XRay Trojan',            has.xray],
+			'xray-socks':         ['XRay Socks',             has.xray],
+			'xray-shadowsocks':   ['XRay Shadowsocks 2022',  has.xray],
+			'shadowsocks-rust':   ['Shadowsocks-Rust 2022',  has.ssRust],
+			'shadowsocks-go':     ['Shadowsocks-Rust 2022',  has.ssRust]
+		};
+		(availProxy.length ? availProxy : Object.keys(proxyDefs)).forEach(function(p) {
+			var k = (p === 'shadowsocks-go') ? 'shadowsocks-rust' : p;
+			var d = proxyDefs[k];
+			if (d && d[1]) o.value(k, d[0]);
+		});
+		o.value('none', _('None'));
+
+		if (has.ssLibev) {
+			o = s.taboption('proxy', form.Value, '_ss_key', _('ShadowSocks key'));
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get('shadowsocks-libev', 'sss0', 'key'); };
+			o.write = function(sid, val) { uci.set('shadowsocks-libev', 'sss0', 'key', val); };
+			o.remove = function() {};
+		}
+		if (has.xray || has.ssRust) {
+			o = s.taboption('proxy', form.Value, '_ss2022_key', _('ShadowSocks 2022 key'));
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get('shadowsocks-rust', 'sss0', 'password'); };
+			o.write = function(sid, val) { uci.set('shadowsocks-rust', 'sss0', 'password', val); };
+			o.remove = function() {};
+		}
+		if (has.v2ray) {
+			o = s.taboption('proxy', form.Value, '_v2ray_user', _('V2Ray user id'));
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get('v2ray', 'omrout', 's_vmess_user_id'); };
+			o.write = function(sid, val) { uci.set('v2ray', 'omrout', 's_vmess_user_id', val); };
+			o.remove = function() {};
+		}
+		if (has.xray) {
+			o = s.taboption('proxy', form.Value, '_xray_user', _('XRay user id'));
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get('xray', 'omrout', 's_vmess_user_id'); };
+			o.write = function(sid, val) { uci.set('xray', 'omrout', 's_vmess_user_id', val); };
+			o.remove = function() {};
+		}
+		if (has.xray || has.v2ray) {
+			o = s.taboption('proxy', form.Flag, '_v2ray_udp', _('V2Ray/XRay UDP'));
+			o.description = _('Use V2Ray/XRay for UDP too');
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() {
+				return (uci.get('v2ray', 'main_transparent_proxy', 'redirect_udp') === '1' ||
+						uci.get('xray', 'main_transparent_proxy', 'redirect_udp') === '1') ? '1' : '0';
+			};
+			o.write = function(sid, val) {
+				if (has.v2ray) uci.set('v2ray', 'main_transparent_proxy', 'redirect_udp', val);
+				if (has.xray)  uci.set('xray', 'main_transparent_proxy', 'redirect_udp', val);
+			};
+			o.remove = function() {};
+
+			o = s.taboption('proxy', form.ListValue, '_xray_transport', _('XRay Transport'));
+			o.value('tcp', 'TCP');
+			o.value('grpc', 'gRPC');
+			o.value('xhttp', 'XHTTP');
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get('xray', 'omrout', 'ss_network') || 'tcp'; };
+			o.write = function(sid, val) { uci.set('xray', 'omrout', 'ss_network', val); };
+			o.remove = function() {};
+		}
+
+		// ── VPN ──
+		var vpnKeyOpts = [
+			[has.glorytun||has.glorytunUdp, '_glorytun_key', _('Glorytun key'),          'glorytun',      'vpn',              'key'],
+			[has.dsvpn,                     '_dsvpn_key',    _('A Dead Simple VPN key'), 'dsvpn',         'vpn',              'key'],
+			[has.mqvpn,                     '_mqvpn_key',    _('MQVPN key'),             'mqvpn',         'auth',             'key'],
+			[has.mlvpn,                     '_mlvpn_pw',     _('MLVPN password'),        'mlvpn',         'general',          'password'],
+			[has.ubond,                     '_ubond_pw',     _('UBOND password'),        'ubond',         'general',          'password'],
+			[has.softether,                 '_softether_pw', _('SoftEther VPN password'),'softethervpn',  'openmptcprouter',  'password']
+		];
+		vpnKeyOpts.forEach(function(def) {
+			if (!def[0]) return;
+			o = s.taboption('vpn', form.Value, def[1], def[2]);
+			o.description = _('Key is retrieved from server API by default.');
+			o.depends('_show_adv', '1');
+			o.cfgvalue = function() { return uci.get(def[3], def[4], def[5]); };
+			o.write = function(sid, val) { uci.set(def[3], def[4], def[5], val); };
+			o.remove = function() {};
+		});
+
+		o = s.taboption('vpn', form.ListValue, 'vpn', _('Default VPN'));
+		o.description = _('VPN for ICMP (and UDP with Shadowsocks proxy).');
+		o.depends('_show_adv', '1');
+		var vpnDefs = {
+			'glorytun_tcp':    ['Glorytun TCP',      has.glorytun],
+			'glorytun_udp':    ['Glorytun UDP',      has.glorytunUdp],
+			'dsvpn':           ['A Dead Simple VPN',  has.dsvpn],
+			'mqvpn':           ['MQVPN',             has.mqvpn],
+			'mlvpn':           ['MLVPN',             has.mlvpn],
+			'ubond':           ['UBOND',             has.ubond],
+			'openvpn':         ['OpenVPN TCP',       has.openvpn],
+			'openvpn_bonding': ['OpenVPN Bonding',   has.openvpnBond],
+			'softether':       ['SoftEther VPN',     has.softether]
+		};
+		var availVpn = L.toArray(uci.get('openmptcprouter', 'vps', 'available_vpn'));
+		(availVpn.length ? availVpn : Object.keys(vpnDefs)).forEach(function(v) {
+			var d = vpnDefs[v];
+			if (d && d[1]) o.value(v, d[0]);
+		});
+		o.value('none', _('None'));
+
+		if (has.mqvpn) {
+			o = s.taboption('vpn', form.ListValue, '_mqvpn_scheduler', _('MQVPN scheduler'));
+			o.depends({ '_show_adv': '1', 'vpn': 'mqvpn' });
+			o.value('wlb',    _('Weighted Load Balancing'));
+			o.value('minrtt', _('Minimum RTT'));
+			o.default = 'wlb';
+			o.cfgvalue = function() { return uci.get('mqvpn', 'multipath', 'scheduler') || 'wlb'; };
+			o.write = function(sid, val) { uci.set('mqvpn', 'multipath', 'scheduler', val); };
+			o.remove = function() {};
+		}
+
+		// ── MPTCP over VPN ──
+		o = s.taboption('mptcpvpn', form.ListValue, 'mptcpovervpn', _('MPTCP over VPN'));
+		o.description = _('Use when MPTCP is blocked by your ISP.');
+		o.depends('_show_adv', '1');
+		if (has.openvpn) o.value('openvpn', 'OpenVPN');
+		if (has.wg)      o.value('wireguard', 'WireGuard');
+		o.default = 'wireguard';
+
+		// ── Country ──
+		o = s.taboption('country', form.ListValue, 'country', _('Country'));
+		o.description = _('For China: accessible DNS and disable DNSSEC.');
+		o.depends('_show_adv', '1');
+		o.value('world', _('World'));
+		o.value('china', _('China'));
+		o.value('europe', _('Europe'));
+		o.value('usa', _('USA'));
+		o.value('custom', _('Custom'));
+		o.default = 'world';
+
+		/* ── Step 3: LAN ───────────────────────────────── */
+		s = m.section(form.TypedSection, 'interface', _('LAN interfaces'));
+		s.uciconfig = 'network';
+		s.addremove = false;
+		s.anonymous = false;
+		s.filter = function(sid) { return zoneLan.indexOf(sid) !== -1; };
+
+		o = s.option(form.Value, 'label', _('Label'));
+		o.optional = true;
+
+		o = s.option(form.ListValue, 'proto', _('Protocol'));
+		o.value('static', _('Static address'));
+		o.value('dhcp', _('DHCP'));
+
+		o = s.option(form.ListValue, 'device', _('Physical interface'));
+		physDevs.forEach(function(d) { o.value(d); });
+
+		o = s.option(form.Value, 'ipaddr', _('IPv4 address'));
+		o.datatype = 'ip4addr';
+		o.depends('proto', 'static');
+
+		o = s.option(form.Value, 'netmask', _('IPv4 netmask'));
+		o.datatype = 'ip4addr';
+		o.default = '255.255.255.0';
+		o.depends('proto', 'static');
+
+		/* ── Step 4: WAN ───────────────────────────────── */
+		s = m.section(form.TypedSection, 'interface', _('WAN interfaces'));
+		s.uciconfig = 'network';
+		s.addremove = true;
+		s.anonymous = false;
+		s.addbtntitle = _('Add an interface');
+		s.filter = function(sid) { return zoneWan.indexOf(sid) !== -1; };
+
+		s.addSection = function(name) {
+			if (!name) {
+				var n = 1;
+				while (uci.get('network', 'wan' + n)) n++;
+				name = 'wan' + n;
+			}
+			uci.add('network', 'interface', name);
+			uci.set('network', name, 'proto', 'static');
+			uci.set('network', name, 'multipath', 'on');
+			var w = L.toArray(uci.get('firewall', 'zone_wan', 'network'));
+			w.push(name);
+			uci.set('firewall', 'zone_wan', 'network', w);
+			zoneWan.push(name);
+			return name;
+		};
+
+		s.removeSection = function(sid) {
+			var w = L.toArray(uci.get('firewall', 'zone_wan', 'network'));
+			var i = w.indexOf(sid);
+			if (i !== -1) { w.splice(i, 1); uci.set('firewall', 'zone_wan', 'network', w); }
+			i = zoneWan.indexOf(sid);
+			if (i !== -1) zoneWan.splice(i, 1);
+			uci.remove('network', sid);
+		};
+
+		o = s.option(form.Value, 'label', _('Label'));
+		o.optional = true;
+
+		// Type
+		o = s.option(form.ListValue, '_type', _('Type'));
+		o.value('normal', _('Normal'));
+		o.value('macvlan', _('MacVLAN'));
+		o.value('bridge', _('Bridge'));
+		o.cfgvalue = function(sid) { return uci.get('network', sid, 'type') || 'normal'; };
+		o.write = function(sid, val) {
+			if (val === 'normal') uci.unset('network', sid, 'type');
+			else uci.set('network', sid, 'type', val);
+		};
+
+		// MacVLAN master — type=macvlan
+		o = s.option(form.ListValue, 'masterintf', _('MacVLAN master'));
+		physDevs.forEach(function(d) { o.value(d); });
+		o.depends('_type', 'macvlan');
+
+		// Protocol — type=normal|bridge
+		o = s.option(form.ListValue, 'proto', _('Protocol'));
+		o.value('static', _('Static address'));
+		o.value('dhcp', _('DHCP'));
+		o.value('dhcpv6', _('DHCPv6'));
+		o.value('modemmanager', _('ModemManager'));
+		o.value('ncm', _('NCM'));
+		o.value('pppoe', _('PPPoE'));
+		o.value('qmi', _('QMI'));
+		o.value('other', _('Other'));
+		o.default = 'static';
+		o.depends('_type', 'normal');
+		o.depends('_type', 'bridge');
+
+		// Physical interface — proto=static|dhcp|dhcpv6
+		o = s.option(form.ListValue, '_intf', _('Physical interface'));
+		physDevs.forEach(function(d) { o.value(d); });
+		o.depends('proto', 'static');
+		o.depends('proto', 'dhcp');
+		o.depends('proto', 'dhcpv6');
+		o.cfgvalue = function(sid) {
+			var d = uci.get('network', sid, 'device') || '';
+			return d.indexOf('/') !== -1 ? d : d.split('.')[0];
+		};
+		o.write = function(sid, val) {
+			var vl = this.section.formvalue(sid, '_vlan') || '';
+			uci.set('network', sid, 'device', vl ? val + '.' + vl : val);
+		};
+
+		o = s.option(form.Value, '_vlan', _('VLAN'));
+		o.optional = true;
+		o.datatype = 'uinteger';
+		o.placeholder = _('Optional');
+		o.depends('proto', 'static');
+		o.depends('proto', 'dhcp');
+		o.depends('proto', 'dhcpv6');
+		o.cfgvalue = function(sid) {
+			var d = uci.get('network', sid, 'device') || '';
+			return d.indexOf('/') !== -1 ? '' : (d.split('.')[1] || '');
+		};
+		o.write = function() {};
+
+		// IPv4 — proto=static OR type=macvlan
+		o = s.option(form.Value, 'ipaddr', _('IPv4 address'));
+		o.datatype = 'ip4addr';
+		o.depends('proto', 'static');
+		o.depends('_type', 'macvlan');
+
+		o = s.option(form.Value, 'netmask', _('IPv4 netmask'));
+		o.datatype = 'ip4addr';
+		o.default = '255.255.255.0';
+		o.depends('proto', 'static');
+		o.depends('_type', 'macvlan');
+
+		o = s.option(form.Value, 'gateway', _('IPv4 gateway'));
+		o.datatype = 'ip4addr';
+		o.depends('proto', 'static');
+		o.depends('_type', 'macvlan');
+
+		// IPv6 — proto=static OR type=macvlan
+		o = s.option(form.Value, 'ip6addr', _('IPv6 address'));
+		o.datatype = 'ip6addr';
+		o.optional = true;
+		o.depends('proto', 'static');
+		o.depends('_type', 'macvlan');
+
+		o = s.option(form.Value, 'ip6gw', _('IPv6 gateway'));
+		o.datatype = 'ip6addr';
+		o.optional = true;
+		o.depends('proto', 'static');
+		o.depends('_type', 'macvlan');
+
+		// Device NCM — proto=ncm
+		o = s.option(form.ListValue, '_device_ncm', _('Device'));
+		ttyAll.forEach(function(d) { o.value(d); });
+		o.depends('proto', 'ncm');
+		o.cfgvalue = function(sid) { return uci.get('network', sid, 'device'); };
+		o.write = function(sid, val) { uci.set('network', sid, 'device', val); };
+
+		// Device QMI — proto=qmi
+		o = s.option(form.ListValue, '_device_qmi', _('Device'));
+		ttyCdc.forEach(function(d) { o.value(d); });
+		o.depends('proto', 'qmi');
+		o.cfgvalue = function(sid) { return uci.get('network', sid, 'device'); };
+		o.write = function(sid, val) { uci.set('network', sid, 'device', val); };
+
+		// Device ModemManager — proto=modemmanager
+		o = s.option(form.ListValue, '_device_mm', _('Device'));
+		alltty.forEach(function(d) { o.value(d); });
+		o.depends('proto', 'modemmanager');
+		o.cfgvalue = function(sid) { return uci.get('network', sid, 'device'); };
+		o.write = function(sid, val) { uci.set('network', sid, 'device', val); };
+
+		// APN — proto=ncm|qmi|modemmanager only
+		o = s.option(form.Value, 'apn', _('APN'));
+		o.depends('proto', 'ncm');
+		o.depends('proto', 'qmi');
+		o.depends('proto', 'modemmanager');
+
+		// PIN code — proto=ncm|qmi|modemmanager only
+		o = s.option(form.Value, 'pincode', _('PIN code'));
+		o.depends('proto', 'ncm');
+		o.depends('proto', 'qmi');
+		o.depends('proto', 'modemmanager');
+
+		// Service type — proto=ncm only
+		o = s.option(form.ListValue, 'mode', _('Service Type'));
+		o.value('', _('Modem default'));
+		o.value('preferlte', _('Prefer LTE'));
+		o.value('preferumts', _('Prefer UMTS'));
+		o.value('lte', _('LTE'));
+		o.value('umts', _('UMTS/GPRS'));
+		o.value('gsm', _('GPRS only'));
+		o.value('auto', _('auto'));
+		o.depends('proto', 'ncm');
+
+		// Authentication — proto=qmi|pppoe only
+		o = s.option(form.ListValue, 'auth', _('Authentication Type'));
+		o.value('none', _('NONE'));
+		o.value('pap', _('PAP'));
+		o.value('chap', _('CHAP'));
+		o.value('both', _('PAP/CHAP'));
+		o.default = 'none';
+		o.depends('proto', 'qmi');
+		o.depends('proto', 'pppoe');
+
+		// PAP/CHAP — proto=ncm|qmi|pppoe only
+		o = s.option(form.Value, 'username', _('PAP/CHAP username'));
+		o.depends('proto', 'ncm');
+		o.depends('proto', 'qmi');
+		o.depends('proto', 'pppoe');
+
+		o = s.option(form.Value, 'password', _('PAP/CHAP password'));
+		o.password = true;
+		o.depends('proto', 'ncm');
+		o.depends('proto', 'qmi');
+		o.depends('proto', 'pppoe');
+
+		// Modem init timeout — proto=ncm|qmi only
+		o = s.option(form.Value, 'delay', _('Modem init timeout'));
+		o.datatype = 'uinteger';
+		o.optional = true;
+		o.depends('proto', 'ncm');
+		o.depends('proto', 'qmi');
+
+		// ── Always visible WAN fields ──
+
+		o = s.option(form.ListValue, 'multipath', _('Multipath TCP'));
+		o.value('on', _('Enabled'));
+		o.value('off', _('Disabled'));
+		o.value('master', _('Master'));
+		o.value('backup', _('Backup'));
+		o.default = 'on';
+
+		o = s.option(form.Value, '_ttl', _('Force TTL'));
+		o.datatype = 'uinteger';
+		o.optional = true;
+		o.description = _('65 often solves LTE tethering detection.');
+		o.cfgvalue = function(sid) { return uci.get('network', sid + '_dev', 'ttl'); };
+		o.write = function(sid, val) {
+			if (val) uci.set('network', sid + '_dev', 'ttl', val);
+			else uci.unset('network', sid + '_dev', 'ttl');
+		};
+		o.remove = function(sid) { uci.unset('network', sid + '_dev', 'ttl'); };
+
+		o = s.option(form.Flag, '_multipathvpn', _('MPTCP over VPN'));
+		o.cfgvalue = function(sid) { return uci.get('openmptcprouter', sid, 'multipathvpn'); };
+		o.write = function(sid, val) { uci.set('openmptcprouter', sid, 'multipathvpn', val); };
+		o.remove = function(sid) { uci.set('openmptcprouter', sid, 'multipathvpn', '0'); };
+
+		if (has.sqm) {
+			o = s.option(form.Flag, '_sqm_enabled', _('Enable SQM'));
+			o.default = '0';
+			o.cfgvalue = function(sid) { return uci.get('sqm', sid, 'enabled') || '0'; };
+			o.write = function(sid, val) { uci.set('sqm', sid, 'enabled', val); };
+			o.remove = function(sid) { uci.set('sqm', sid, 'enabled', '0'); };
+		}
+
+		if (has.qos) {
+			o = s.option(form.Flag, '_qos_enabled', _('Enable QoS'));
+			o.cfgvalue = function(sid) { return uci.get('qos', sid, 'enabled'); };
+			o.write = function(sid, val) { uci.set('qos', sid, 'enabled', val); };
+			o.remove = function(sid) { uci.set('qos', sid, 'enabled', '0'); };
+		}
+
+		o = s.option(form.Flag, '_testspeed', _('Calculate speed'));
+		o.description = _('Run an automatic speedtest.');
+		o.cfgvalue = function(sid) { return uci.get('openmptcprouter', sid, 'testspeed'); };
+		o.write = function(sid, val) { uci.set('openmptcprouter', sid, 'testspeed', val); };
+		o.remove = function(sid) { uci.set('openmptcprouter', sid, 'testspeed', '0'); };
+
+		o = s.option(form.Value, 'downloadspeed', _('Download speed (Kb/s)'));
+		o.datatype = 'uinteger';
+		o.default = '0';
+
+		o = s.option(form.Value, 'uploadspeed', _('Upload speed (Kb/s)'));
+		o.datatype = 'uinteger';
+		o.default = '0';
+
+		/* ═══════════════════════════════════════════════════
+		 *  RENDER + STEP WIZARD WRAPPER
+		 * ═══════════════════════════════════════════════════ */
+		return m.render().then(function(mapEl) {
+			ensureWizardCSSLoaded();
+
+			var sections = mapEl.querySelectorAll(':scope > .cbi-section');
+			if (sections.length < 4)
+				sections = mapEl.querySelectorAll('.cbi-section');
+
+			var stepLabels = [_('Server'), _('Settings'), _('LAN'), _('WAN')];
+			var panels = [], i;
+
+			for (i = 0; i < Math.min(sections.length, 4); i++) {
+				var panel = E('div', { 'class': 'omr-panel' });
+				sections[i].parentNode.insertBefore(panel, sections[i]);
+				panel.appendChild(sections[i]);
+				panels.push(panel);
+			}
+
+			// Remove LuCI default page actions (using wizard's custom buttons instead)
+			mapEl.querySelectorAll('.cbi-page-actions').forEach(function(el) {
+				el.remove();
+			});
+
+			panels[0].classList.add('active');
+
+			// Step bar
+			var stepsUl = E('ul', { 'class': 'omr-steps' });
+			var currentStep = 0;
+
+			function goTo(idx) {
+				if (idx < 0 || idx >= panels.length) return;
+				for (var j = 0; j < idx; j++)
+					stepsUl.children[j].classList.add('done');
+				panels[currentStep].classList.remove('active');
+				stepsUl.children[currentStep].classList.remove('active');
+				currentStep = idx;
+				panels[currentStep].classList.add('active');
+				stepsUl.children[currentStep].classList.add('active');
+				updateNav();
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+
+			stepLabels.forEach(function(label, idx) {
+				stepsUl.appendChild(E('li', {
+					'class': idx === 0 ? 'active' : '',
+					'click': function() { goTo(idx); }
+				}, [
+					E('span', { 'class': 'step-num' }, '' + (idx + 1)),
+					E('span', { 'class': 'step-label' }, ' ' + label)
+				]));
+			});
+
+			// Nav buttons
+			var btnPrev = E('button', { 'type': 'button', 'class': 'cbi-button' }, '← ' + _('Previous'));
+			var btnNext = E('button', { 'type': 'button', 'class': 'cbi-button cbi-button-apply' }, _('Next') + ' →');
+			var btnSave = E('button', { 'type': 'button', 'class': 'cbi-button cbi-button-apply' }, _('Save & Apply'));
+
+			btnPrev.addEventListener('click', function() { goTo(currentStep - 1); });
+			btnNext.addEventListener('click', function() { goTo(currentStep + 1); });
+			btnSave.addEventListener('click', function() {
+				btnSave.disabled = true;
+				m.save().then(function() {
+					var payload = buildWizardPayload();
+					return callOMRWizardAddCompat(payload);
+				}).then(function(res) {
+					var status = (res && res.status) ? res.status : 'ok';
+					ui.addNotification(null, E('p', _('Saved through openmptcprouter ubus API (%s).').format(status)), 'info');
+					// Mark changes as applied in LuCI
+					return ui.changes.apply();
+				}).catch(function(e) {
+					ui.addNotification(null, E('p', _('Error: ') + e.message), 'error');
+				}).finally(function() {
+					btnSave.disabled = false;
+				});
+			});
+
+			var navDiv = E('div', { 'class': 'cbi-page-actions omr-nav' }, [
+				E('div', { 'style': 'display:flex;gap:.5em' }, [btnPrev, btnNext, btnSave])
+			]);
+
+			function updateNav() {
+				btnPrev.style.display = currentStep === 0 ? 'none' : '';
+				btnNext.style.display = currentStep === panels.length - 1 ? 'none' : '';
+				//btnSave.style.display = currentStep === panels.length - 1 ? '' : 'none';
+			}
+			updateNav();
+
+			// Assemble
+			var wrapper = E('div', {}, [
+				E('h2', {}, _('OpenMPTCProuter Wizard')),
+				stepsUl
+			]);
+
+			panels.forEach(function(p) { wrapper.appendChild(p); });
+			wrapper.appendChild(navDiv);
+
+			// Remove ALL page action elements and buttons outside wrapper
+			mapEl.querySelectorAll('.cbi-page-actions:not(.omr-nav), .cbi-section-actions').forEach(function(el) {
+				el.remove();
+			});
+			mapEl.querySelectorAll('button').forEach(function(btn) {
+				if (!wrapper.contains(btn)) {
+					btn.remove();
+				}
+			});
+
+			while (mapEl.firstChild) mapEl.removeChild(mapEl.firstChild);
+			mapEl.appendChild(wrapper);
+
+			// Remove LuCI default buttons that appear after render (with delay to ensure they're added)
+			setTimeout(function() {
+				document.querySelectorAll('.cbi-page-actions:not(.omr-nav), .cbi-section-actions').forEach(function(el) {
+					el.remove();
+				});
+			}, 100);
+
+			return mapEl;
+		});
+	},
+
+	handleSaveApply: function(ev) {
+		var self = this;
+		return this.handleSave(ev).then(function() {
+			return ui.changes.apply();
+		});
+	},
+
+	handleSave: function(ev) {
+		var map = this.map;
+
+		document.querySelectorAll('.cbi-input-invalid').forEach(function(elem) {
+			ui.addNotification(null, 
+				E('p', _('Validation errors exist in the form. Please check all fields.')), 
+				'error');
+		});
+
+		if (document.querySelector('.cbi-input-invalid'))
+			return Promise.reject();
+
+		return uci.save()
+			.then(L.bind(function() {
+				var zoneLan = L.toArray(uci.get('firewall', 'zone_lan', 'network'));
+				var zoneWan = L.toArray(uci.get('firewall', 'zone_wan', 'network'));
+
+				var allIntfs = {};
+				zoneLan.forEach(function(i) { allIntfs[i] = true; });
+				zoneWan.forEach(function(i) { allIntfs[i] = true; });
+
+				var interfaces = [];
+				Object.keys(allIntfs).forEach(function(intf) {
+					if (!uci.get('network', intf))
+						return;
+
+					var proto = uci.get('network', intf, 'proto') || 'static';
+					var typeintf = uci.get('network', intf, 'type') || '';
+					var device = uci.get('network', intf, 'device') || '';
+					var dev = splitDeviceAndVlan(device);
+
+					interfaces.push({
+						name: intf,
+						label: uci.get('network', intf, 'label') || '',
+						proto: proto,
+						type: typeintf,
+						masterintf: uci.get('network', intf, 'masterintf') || '',
+						ifname: dev.ifname,
+						vlan: dev.vlan,
+						device_ncm: proto === 'ncm' ? device : '',
+						device_qmi: proto === 'qmi' ? device : '',
+						device_modemmanager: proto === 'modemmanager' ? device : '',
+						ipaddr: uci.get('network', intf, 'ipaddr') || '',
+						ip6addr: uci.get('network', intf, 'ip6addr') || '',
+						netmask: uci.get('network', intf, 'netmask') || '',
+						gateway: uci.get('network', intf, 'gateway') || '',
+						ip6gw: uci.get('network', intf, 'ip6gw') || '',
+						ipv6: uci.get('network', intf, 'ipv6') || '0',
+						apn: uci.get('network', intf, 'apn') || '',
+						pincode: uci.get('network', intf, 'pincode') || '',
+						delay: uci.get('network', intf, 'delay') || '',
+						username: uci.get('network', intf, 'username') || '',
+						password: uci.get('network', intf, 'password') || '',
+						auth: uci.get('network', intf, 'auth') || '',
+						mode: uci.get('network', intf, 'mode') || '',
+						sqmenabled: uci.get('sqm', intf, 'enabled') || '0',
+						sqmautorate: uci.get('sqm', intf, 'autorate') || '0',
+						qosenabled: uci.get('qos', intf, 'enabled') || '0',
+						multipath: uci.get('network', intf, 'multipath') || 'on',
+						lan: zoneLan.indexOf(intf) !== -1 ? '1' : '0',
+						ttl: uci.get('network', intf + '_dev', 'ttl') || '',
+						downloadspeed: uci.get('network', intf, 'downloadspeed') || '0',
+						uploadspeed: uci.get('network', intf, 'uploadspeed') || '0',
+						testspeed: uci.get('openmptcprouter', intf, 'testspeed') || '0',
+						multipathvpn: uci.get('openmptcprouter', intf, 'multipathvpn') || '0'
+					});
+				});
+
+				var servers = [];
+				var master = '';
+				uci.sections('openmptcprouter', 'server', function(srv) {
+					var sid = srv['.name'];
+					if (!master && (uci.get('openmptcprouter', sid, 'master') === '1'))
+						master = sid;
+
+					servers.push({
+						name: sid,
+						ips: uniqueValues(uci.get('openmptcprouter', sid, 'ip')),
+						password: uci.get('openmptcprouter', sid, 'password') || '',
+						username: uci.get('openmptcprouter', sid, 'username') || 'openmptcprouter',
+						disabled: uci.get('openmptcprouter', sid, 'disabled') || '0'
+					});
+				});
+
+				if (!master && servers.length)
+					master = servers[0].name;
+
+				return {
+					interfaces: JSON.stringify(interfaces),
+					servers: JSON.stringify(servers),
+					delete_intfs: '[]',
+					delete_servers: '[]',
+					add_interface: '',
+					add_interface_ifname: '',
+					add_server_name: '',
+					disableipv6: uci.get('openmptcprouter', 'settings', 'disable_ipv6') || '1',
+					ula: uci.get('network', 'globals', 'ula_prefix') || '',
+					default_vpn: uci.get('openmptcprouter', 'settings', 'vpn') || 'glorytun_tcp',
+					default_proxy: uci.get('openmptcprouter', 'settings', 'proxy') || 'shadowsocks-rust',
+					encryption: uci.get('openmptcprouter', 'settings', 'encryption') || 'chacha20-ietf-poly1305',
+					shadowsocks_key: uci.get('shadowsocks-libev', 'sss0', 'key') || '',
+					shadowsocks2022_key: uci.get('shadowsocks-rust', 'sss0', 'password') || '',
+					glorytun_key: uci.get('glorytun', 'vpn', 'key') || '',
+					dsvpn_key: uci.get('dsvpn', 'vpn', 'key') || '',
+					mlvpn_password: uci.get('mlvpn', 'general', 'password') || '',
+					softethervpn_password: uci.get('softethervpn', 'openmptcprouter', 'password') || '',
+					ubond_password: uci.get('ubond', 'general', 'password') || '',
+					v2ray_user: uci.get('v2ray', 'omrout', 's_vmess_user_id') || '',
+					xray_user: uci.get('xray', 'omrout', 's_vmess_user_id') || '',
+					xray_transport: uci.get('xray', 'omrout', 'ss_network') || 'tcp',
+					v2rayudp: (uci.get('v2ray', 'main_transparent_proxy', 'redirect_udp') === '1' ||
+						uci.get('xray', 'main_transparent_proxy', 'redirect_udp') === '1') ? '1' : '0',
+					forceretrieve: uci.get('openmptcprouter', 'settings', 'forceretrieve') === '1' ? '1' : '',
+					mptcpovervpn_vpn: uci.get('openmptcprouter', 'settings', 'mptcpovervpn') || 'wireguard',
+					country: uci.get('openmptcprouter', 'settings', 'country') || 'world',
+					dns64: uci.get('openmptcprouter', 'settings', 'dns64') || '0',
+					master: master
+				};
+			}, this))
+			.then(function(payload) {
+				return callOMRWizardAddCompat(payload);
+			})
+			.then(function(res) {
+				var status = (res && res.status) ? res.status : 'ok';
+				
+				if (status === 'ok' || status === 'reload') {
+					ui.addNotification(null, 
+						E('p', _('Configuration saved successfully through OpenMPTCProuter API.')), 
+						'info');
+					
+					if (status === 'ok') {
+						ui.addNotification(null,
+							E('p', _('System is restarting services. This may take a few moments...')),
+							'info');
+					}
+					
+					return ui.changes.apply();
+				} else {
+					throw new Error(_('API returned unexpected status: %s').format(status));
+				}
+			})
+			.catch(function(e) {
+				ui.addNotification(null, 
+					E('p', [
+						_('Save error: '), 
+						E('em', {}, e.message || e.toString())
+					]), 
+					'error');
+				throw e;
+			});
+	},
+
+	handleReset: function(ev) {
+		return this.map.reset();
+	}
+});

@@ -7,7 +7,7 @@
 #
 # This script launch a speedtest if the option is enabled on the interface
 
-[ "$OMR_TRACKER_STATUS" = "ERROR" ] || [ -z "$OMR_TRACKER_INTERFACE" ] && exit 0
+{ [ "$OMR_TRACKER_STATUS" = "ERROR" ] || [ -z "$OMR_TRACKER_INTERFACE" ]; } && exit 0
 interface_up=$(ifstatus "$OMR_TRACKER_INTERFACE" 2>/dev/null | jsonfilter -q -e '@["up"]')
 [ "$interface_up" != "true" ] && exit 0
 

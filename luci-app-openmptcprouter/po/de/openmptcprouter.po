@@ -765,11 +765,12 @@ msgstr "Keine"
 msgid "Normal"
 msgstr ""
 
-#: luci-app-openmptcprouter/luasrc/view/openmptcprouter/settings.htm:150
 msgid ""
 "Number of times initial SYNs for an active TCP connection attempt will be "
 "retransmitted."
 msgstr ""
+"Anzahl der Wiederholungen der initialen SYNs fuer einen aktiven TCP-"
+"Verbindungsaufbau."
 
 #: luci-app-openmptcprouter/luasrc/view/openmptcprouter/settings.htm:89
 msgid "Obfuscating plugin"
@@ -1103,18 +1104,20 @@ msgstr ""
 "Die CPU beherrscht keine AES-NI-Befehle für hardwarebeschleunigte "
 "Verschlüsselung. Sinnvollerweise stattdessen 'chacha20' nutzen!"
 
-#: luci-app-openmptcprouter/luasrc/view/openmptcprouter/settings.htm:160
 msgid ""
 "This value influences the time, after which TCP decides, that something is "
 "wrong due to unacknowledged RTO retransmissions, and reports this suspicion "
 "to the network layer."
 msgstr ""
+"Dieser Wert beeinflusst die Zeit, nach der TCP wegen nicht bestaetigter RTO-"
+"Wiederholungen einen Fehler vermutet und dies der Netzwerkschicht meldet."
 
-#: luci-app-openmptcprouter/luasrc/view/openmptcprouter/settings.htm:170
 msgid ""
 "This value influences the timeout of an alive TCP connection, when RTO "
 "retransmissions remain unacknowledged."
 msgstr ""
+"Dieser Wert beeinflusst das Timeout einer aktiven TCP-Verbindung, wenn RTO-"
+"Wiederholungen unbestaetigt bleiben."
 
 #: luci-app-openmptcprouter/luasrc/view/openmptcprouter/settings.htm:269
 #, fuzzy
@@ -1393,6 +1396,307 @@ msgstr "öffentliche ipv6 Adresse:"
 #: luci-app-openmptcprouter/luasrc/view/openmptcprouter/wanstatus.htm:747
 msgid "whois:"
 msgstr ""
+
+msgid "65 often solves LTE tethering detection."
+msgstr "65 loest oft die LTE-Tethering-Erkennung."
+
+msgid "AES instruction set detected."
+msgstr "AES-Befehlssatz erkannt."
+
+msgid "Anonymize public IPs"
+msgstr "Oeffentliche IPs anonymisieren"
+
+msgid "API returned unexpected status: %s"
+msgstr "API lieferte unerwarteten Status: %s"
+
+msgid "Authorize access to proxy only from LAN firewall zone"
+msgstr "Zugriff auf den Proxy nur aus der LAN-Firewall-Zone erlauben"
+
+msgid "Backup available on server"
+msgstr "Backup auf dem Server verfuegbar"
+
+msgid "Backup restored successfully."
+msgstr "Backup erfolgreich wiederhergestellt."
+
+msgid "Backup sent successfully."
+msgstr "Backup erfolgreich gesendet."
+
+msgid "Calculate speed"
+msgstr "Geschwindigkeit berechnen"
+
+msgid "Can't ping server"
+msgstr "Server kann nicht angepingt werden"
+
+msgid "Clients"
+msgstr "Clients"
+
+msgid "Configuration saved successfully through OpenMPTCProuter API."
+msgstr "Konfiguration erfolgreich ueber die OpenMPTCProuter-API gespeichert."
+
+msgid "Custom"
+msgstr "Benutzerdefiniert"
+
+msgid "Direct Output"
+msgstr "Direktausgabe"
+
+msgid "Disable 6in4"
+msgstr "6in4 deaktivieren"
+
+msgid "Disable if server doesn't provide IPv6."
+msgstr "Deaktivieren, wenn der Server kein IPv6 bereitstellt."
+
+msgid "Disable multipath test"
+msgstr "Multipath-Test deaktivieren"
+
+msgid "Disable multipath test display in status page"
+msgstr "Anzeige des Multipath-Tests auf der Statusseite deaktivieren"
+
+msgid "Disable OpenVPN multi clients"
+msgstr "OpenVPN Multi-Clients deaktivieren"
+
+msgid ""
+"Disable OpenVPN multi clients to distribute connections and use more CPU "
+"cores"
+msgstr ""
+"OpenVPN Multi-Clients deaktivieren, um Verbindungen zu verteilen und mehr "
+"CPU-Kerne zu nutzen"
+
+msgid "DNS issue: can't resolve hostname"
+msgstr "DNS-Problem: Hostname kann nicht aufgeloest werden"
+
+msgid "Enable Fast Path offloading for connections"
+msgstr "Fast-Path-Offloading fuer Verbindungen aktivieren"
+
+msgid "Enable if host supports NAT64."
+msgstr "Aktivieren, wenn der Host NAT64 unterstuetzt."
+
+msgid "Error: "
+msgstr "Fehler: "
+
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Failed to restore backup: "
+msgstr "Backup-Wiederherstellung fehlgeschlagen: "
+
+msgid "Failed to save settings: "
+msgstr "Speichern der Einstellungen fehlgeschlagen: "
+
+msgid "Failed to send backup: "
+msgstr "Senden des Backups fehlgeschlagen: "
+
+msgid "Force TCP failback in compatible applications"
+msgstr "TCP-Fallback in kompatiblen Anwendungen erzwingen"
+
+msgid "Force TCP failback in Zoom, Microsoft Teams and Google Net"
+msgstr "TCP-Fallback in Zoom, Microsoft Teams und Google Net erzwingen"
+
+msgid "For China: accessible DNS and disable DNSSEC."
+msgstr "Fuer China: erreichbare DNS verwenden und DNSSEC deaktivieren."
+
+msgid "gateway:"
+msgstr "Gateway:"
+
+msgid "General"
+msgstr "Allgemein"
+
+msgid "IPv4 TCP retries1"
+msgstr "IPv4 TCP retries1"
+
+msgid "IPv4 TCP retries2"
+msgstr "IPv4 TCP retries2"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Kernel:"
+msgstr "Kernel:"
+
+msgid "Key to configure and retrieve others keys from Server."
+msgstr ""
+"Schluessel zum Konfigurieren und Abrufen weiterer Schluessel vom Server."
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "LAN interfaces"
+msgstr "LAN-Schnittstellen"
+
+msgid "Last available backup on server"
+msgstr "Letztes verfuegbares Backup auf dem Server"
+
+msgid "MacVLAN master"
+msgstr "MacVLAN-Master"
+
+msgid "Minimum RTT"
+msgstr "Minimale RTT"
+
+msgid "MQVPN key"
+msgstr "MQVPN-Schluessel"
+
+msgid "MQVPN scheduler"
+msgstr "MQVPN-Scheduler"
+
+msgid "Network"
+msgstr "Netzwerk"
+
+msgid "Next"
+msgstr "Weiter"
+
+msgid "No AES instruction set, you should use chacha20."
+msgstr "Kein AES-Befehlssatz vorhanden, Sie sollten chacha20 verwenden."
+
+msgid "No WAN with multipath enabled"
+msgstr "Kein WAN mit aktiviertem Multipath"
+
+msgid "number:"
+msgstr "Nummer:"
+
+msgid "Obfuscation"
+msgstr "Verschleierung"
+
+msgid "Only one server can be master."
+msgstr "Nur ein Server kann Master sein."
+
+msgid "OpenMPTCProuter Wizard"
+msgstr "OpenMPTCProuter-Assistent"
+
+msgid "Optional"
+msgstr "Optional"
+
+msgid "Previous"
+msgstr "Zurueck"
+
+msgid "Proxy"
+msgstr "Proxy"
+
+msgid "Proxy:"
+msgstr "Proxy:"
+
+msgid "Proxy for TCP (and UDP for V2Ray/XRay)."
+msgstr "Proxy fuer TCP (und UDP fuer V2Ray/XRay)."
+
+msgid "Public IPv6 prefix only with one server."
+msgstr "Oeffentliches IPv6-Praefix nur mit einem Server."
+
+msgid "Qualcomm SFE"
+msgstr "Qualcomm SFE"
+
+msgid "Restrict proxy to LAN zone"
+msgstr "Proxy auf die LAN-Zone beschraenken"
+
+msgid "Reveal proxy, VPN, IPv6 and country settings."
+msgstr "Proxy-, VPN-, IPv6- und Landeinstellungen anzeigen."
+
+msgid "Run an automatic speedtest."
+msgstr "Automatischen Geschwindigkeitstest ausfuehren."
+
+msgid "Saved through openmptcprouter ubus API (%s)."
+msgstr "Ueber openmptcprouter-ubus-API gespeichert (%s)."
+
+msgid "Save error: "
+msgstr "Speicherfehler: "
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "Settings saved and applied successfully."
+msgstr "Einstellungen erfolgreich gespeichert und angewendet."
+
+msgid "ShadowSocks 2022 key"
+msgstr "ShadowSocks-2022-Schluessel"
+
+msgid "Shadowsocks UDP"
+msgstr "Shadowsocks UDP"
+
+msgid "SoftEther VPN password"
+msgstr "SoftEther-VPN-Passwort"
+
+msgid "System"
+msgstr "System"
+
+msgid "System is restarting services. This may take a few moments..."
+msgstr "System startet Dienste neu. Das kann einige Augenblicke dauern..."
+
+msgid ""
+"The length of time an orphaned connection will remain in the FIN_WAIT_2 "
+"state before it is aborted at the local end."
+msgstr ""
+"Zeitspanne, die eine verwaiste Verbindung im Zustand FIN_WAIT_2 verbleibt, "
+"bevor sie lokal beendet wird."
+
+msgid "Timeout for retrieving Whois WANs IP on status pages"
+msgstr "Timeout fuer das Abrufen der Whois-WAN-IPs auf den Statusseiten"
+
+msgid "Trigger update"
+msgstr "Update ausloesen"
+
+msgid "Update remotely to latest version and reboot. (Beta)"
+msgstr "Remote auf die neueste Version aktualisieren und neu starten. (Beta)"
+
+msgid "Update started."
+msgstr "Update gestartet."
+
+msgid "USA"
+msgstr "USA"
+
+msgid "Used for Shadowsocks, V2Ray/XRay, Glorytun and OpenVPN."
+msgstr "Wird fuer Shadowsocks, V2Ray/XRay, Glorytun und OpenVPN verwendet."
+
+msgid "Use V2Ray/XRay for UDP too"
+msgstr "V2Ray/XRay auch fuer UDP verwenden"
+
+msgid "Use when MPTCP is blocked by your ISP."
+msgstr "Verwenden, wenn MPTCP durch Ihren ISP blockiert wird."
+
+msgid "V2Ray/XRay UDP"
+msgstr "V2Ray/XRay UDP"
+
+msgid "Validation errors exist in the form. Please check all fields."
+msgstr ""
+"Im Formular sind Validierungsfehler vorhanden. Bitte alle Felder pruefen."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "VPN:"
+msgstr "VPN:"
+
+msgid "VPN for ICMP (and UDP with Shadowsocks proxy)."
+msgstr "VPN fuer ICMP (und UDP mit Shadowsocks-Proxy)."
+
+msgid "WAN"
+msgstr "WAN"
+
+msgid "WAN interfaces"
+msgstr "WAN-Schnittstellen"
+
+msgid "Weighted Load Balancing"
+msgstr "Gewichtetes Lastenausgleichen"
+
+msgid ""
+"When enabled, checks are done on external sites to get each WAN IP and the "
+"IP used to go outside."
+msgstr ""
+"Wenn aktiviert, werden externe Seiten geprueft, um jede WAN-IP und die fuer "
+"den Ausgang verwendete IP zu ermitteln."
+
+msgid "When proxy V2Ray/XRay VLESS, VMESS or Trojan is used, use it for UDP"
+msgstr ""
+"Wenn der V2Ray/XRay-Proxy VLESS, VMESS oder Trojan verwendet wird, ihn auch "
+"fuer UDP verwenden"
+
+msgid "Whois WAN IPs retrieve timeout"
+msgstr "Timeout fuer Whois-WAN-IP-Abruf"
+
+msgid "XRay Transport"
+msgstr "XRay-Transport"
+
+msgid "XRay user id"
+msgstr "XRay-Benutzer-ID"
 
 #~ msgid ""
 #~ "You should disable SQM for LTE or any interfaces with variable speed."

@@ -1,0 +1,152 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-omr-dscp\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: root/usr/share/luci/menu.d/luci-app-omr-dscp.json
+msgid "OMR-DSCP"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Differentiated services"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid ""
+"Traffic may be classified by many different parameters, such as source "
+"address, destination address or traffic type and assigned to a specific "
+"traffic class."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Classification Rules"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Direction"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "upload"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "download"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "both"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Protocol"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Source host"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "all"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Source ports"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Destination host"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "Destination ports"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Class"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS0 - Normal/Best Effort"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS1 - Low priority"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS2 - High priority"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS3 - SIP"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS4 - Real-Time Interactive"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "CS5 - Broadcast Video"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS5 - Broadcast video"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS6 - Network routing"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "CS7 - Latency sensitive"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+msgid "EF - Voice"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "EF Voice"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/rules.js
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Comment"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "DSCP by domain"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Set DSCP by domains."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Domains"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/dscp/domains.js
+msgid "Domain"
+msgstr ""
+
+#: root/usr/share/rpcd/acl.d/luci-app-omr-dscp.json
+msgid "Grant UCI access for luci-app-dscp"
+msgstr ""

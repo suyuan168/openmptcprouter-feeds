@@ -35,7 +35,8 @@ return view.extend({
 				.map(function(s) { return s['.name']; });
 		};
 
-		o = s.option(form.Flag, 'enabled', _('Enabled'));
+		o = s.option(form.Flag, 'enabled', _('Enabled'),
+			_('Enable monitoring for this proxy and stop using it automatically when tests fail.'));
 		o.default = false;
 
 		o = s.option(form.ListValue, 'initial_state', _('Initial state'),
@@ -45,7 +46,8 @@ return view.extend({
 		o.value('offline', _('Offline'));
 		o.modalonly = true;
 
-		o = s.option(form.ListValue, 'family', _('Internet Protocol'));
+		o = s.option(form.ListValue, 'family', _('Internet Protocol'),
+			_('Choose whether proxy checks use IPv4 targets, IPv6 targets, or both.'));
 		o.default = 'ipv4ipv6';
 		//o.value('ipv4', _('IPv4'));
 		//o.value('ipv6', _('IPv6'));
@@ -107,7 +109,8 @@ return view.extend({
 		o.datatype = 'range(1, 100)';
 		o.default = '1';
 */
-		o = s.option(form.ListValue, 'tries', _('Test count'));
+		o = s.option(form.ListValue, 'tries', _('Test count'),
+			_('Number of probes sent during each proxy test cycle.'));
 		o.default = '1';
 		o.value('1');
 		o.value('2');
@@ -116,14 +119,16 @@ return view.extend({
 		o.value('5');
 		o.modalonly = true;
 
-		o = s.option(form.ListValue, "timeout", _("Test timeout"));
+		o = s.option(form.ListValue, "timeout", _("Test timeout"),
+			_('Maximum time to wait for each proxy test before it is counted as failed.'));
 		o.default = '4';
 		o.value('1', _('%d second').format('1'));
 		for (var i = 2; i <= 10; i++)
 			o.value(String(i), _('%d seconds').format(i));
 		o.modalonly = true;
 
-		o = s.option(form.ListValue, 'interval', _('Test interval'));
+		o = s.option(form.ListValue, 'interval', _('Test interval'),
+			_('Delay between regular proxy health checks while the proxy is considered available.'));
 		o.default = '10';
 		o.value('1', _('%d second').format('1'));
 		o.value('3', _('%d seconds').format('3'));

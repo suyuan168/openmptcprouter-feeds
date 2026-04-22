@@ -1,127 +1,137 @@
 msgid ""
-msgstr "Content-Type: text/plain; charset=UTF-8"
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:166
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:174
-msgid "ASN"
 msgstr ""
+"Project-Id-Version: luci-app-omr-bypass\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:34
-msgid "Domain"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:26
-msgid "Domains"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:31
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:50
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:69
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:95
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:121
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:145
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:171
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:190
-msgid "Enabled"
-msgstr ""
-
-#: luci-app-omr-bypass/root/usr/share/rpcd/acl.d/luci-app-omr-bypass.json:3
-msgid "Grant access to ndpi resources"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:53
-msgid "IP"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:148
-msgid "IP Address"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:45
-msgid "IPs and Networks"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:37
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:56
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:82
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:108
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:132
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:158
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:177
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:221
-msgid "Interface"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:116
-msgid "MAC-Address"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:42
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:61
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:87
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:113
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:137
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:163
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:182
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:226
-msgid "Note"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:24
-#: luci-app-omr-bypass/root/usr/share/luci/menu.d/luci-app-omr-bypass.json:3
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid "OMR-Bypass"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:24
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid "OpenMPTCProuter IP must be used as DNS."
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:64
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Domains"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Enabled"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Domain"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "VPN on server"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Bypass using VPN configured on server."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Output interface"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "When none selected, MPTCP master interface is used."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Note"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Restrict to address family"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IPv4 and IPv6"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IPv4 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IPv6 only"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "protocol"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Disable AAAA IPv6 DNS"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IPs and Networks"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IP"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid "Ports destination"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:90
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid "Ports source"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:193
-msgid "Protocol/Service"
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "MAC-Address"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:185
-msgid "Protocols and services"
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "source MAC-Address"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:140
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid "Source lan IP address or network"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:221
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "IP Address"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "ASN"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Protocols and services"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Protocol/Service"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
 msgid ""
 "When none selected, MPTCP master interface is used (or an other interface if "
 "master is down)."
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:37
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:56
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:82
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:108
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:132
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:158
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:177
-msgid "When none selected, MPTCP master interface is used."
+#: htdocs/luci-static/resources/view/services/omr-bypass.js
+msgid "Enable ndpi"
 msgstr ""
 
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:72
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:98
-msgid "port"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:75
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:101
-msgid "protocol"
-msgstr ""
-
-#: luci-app-omr-bypass/htdocs/luci-static/resources/view/services/omr-bypass.js:124
-msgid "source MAC-Address"
+#: root/usr/share/rpcd/acl.d/luci-app-omr-bypass.json
+msgid "Grant access to ndpi resources"
 msgstr ""

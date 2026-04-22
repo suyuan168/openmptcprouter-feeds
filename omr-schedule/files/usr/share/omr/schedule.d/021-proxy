@@ -1,0 +1,110 @@
+#!/bin/sh
+#
+# Copyright (C) 2018-2025 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+# This script ensures only the proxy set in openmptcprouter.settings.proxy is enabled
+
+configured_proxy="$(uci -q get openmptcprouter.settings.proxy)"
+[ -z "$configured_proxy" ] && exit 0
+
+case "$configured_proxy" in
+	shadowsocks)
+		ss_libev_disabled=0
+		ss_rust_disabled=1
+		v2ray_enabled=0
+		xray_enabled=0
+		ss_disable=0
+		;;
+	shadowsocks-rust)
+		ss_libev_disabled=1
+		ss_rust_disabled=0
+		v2ray_enabled=0
+		xray_enabled=0
+		ss_disable=0
+		;;
+	v2ray)
+		ss_libev_disabled=1
+		ss_rust_disabled=1
+		v2ray_enabled=1
+		xray_enabled=0
+		ss_disable=1
+		;;
+	xray)
+		ss_libev_disabled=1
+		ss_rust_disabled=1
+		v2ray_enabled=0
+		xray_enabled=1
+		ss_disable=1
+		;;
+	none)
+		ss_libev_disabled=1
+		ss_rust_disabled=1
+		v2ray_enabled=0
+		xray_enabled=0
+		ss_disable=1
+		;;
+	*)
+		exit 0
+		;;
+esac
+
+changed=0
+
+if [ -f /etc/init.d/shadowsocks-libev ] && [ "$(uci -q get shadowsocks-libev.sss0.disabled)" != "$ss_libev_disabled" ]; then
+	_log "Proxy enforce: setting shadowsocks-libev.sss0.disabled=${ss_libev_disabled} (configured proxy: ${configured_proxy})"
+	uci -q set shadowsocks-libev.sss0.disabled="$ss_libev_disabled"
+	uci -q commit shadowsocks-libev
+	if [ "$ss_libev_disabled" = "0" ]; then
+		/etc/init.d/shadowsocks-libev restart >/dev/null 2>&1
+	else
+		/etc/init.d/shadowsocks-libev stop >/dev/null 2>&1
+	fi
+	changed=1
+fi
+
+if [ -f /etc/init.d/shadowsocks-rust ] && [ "$(uci -q get shadowsocks-rust.sss0.disabled)" != "$ss_rust_disabled" ]; then
+	_log "Proxy enforce: setting shadowsocks-rust.sss0.disabled=${ss_rust_disabled} (configured proxy: ${configured_proxy})"
+	uci -q set shadowsocks-rust.sss0.disabled="$ss_rust_disabled"
+	uci -q commit shadowsocks-rust
+	if [ "$ss_rust_disabled" = "0" ]; then
+		/etc/init.d/shadowsocks-rust restart >/dev/null 2>&1
+	else
+		/etc/init.d/shadowsocks-rust stop >/dev/null 2>&1
+	fi
+	changed=1
+fi
+
+if [ -f /etc/init.d/v2ray ] && [ "$(uci -q get v2ray.main.enabled)" != "$v2ray_enabled" ]; then
+	_log "Proxy enforce: setting v2ray.main.enabled=${v2ray_enabled} (configured proxy: ${configured_proxy})"
+	uci -q set v2ray.main.enabled="$v2ray_enabled"
+	uci -q commit v2ray
+	if [ "$v2ray_enabled" = "1" ]; then
+		/etc/init.d/v2ray restart >/dev/null 2>&1
+	else
+		/etc/init.d/v2ray stop >/dev/null 2>&1
+	fi
+	changed=1
+fi
+
+if [ -f /etc/init.d/xray ] && [ "$(uci -q get xray.main.enabled)" != "$xray_enabled" ]; then
+	_log "Proxy enforce: setting xray.main.enabled=${xray_enabled} (configured proxy: ${configured_proxy})"
+	uci -q set xray.main.enabled="$xray_enabled"
+	uci -q commit xray
+	if [ "$xray_enabled" = "1" ]; then
+		/etc/init.d/xray restart >/dev/null 2>&1
+	else
+		/etc/init.d/xray stop >/dev/null 2>&1
+	fi
+	changed=1
+fi
+
+if [ "$(uci -q get openmptcprouter.settings.shadowsocks_disable)" != "$ss_disable" ]; then
+	uci -q set openmptcprouter.settings.shadowsocks_disable="$ss_disable"
+	uci -q commit openmptcprouter
+fi
+
+[ "$changed" = "1" ] && /etc/init.d/omr-tracker restart >/dev/null 2>&1
+exit 0

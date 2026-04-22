@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Copyright (C) 2018-2025 Ycarus (Yannick Chabanois) <ycarus@zugaina.org> for OpenMPTCProuter
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+# This script ensures only the VPN set in openmptcprouter.settings.vpn is enabled
+
+configured_vpn="$(uci -q get openmptcprouter.settings.vpn)"
+[ -z "$configured_vpn" ] && exit 0
+
+_set_vpn_state() {
+	local vpn_name="$1"   # internal name (e.g. glorytun_tcp)
+	local pkg="$2"        # uci config name
+	local section="$3"    # uci section name
+	local key="$4"        # enable option key
+	local init="$5"       # init.d script name
+	local want
+
+	[ ! -f "/etc/init.d/$init" ] && return
+
+	if [ "$configured_vpn" = "$vpn_name" ]; then
+		want=1
+	else
+		want=0
+	fi
+
+	current="$(uci -q get ${pkg}.${section}.${key})"
+	[ "$current" = "$want" ] && return
+
+	_log "VPN enforce: setting ${pkg}.${section}.${key}=${want} (configured vpn: ${configured_vpn})"
+	uci -q set "${pkg}.${section}.${key}=${want}"
+	uci -q commit "${pkg}"
+	if [ "$want" = "1" ]; then
+		/etc/init.d/${init} restart >/dev/null 2>&1
+	else
+		/etc/init.d/${init} stop >/dev/null 2>&1
+	fi
+}
+
+_set_openvpn_state() {
+	local want
+
+	[ ! -f /etc/init.d/openvpn ] && return
+
+	if [ "$configured_vpn" = "openvpn" ] || [ "$configured_vpn" = "openvpn_bonding" ]; then
+		want=1
+	else
+		want=0
+	fi
+
+	current="$(uci -q get openvpn.omr.enabled 2>/dev/null)"
+	[ "$current" = "$want" ] && return
+
+	_log "VPN enforce: setting openvpn.omr.enabled=${want} (configured vpn: ${configured_vpn})"
+	uci -q set "openvpn.omr.enabled=${want}"
+	uci -q commit openvpn
+	if [ "$want" = "1" ]; then
+		/etc/init.d/openvpn restart >/dev/null 2>&1
+	else
+		/etc/init.d/openvpn stop >/dev/null 2>&1
+	fi
+}
+
+_set_vpn_state "glorytun_tcp"  glorytun     vpn              enable  glorytun
+_set_vpn_state "glorytun_udp"  glorytun-udp vpn              enable  glorytun-udp
+_set_vpn_state "mlvpn"         mlvpn        general          enable  mlvpn
+_set_vpn_state "mqvpn"         mqvpn        settings         enable  mqvpn
+_set_vpn_state "dsvpn"         dsvpn        vpn              enable  dsvpn
+_set_vpn_state "softethervpn"  softethervpn openmptcprouter  enable  softethervpnclient
+_set_openvpn_state
+exit 0

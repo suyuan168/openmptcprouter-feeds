@@ -173,7 +173,7 @@ _set_server_default_route_common() {
 		config_get disabled $server disabled
 		[ "$disabled" = "1" ] && return
 
-		multipath_config_route=$(_get_multipath_config $INTERFACE)
+		multipath_config_route=$(_get_multipath_config $OMR_TRACKER_INTERFACE)
 
 		if [ -n "$serverip" ] && [ -n "$gateway_var" ] && [ -n "$OMR_TRACKER_DEVICE" ] && [ "$multipath_config_route" != "off" ]; then
 			local existing_route=$($ip_cmd route show dev "$OMR_TRACKER_DEVICE" metric 1 2>/dev/null | grep "$serverip" | grep "$gateway_var")
@@ -418,7 +418,7 @@ _set_server_all_routes_common() {
 
 		multipath_config_route=$(_get_multipath_config $OMR_TRACKER_INTERFACE)
 
-		if [ "$serverip" != "" ] && [ "$gateway_var" != "" ] && [ "$multipath_config_route" != "off" ] && [ "$interface_up" = "true" ]; then
+		if [ "$serverip" != "" ] && [ "$multipath_config_route" != "off" ]; then
 			eval "${routes_var}=''"
 			eval "${backup_var}=''"
 			eval "${nbintf_var}=0"
@@ -443,19 +443,12 @@ _set_server_all_routes_common() {
 
 			
 			if [ -n "$current_routes" ]; then
-				local uintf=$(echo "$current_routes" | awk '{print $5}')
 				local needs_update=false
-				if [ "$current_nbintf" -gt 1 ]; then
-					#local existing_route=$( { $ip_cmd r show "$serverip" metric 1 | tr -d '\t' | tr -d '\n' | sed 's/ *$//' | tr ' ' '\n' | sort | tr -d '\n'; } 2>/dev/null)
-					existing_raw_route=$($ip_cmd r show "$serverip" metric 1 2>/dev/null)
-					local existing_route=$(_normalize_route_safe "$existing_raw_route")
-					#local expected_route=$( { echo "$serverip $current_routes" | sed 's/ *$//' | tr ' ' '\n' | sort | tr -d '\n'; } 2>/dev/null)
-					expected_raw_route="$serverip $current_routes"
-					local expected_route=$(_normalize_route_safe "$expected_raw_route")
-					[ "$existing_route" != "$expected_route" ] && needs_update=true
-				elif [ "$current_nbintf" = 1 ] && [ -n "$uintf" ]; then
-					[ -z "$($ip_cmd r show "$serverip" metric 1 | grep "$uintf")" ] && needs_update=true
-				fi
+				existing_raw_route=$($ip_cmd r show "$serverip" metric 1 2>/dev/null)
+				local existing_route=$(_normalize_route_safe "$existing_raw_route")
+				expected_raw_route="$serverip $current_routes"
+				local expected_route=$(_normalize_route_safe "$expected_raw_route")
+				[ "$existing_route" != "$expected_route" ] && needs_update=true
 				if [ "$needs_update" = true ]; then
 					# Remove existing routes
 					while [ -n "$($ip_cmd r show "$serverip" | grep -v nexthop)" ] && 
@@ -470,21 +463,12 @@ _set_server_all_routes_common() {
 
 			# Handle backup routes
 			if [ -n "$current_backup" ]; then
-				local uintfb=$(echo "$current_backup" | awk '{print $5}')
 				local needs_backup_update=false
-
-				if [ "$current_nbintfb" -gt 1 ]; then
-					#local existing_backup=$( { $ip_cmd r show "$serverip" metric 999 | tr -d '\t' | tr -d '\n' | sed 's/ *$//' | tr ' ' '\n' | sort | tr -d '\n'; } 2>/dev/null)
-					existing_raw_backup=$($ip_cmd r show "$serverip" metric 999 2>/dev/null)
-					local existing_backup=$(_normalize_route_safe "$existing_raw_backup")
-					#local expected_backup=$( { echo "$serverip $current_backup" | sed 's/ *$//' | tr ' ' '\n' | sort 2>/dev/null | tr -d '\n'; } 2>/dev/null)
-					expected_raw_backup="$serverip $current_backup"
-					local expected_backup=$(_normalize_route_safe "$expected_raw_backup")
-
-					[ "$existing_backup" != "$expected_backup" ] && needs_backup_update=true
-				elif [ "$current_nbintfb" = 1 ] && [ -n "$uintfb" ]; then
-					[ -z "$($ip_cmd r show "$serverip" metric 999 | grep "$uintfb")" ] && needs_backup_update=true
-				fi
+				existing_raw_backup=$($ip_cmd r show "$serverip" metric 999 2>/dev/null)
+				local existing_backup=$(_normalize_route_safe "$existing_raw_backup")
+				expected_raw_backup="$serverip $current_backup"
+				local expected_backup=$(_normalize_route_safe "$expected_raw_backup")
+				[ "$existing_backup" != "$expected_backup" ] && needs_backup_update=true
 				if [ "$needs_backup_update" = true ]; then
 					local debug_enabled=$(uci -q get "openmptcprouter.settings.debug")
 					[ "$debug" = "true" ] && _log "Set server $server ($serverip) backup default route $serverip $current_backup nbintfb $current_nbintfb $OMR_TRACKER_DEVICE"

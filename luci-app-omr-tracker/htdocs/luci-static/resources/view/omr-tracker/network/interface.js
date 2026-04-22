@@ -44,7 +44,8 @@ return view.extend({
 			return promise;
 		};
 
-		o = s.option(form.Flag, 'enabled', _('Enabled'));
+		o = s.option(form.Flag, 'enabled', _('Enabled'),
+			_('Enable monitoring and automatic state changes for this interface.'));
 		o.default = false;
 
 		o = s.option(form.ListValue, 'initial_state', _('Initial state'),
@@ -54,14 +55,16 @@ return view.extend({
 		o.value('offline', _('Offline'));
 		o.modalonly = true;
 
-		o = s.option(form.ListValue, 'family', _('Internet Protocol'));
+		o = s.option(form.ListValue, 'family', _('Internet Protocol'),
+			_('Choose whether checks use IPv4 targets, IPv6 targets, or both.'));
 		o.default = 'ipv4';
 		o.value('ipv4', _('IPv4'));
 		o.value('ipv6', _('IPv6'));
 		o.value('ipv4ipv6', _('IPv4 & IPv6'));
 		o.modalonly = true;
 
-		o = s.option(form.ListValue, 'country', _('Country'));
+		o = s.option(form.ListValue, 'country', _('Country'),
+			_('Select the host group used for connectivity tests on this interface.'));
 		o.default = 'world';
 		o.modalonly = true;
 
@@ -166,7 +169,8 @@ return view.extend({
 		o.modalonly = true;
 		*/
 
-		o = s.option(form.ListValue, 'count', _('Ping count'));
+		o = s.option(form.ListValue, 'count', _('Ping count'),
+			_('Number of probes sent during each test cycle.'));
 		o.depends('type', 'ping');
 		o.depends('type', 'httping');
 		o.depends('type', 'dns');
@@ -178,7 +182,8 @@ return view.extend({
 		o.value('5');
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'size', _('Ping size'));
+		o = s.option(form.Value, 'size', _('Ping size'),
+			_('Payload size in bytes for ICMP probes when using ping tracking.'));
 		o.depends('type', 'ping');
 		o.default = '56';
 		o.value('8');
@@ -193,7 +198,8 @@ return view.extend({
 		o.datatype = 'range(1, 65507)';
 		o.modalonly = true;
 
-		o =s.option(form.Value, 'max_ttl', _('Max TTL'));
+		o =s.option(form.Value, 'max_ttl', _('Max TTL'),
+			_('Maximum TTL or hop limit allowed for ping-based checks.'));
 		o.default = '60';
 		o.depends('type', 'ping');
 		o.value('10');
@@ -206,12 +212,14 @@ return view.extend({
 		o.datatype = 'range(1, 255)';
 		o.modalonly = true;
 
-		o = s.option(form.Flag, 'check_quality', _('Check link quality'));
+		o = s.option(form.Flag, 'check_quality', _('Check link quality'),
+			_('Mark the interface down when latency or packet loss crosses the thresholds below.'));
 		o.depends('type', 'ping');
 		o.default = false;
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'failure_latency', _('Failure latency [ms]'));
+		o = s.option(form.Value, 'failure_latency', _('Failure latency [ms]'),
+			_('Latency above this value is treated as a failure while quality checks are enabled.'));
 		o.depends('check_quality', '1');
 		o.default = '1000';
 		o.value('25');
@@ -224,7 +232,8 @@ return view.extend({
 		o.value('300');
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'failure_loss', _('Failure packet loss [%]'));
+		o = s.option(form.Value, 'failure_loss', _('Failure packet loss [%]'),
+			_('Packet loss above this percentage is treated as a failure.'));
 		o.depends('check_quality', '1');
 		o.default = '40';
 		o.value('2');
@@ -234,7 +243,8 @@ return view.extend({
 		o.value('25');
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'recovery_latency', _('Recovery latency [ms]'));
+		o = s.option(form.Value, 'recovery_latency', _('Recovery latency [ms]'),
+			_('Latency must fall below this value before the interface is considered recovered.'));
 		o.depends('check_quality', '1');
 		o.default = '500';
 		o.value('25');
@@ -247,7 +257,8 @@ return view.extend({
 		o.value('300');
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'recovery_loss', _('Recovery packet loss [%]'));
+		o = s.option(form.Value, 'recovery_loss', _('Recovery packet loss [%]'),
+			_('Packet loss must fall below this percentage before the interface is considered recovered.'));
 		o.depends('check_quality', '1');
 		o.default = '10';
 		o.value('2');
@@ -257,7 +268,8 @@ return view.extend({
 		o.value('25');
 		o.modalonly = true;
 
-		o = s.option(form.Value, "timeout", _("Ping timeout"));
+		o = s.option(form.Value, "timeout", _("Ping timeout"),
+			_('Maximum time to wait for each test response before it is counted as failed.'));
 		o.default = '4';
 		o.value('1', _('%d second').format('1'));
 		for (var i = 2; i <= 10; i++)
@@ -265,7 +277,8 @@ return view.extend({
 		o.rmempty = false;
 		o.modalonly = true;
 
-		o = s.option(form.Value, 'interval', _('Ping interval'));
+		o = s.option(form.Value, 'interval', _('Ping interval'),
+			_('Delay between normal test cycles while the interface is considered healthy.'));
 		o.default = '10';
 		o.value('1', _('%d second').format('1'));
 		o.value('3', _('%d seconds').format('3'));

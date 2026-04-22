@@ -1309,3 +1309,294 @@ msgstr ""
 #: luci-app-openmptcprouter/luasrc/view/openmptcprouter/wanstatus.htm:747
 msgid "whois:"
 msgstr ""
+
+msgid "65 often solves LTE tethering detection."
+msgstr ""
+
+msgid "AES instruction set detected."
+msgstr ""
+
+msgid "Anonymize public IPs"
+msgstr ""
+
+msgid "API returned unexpected status: %s"
+msgstr ""
+
+msgid "Authorize access to proxy only from LAN firewall zone"
+msgstr ""
+
+msgid "Backup available on server"
+msgstr ""
+
+msgid "Backup restored successfully."
+msgstr ""
+
+msgid "Backup sent successfully."
+msgstr ""
+
+msgid "Calculate speed"
+msgstr ""
+
+msgid "Can't ping server"
+msgstr ""
+
+msgid "Clients"
+msgstr ""
+
+msgid "Configuration saved successfully through OpenMPTCProuter API."
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "Direct Output"
+msgstr ""
+
+msgid "Disable 6in4"
+msgstr ""
+
+msgid "Disable if server doesn't provide IPv6."
+msgstr ""
+
+msgid "Disable multipath test"
+msgstr ""
+
+msgid "Disable multipath test display in status page"
+msgstr ""
+
+msgid "Disable OpenVPN multi clients"
+msgstr ""
+
+msgid ""
+"Disable OpenVPN multi clients to distribute connections and use more CPU "
+"cores"
+msgstr ""
+
+msgid "DNS issue: can't resolve hostname"
+msgstr ""
+
+msgid "Enable Fast Path offloading for connections"
+msgstr ""
+
+msgid "Enable if host supports NAT64."
+msgstr ""
+
+msgid "Error: "
+msgstr ""
+
+msgid "Europe"
+msgstr ""
+
+msgid "Failed to restore backup: "
+msgstr ""
+
+msgid "Failed to save settings: "
+msgstr ""
+
+msgid "Failed to send backup: "
+msgstr ""
+
+msgid "Force TCP failback in compatible applications"
+msgstr ""
+
+msgid "Force TCP failback in Zoom, Microsoft Teams and Google Net"
+msgstr ""
+
+msgid "For China: accessible DNS and disable DNSSEC."
+msgstr ""
+
+msgid "gateway:"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "IPv4 TCP retries1"
+msgstr ""
+
+msgid "IPv4 TCP retries2"
+msgstr ""
+
+msgid "IPv6"
+msgstr ""
+
+msgid "Kernel:"
+msgstr ""
+
+msgid "Key to configure and retrieve others keys from Server."
+msgstr ""
+
+msgid "LAN"
+msgstr ""
+
+msgid "LAN interfaces"
+msgstr ""
+
+msgid "Last available backup on server"
+msgstr ""
+
+msgid "MacVLAN master"
+msgstr ""
+
+msgid "Minimum RTT"
+msgstr ""
+
+msgid "MQVPN key"
+msgstr ""
+
+msgid "MQVPN scheduler"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "No AES instruction set, you should use chacha20."
+msgstr ""
+
+msgid "No WAN with multipath enabled"
+msgstr ""
+
+msgid "number:"
+msgstr ""
+
+msgid "Obfuscation"
+msgstr ""
+
+msgid "Only one server can be master."
+msgstr ""
+
+msgid "OpenMPTCProuter Wizard"
+msgstr ""
+
+msgid "Optional"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Proxy"
+msgstr ""
+
+msgid "Proxy:"
+msgstr ""
+
+msgid "Proxy for TCP (and UDP for V2Ray/XRay)."
+msgstr ""
+
+msgid "Public IPv6 prefix only with one server."
+msgstr ""
+
+msgid "Qualcomm SFE"
+msgstr ""
+
+msgid "Restrict proxy to LAN zone"
+msgstr ""
+
+msgid "Reveal proxy, VPN, IPv6 and country settings."
+msgstr ""
+
+msgid "Run an automatic speedtest."
+msgstr ""
+
+msgid "Saved through openmptcprouter ubus API (%s)."
+msgstr ""
+
+msgid "Save error: "
+msgstr ""
+
+msgid "Server"
+msgstr ""
+
+msgid "Settings"
+msgstr ""
+
+msgid "Settings saved and applied successfully."
+msgstr ""
+
+msgid "ShadowSocks 2022 key"
+msgstr ""
+
+msgid "Shadowsocks UDP"
+msgstr ""
+
+msgid "SoftEther VPN password"
+msgstr ""
+
+msgid "System"
+msgstr ""
+
+msgid "System is restarting services. This may take a few moments..."
+msgstr ""
+
+msgid ""
+"The length of time an orphaned connection will remain in the FIN_WAIT_2 "
+"state before it is aborted at the local end."
+msgstr ""
+
+msgid "Timeout for retrieving Whois WANs IP on status pages"
+msgstr ""
+
+msgid "Trigger update"
+msgstr ""
+
+msgid "Update remotely to latest version and reboot. (Beta)"
+msgstr ""
+
+msgid "Update started."
+msgstr ""
+
+msgid "USA"
+msgstr ""
+
+msgid "Used for Shadowsocks, V2Ray/XRay, Glorytun and OpenVPN."
+msgstr ""
+
+msgid "Use V2Ray/XRay for UDP too"
+msgstr ""
+
+msgid "Use when MPTCP is blocked by your ISP."
+msgstr ""
+
+msgid "V2Ray/XRay UDP"
+msgstr ""
+
+msgid "Validation errors exist in the form. Please check all fields."
+msgstr ""
+
+msgid "VPN"
+msgstr ""
+
+msgid "VPN:"
+msgstr ""
+
+msgid "VPN for ICMP (and UDP with Shadowsocks proxy)."
+msgstr ""
+
+msgid "WAN"
+msgstr ""
+
+msgid "WAN interfaces"
+msgstr ""
+
+msgid "Weighted Load Balancing"
+msgstr ""
+
+msgid ""
+"When enabled, checks are done on external sites to get each WAN IP and the "
+"IP used to go outside."
+msgstr ""
+
+msgid "When proxy V2Ray/XRay VLESS, VMESS or Trojan is used, use it for UDP"
+msgstr ""
+
+msgid "Whois WAN IPs retrieve timeout"
+msgstr ""
+
+msgid "XRay Transport"
+msgstr ""
+
+msgid "XRay user id"
+msgstr ""

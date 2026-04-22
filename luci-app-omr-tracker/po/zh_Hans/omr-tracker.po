@@ -171,3 +171,109 @@ msgstr "禁用跟踪器时，也禁用连接故障转移"
 #: luci-app-omr-tracker/luasrc/model/cbi/omr-tracker.lua:60
 msgid "When tracker is disabled, server failover is also disabled"
 msgstr "禁用跟踪器时，也禁用服务器故障转移"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:42
+msgid "Enable monitoring and automatic state changes for this interface."
+msgstr "启用此接口的监控和自动状态切换。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:51
+msgid "Choose whether checks use IPv4 targets, IPv6 targets, or both."
+msgstr "选择检查使用 IPv4 目标、IPv6 目标或两者。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:58
+msgid "Select the host group used for connectivity tests on this interface."
+msgstr "选择用于此接口连通性测试的主机组。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:170
+msgid "Number of probes sent during each test cycle."
+msgstr "每个测试周期发送的探测次数。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:182
+msgid "Payload size in bytes for ICMP probes when using ping tracking."
+msgstr "使用 ping 跟踪时 ICMP 探测的负载大小（字节）。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:198
+msgid "Maximum TTL or hop limit allowed for ping-based checks."
+msgstr "基于 ping 的检查允许的最大 TTL 或跳数限制。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:211
+msgid "Mark the interface down when latency or packet loss crosses the thresholds below."
+msgstr "当延迟或丢包率超过以下阈值时，将接口标记为故障。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:217
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:74
+msgid "Latency above this value is treated as a failure while quality checks are enabled."
+msgstr "启用质量检查时，延迟高于该值将视为失败。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:230
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:87
+msgid "Packet loss above this percentage is treated as a failure."
+msgstr "丢包率高于该百分比将视为失败。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:242
+msgid "Latency must fall below this value before the interface is considered recovered."
+msgstr "在接口被视为恢复之前，延迟必须降到该值以下。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:255
+msgid "Packet loss must fall below this percentage before the interface is considered recovered."
+msgstr "在接口被视为恢复之前，丢包率必须降到该百分比以下。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:267
+msgid "Maximum time to wait for each test response before it is counted as failed."
+msgstr "在将每次测试计为失败之前等待响应的最长时间。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:276
+msgid "Delay between normal test cycles while the interface is considered healthy."
+msgstr "接口被视为正常时，常规测试周期之间的延迟。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:33
+msgid "Enable monitoring for this proxy and stop using it automatically when tests fail."
+msgstr "启用此代理的监控，并在测试失败时自动停止使用它。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:44
+msgid "Choose whether proxy checks use IPv4 targets, IPv6 targets, or both."
+msgstr "选择代理检查使用 IPv4 目标、IPv6 目标或两者。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:113
+msgid "Number of probes sent during each proxy test cycle."
+msgstr "每个代理测试周期发送的探测次数。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:123
+msgid "Maximum time to wait for each proxy test before it is counted as failed."
+msgstr "在将每次代理测试计为失败之前等待的最长时间。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:130
+msgid "Delay between regular proxy health checks while the proxy is considered available."
+msgstr "代理被视为可用时，常规健康检查之间的延迟。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:33
+msgid "Enable server monitoring and automatic fallback to a backup server when checks fail."
+msgstr "启用服务器监控，并在检查失败时自动切换到备份服务器。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:42
+msgid "Choose whether server health is verified through the API, ping probes, or both."
+msgstr "选择通过 API、ping 探测或两者来验证服务器健康状态。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:59
+msgid "Number of probes sent during each server test cycle."
+msgstr "每个服务器测试周期发送的探测次数。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:68
+msgid "Use latency and packet loss thresholds to detect degraded server connectivity."
+msgstr "使用延迟和丢包阈值来检测服务器连接质量下降。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:100
+msgid "Latency must fall below this value before the server is considered healthy again."
+msgstr "服务器再次被视为健康之前，延迟必须降到该值以下。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:113
+msgid "Packet loss must fall below this percentage before the server is considered healthy again."
+msgstr "服务器再次被视为健康之前，丢包率必须降到该百分比以下。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:125
+msgid "Maximum time to wait for each API or ping test before it is counted as failed."
+msgstr "在将每次 API 或 ping 测试计为失败之前等待的最长时间。"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:132
+msgid "Delay between regular server health checks while the server is considered available."
+msgstr "服务器被视为可用时，常规健康检查之间的延迟。"
