@@ -1,0 +1,195 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-mqvpn\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "MQVPN"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "QUIC-based VPN tunnel"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "General"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Enabled"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server IP"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "IPv4 or IPv6 address of the MQVPN server"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Insecure TLS"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip TLS certificate verification"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Authentication"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "User"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Key"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Interface"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Tunnel name"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Log level"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Debug"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Info"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Warning"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Error"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Kill switch"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Block all traffic if the VPN tunnel goes down"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically reconnect on failure"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect interval"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Seconds between reconnection attempts"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Route via server"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Add a host route to the server IP before setting the default route"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "No automatic routes"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip all automatic route setup and manage routes manually"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "DNS servers"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Control API"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Port"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "TCP port for the JSON control API (leave empty to disable)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Bind address"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Address to bind the control API (default: 127.0.0.1)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Multipath"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Scheduler"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Weighted Load Balancing"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Minimum RTT"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Auto WAN"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically add WAN interfaces as multipath paths. If disabled, use the paths defined below."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Paths"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as multipath paths"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Backup paths"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as backup multipath paths"
+msgstr ""

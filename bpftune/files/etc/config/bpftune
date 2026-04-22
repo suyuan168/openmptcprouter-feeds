@@ -1,10 +1,25 @@
 config bpftune 'config'
-    option enabled '1'
+    option enabled '0'
     option logging_stdout '0'
+    # Taux d'apprentissage: 0 (~1%) à 4 (~25%), défaut: 4
+    # Réduire cette valeur diminue la fréquence des ajustements et des messages
+    option learning_rate '2'
+    # Mode daemon (1 = oui)
+    option daemon '1'
+    # Mode rollback: annule les changements si bpftune s'arrête (1 = oui)
+    option rollback '0'
+    # Force le mode BPF legacy
+    option legacy '0'
+    # Répertoire cgroup (laisser vide pour la valeur par défaut)
+    option cgroup ''
+    # Répertoire des librairies bpftune (laisser vide pour la valeur par défaut /usr/lib/bpftune)
+    option libdir '/usr/lib/bpftune'
     # Liste des tuners à désactiver (séparés par des espaces)
     # Tuners disponibles: tcp_buffer tcp_conn ip_frag neigh sysctl net_buffer netns udp_buffer
     # Exemple: option tuners_disabled 'tcp_buffer netns'
     option tuners_disabled ''
+    # Allowlist de tuners (si défini, seuls ces tuners seront actifs)
+    option tuners_allowed ''
     # Options de respawn pour procd
     option respawn_threshold '3600'
     option respawn_timeout '5'

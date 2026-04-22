@@ -3,8 +3,8 @@
 		"title": "Quota",
 		"order": 90,
 		"action": {
-			"type": "cbi",
-			"path": "quota/quota"
+			"type": "view",
+			"path": "omr-quota/quota"
 		},
 		"depends": {
 			"acl": [ "luci-app-omr-quota" ]

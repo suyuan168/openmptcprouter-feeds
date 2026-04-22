@@ -1,0 +1,11 @@
+{
+	"luci-app-bpftune": {
+		"description": "Grant access to bpftune configuration",
+		"read": {
+			"uci": [ "bpftune" ]
+		},
+		"write": {
+			"uci": [ "bpftune" ]
+		}
+	}
+}

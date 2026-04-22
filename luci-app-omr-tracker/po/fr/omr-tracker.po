@@ -185,5 +185,355 @@ msgstr ""
 #: luci-app-omr-tracker/luasrc/model/cbi/omr-tracker.lua:60
 msgid "When tracker is disabled, server failover is also disabled"
 msgstr ""
-"Lorsque le tracker est désactivé, le basculement du serveur est également "
-"désactivé"
+"Lorsque le tracker est desactive, le basculement du serveur est egalement "
+"desactive"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:20
+msgid "OMR-Tracker - Proxy"
+msgstr "OMR-Tracker - Proxy"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:21
+msgid "Detect if proxy is down and stop redirection over it."
+msgstr "Detecte si le proxy est en panne et arrete la redirection vers celui-ci."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:33
+msgid "Enabled"
+msgstr "Active"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:36
+msgid "Initial state"
+msgstr "Etat initial"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:37
+msgid "Expect interface state on up event"
+msgstr "Etat de l'interface attendu lors de l'evenement up"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:39
+msgid "Online"
+msgstr "En ligne"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:40
+msgid "Offline"
+msgstr "Hors ligne"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:43
+msgid "Internet Protocol"
+msgstr "Protocole Internet"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:47
+msgid "IPv4 & IPv6"
+msgstr "IPv4 et IPv6"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:62
+msgid "IPv4 Hosts (%s)"
+msgstr "Hotes IPv4 (%s)"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:62
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:72
+msgid "This hostname or IP address will be pinged to determine if the link is up or down. Leave blank to use defaults settings."
+msgstr "Ce nom d'hote ou cette adresse IP sera pinge pour determiner si le lien est actif ou non. Laisser vide pour utiliser les parametres par defaut."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:72
+msgid "IPv6 Hosts (%s)"
+msgstr "Hotes IPv6 (%s)"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:97
+msgid "Send a mail when connection status change. You need to configure e-mail settings here."
+msgstr "Envoyer un e-mail lorsque l'etat de la connexion change. Vous devez configurer les parametres e-mail ici."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:111
+msgid "Test count"
+msgstr "Nombre de tests"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:120
+msgid "Test timeout"
+msgstr "Delai d'attente du test"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:122
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:128
+msgid "%d second"
+msgstr "%d seconde"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:124
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:129
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:130
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:131
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:132
+msgid "%d seconds"
+msgstr "%d secondes"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:126
+msgid "Test interval"
+msgstr "Intervalle de test"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:133
+msgid "%d minute"
+msgstr "%d minute"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:134
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:135
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:136
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:137
+msgid "%d minutes"
+msgstr "%d minutes"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:138
+msgid "%d hour"
+msgstr "%d heure"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:20
+msgid "OMR-Tracker - Interfaces"
+msgstr "OMR-Tracker - Interfaces"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:21
+msgid "Names must match the interface name found in /etc/config/network."
+msgstr "Les noms doivent correspondre au nom d'interface trouve dans /etc/config/network."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:22
+msgid "Names may contain characters A-Z, a-z, 0-9, _ and no spaces-"
+msgstr "Les noms peuvent contenir A-Z, a-z, 0-9, _ et aucun espace."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:54
+msgid "IPv4"
+msgstr "IPv4"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:55
+msgid "IPv6"
+msgstr "IPv6"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:59
+msgid "Country"
+msgstr "Pays"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:99
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:42
+msgid "Tracking method"
+msgstr "Methode de suivi"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:123
+msgid "Check if connection work with http by sending a request to server API"
+msgstr "Verifier si la connexion fonctionne avec HTTP en envoyant une requete a l'API du serveur"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:127
+msgid "Server test"
+msgstr "Test serveur"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:128
+msgid "Check if connection work by sending a ping or http request to server over all interfaces, failed if only current interface is not able to."
+msgstr "Verifier la connexion en envoyant un ping ou une requete HTTP au serveur via toutes les interfaces, en echec seulement si l'interface courante n'y arrive pas."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:168
+msgid "Ping count"
+msgstr "Nombre de pings"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:179
+msgid "Ping size"
+msgstr "Taille du ping"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:194
+msgid "Max TTL"
+msgstr "TTL max"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:206
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:67
+msgid "Check link quality"
+msgstr "Verifier la qualite du lien"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:211
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:73
+msgid "Failure latency [ms]"
+msgstr "Latence d'echec [ms]"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:224
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:86
+msgid "Failure packet loss [%]"
+msgstr "Perte de paquets en echec [%]"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:235
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:97
+msgid "Recovery latency [ms]"
+msgstr "Latence de recuperation [ms]"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:248
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:110
+msgid "Recovery packet loss [%]"
+msgstr "Perte de paquets en recuperation [%]"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:259
+msgid "Ping timeout"
+msgstr "Delai d'attente du ping"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:267
+msgid "Ping interval"
+msgstr "Intervalle de ping"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:291
+msgid "Failure interval"
+msgstr "Intervalle en echec"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:292
+msgid "Ping interval during failure detection"
+msgstr "Intervalle de ping pendant la detection d'echec"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:308
+msgid "Keep failure interval"
+msgstr "Conserver l'intervalle en echec"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:309
+msgid "Keep ping failure interval during failure state"
+msgstr "Conserver l'intervalle de ping d'echec pendant l'etat de panne"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:313
+msgid "Interface down"
+msgstr "Interface en panne"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:314
+msgid "Interface will be deemed down after this many failed ping tests"
+msgstr "L'interface sera consideree en panne apres ce nombre de tests ping echoues"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:327
+msgid "Interface up"
+msgstr "Interface active"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:328
+msgid "Downed interface will be deemed up after this many successful ping tests"
+msgstr "Une interface en panne sera consideree active apres ce nombre de tests ping reussis"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:341
+msgid "Restart interface if detected as down."
+msgstr "Redemarrer l'interface si elle est detectee en panne."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:20
+msgid "OMR-Tracker - Server"
+msgstr "OMR-Tracker - Serveur"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:21
+msgid "Detect if server is down and use defined backup server in this case."
+msgstr "Detecter si le serveur est en panne et utiliser le serveur de secours defini dans ce cas."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:42
+msgid "Check if VPS api answer or/and ping server IPs."
+msgstr "Verifier si l'API VPS repond et/ou ping les IP du serveur."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:44
+msgid "API & Ping"
+msgstr "API et Ping"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:45
+msgid "API"
+msgstr "API"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:46
+msgid "Ping"
+msgstr "Ping"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:47
+msgid "None"
+msgstr "Aucun"
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:42
+msgid "Enable monitoring and automatic state changes for this interface."
+msgstr "Activer la surveillance et les changements d'etat automatiques pour cette interface."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:51
+msgid "Choose whether checks use IPv4 targets, IPv6 targets, or both."
+msgstr "Choisir si les verifications utilisent des cibles IPv4, IPv6, ou les deux."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:58
+msgid "Select the host group used for connectivity tests on this interface."
+msgstr "Selectionner le groupe d'hotes utilise pour les tests de connectivite sur cette interface."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:170
+msgid "Number of probes sent during each test cycle."
+msgstr "Nombre de sondes envoyees a chaque cycle de test."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:182
+msgid "Payload size in bytes for ICMP probes when using ping tracking."
+msgstr "Taille utile en octets des sondes ICMP lors du suivi par ping."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:198
+msgid "Maximum TTL or hop limit allowed for ping-based checks."
+msgstr "TTL maximal ou limite de sauts autorisee pour les verifications basees sur le ping."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:211
+msgid "Mark the interface down when latency or packet loss crosses the thresholds below."
+msgstr "Marquer l'interface en panne lorsque la latence ou la perte de paquets depasse les seuils ci-dessous."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:217
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:74
+msgid "Latency above this value is treated as a failure while quality checks are enabled."
+msgstr "Une latence superieure a cette valeur est consideree comme un echec lorsque la verification de qualite est activee."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:230
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:87
+msgid "Packet loss above this percentage is treated as a failure."
+msgstr "Une perte de paquets superieure a ce pourcentage est consideree comme un echec."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:242
+msgid "Latency must fall below this value before the interface is considered recovered."
+msgstr "La latence doit redescendre sous cette valeur avant que l'interface soit consideree comme retablie."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:255
+msgid "Packet loss must fall below this percentage before the interface is considered recovered."
+msgstr "La perte de paquets doit redescendre sous ce pourcentage avant que l'interface soit consideree comme retablie."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:267
+msgid "Maximum time to wait for each test response before it is counted as failed."
+msgstr "Delai maximal d'attente de chaque reponse avant de compter le test comme echoue."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/interface.js:276
+msgid "Delay between normal test cycles while the interface is considered healthy."
+msgstr "Delai entre les cycles de test normaux lorsque l'interface est consideree comme saine."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:33
+msgid "Enable monitoring for this proxy and stop using it automatically when tests fail."
+msgstr "Activer la surveillance de ce proxy et cesser de l'utiliser automatiquement lorsque les tests echouent."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:44
+msgid "Choose whether proxy checks use IPv4 targets, IPv6 targets, or both."
+msgstr "Choisir si les verifications du proxy utilisent des cibles IPv4, IPv6, ou les deux."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:113
+msgid "Number of probes sent during each proxy test cycle."
+msgstr "Nombre de sondes envoyees a chaque cycle de test du proxy."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:123
+msgid "Maximum time to wait for each proxy test before it is counted as failed."
+msgstr "Delai maximal d'attente avant de compter chaque test du proxy comme echoue."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/proxy.js:130
+msgid "Delay between regular proxy health checks while the proxy is considered available."
+msgstr "Delai entre les verifications regulieres de sante du proxy lorsqu'il est considere disponible."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:33
+msgid "Enable server monitoring and automatic fallback to a backup server when checks fail."
+msgstr "Activer la surveillance du serveur et le basculement automatique vers un serveur de secours lorsque les tests echouent."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:42
+msgid "Choose whether server health is verified through the API, ping probes, or both."
+msgstr "Choisir si la sante du serveur est verifiee via l'API, des sondes ping, ou les deux."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:59
+msgid "Number of probes sent during each server test cycle."
+msgstr "Nombre de sondes envoyees a chaque cycle de test du serveur."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:68
+msgid "Use latency and packet loss thresholds to detect degraded server connectivity."
+msgstr "Utiliser les seuils de latence et de perte de paquets pour detecter une connectivite serveur degradee."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:100
+msgid "Latency must fall below this value before the server is considered healthy again."
+msgstr "La latence doit redescendre sous cette valeur avant que le serveur soit de nouveau considere sain."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:113
+msgid "Packet loss must fall below this percentage before the server is considered healthy again."
+msgstr "La perte de paquets doit redescendre sous ce pourcentage avant que le serveur soit de nouveau considere sain."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:125
+msgid "Maximum time to wait for each API or ping test before it is counted as failed."
+msgstr "Delai maximal d'attente avant de compter chaque test API ou ping comme echoue."
+
+#: luci-app-omr-tracker/htdocs/luci-static/resources/view/omr-tracker/network/server.js:132
+msgid "Delay between regular server health checks while the server is considered available."
+msgstr "Delai entre les verifications regulieres de sante du serveur lorsqu'il est considere disponible."
+

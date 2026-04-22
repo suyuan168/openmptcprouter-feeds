@@ -384,6 +384,8 @@ outbound_section_validate() {
 		's_vless_user_alter_id:and(uinteger, max(65535))' \
 		's_vless_user_security:or("auto", "aes-128-gcm", "chacha20-poly1305", "none")' \
 		's_vless_user_encryption:or("auto", "none")' \
+		's_vless_flow:string' \
+		's_vless_decryption:string' \
 		's_vless_user_level:uinteger' \
 		's_vless_reality_address:host' \
 		's_vless_reality_port:port' \
@@ -1637,6 +1639,8 @@ add_outbound_setting() {
 			append_server_address "$s_vless_address"
 
 			json_add_int "port" "$s_vless_port"
+			test -n "$ss_vless_decryption" && \
+				json_add_string "decryption" "$ss_vless_decryption"
 
 			json_add_array "users"
 			json_add_object ""
@@ -1648,6 +1652,8 @@ add_outbound_setting() {
 				json_add_string "encryption" "$s_vless_user_encryption"
 			test -n "$s_vless_user_level" && \
 				json_add_int "level" "$s_vless_user_level"
+			test -n "$s_vless_flow" && \
+				json_add_string "flow" "$s_vless_flow"
 			json_close_object
 			json_close_array # users
 
@@ -1735,6 +1741,9 @@ add_outbound_setting() {
 		json_add_string "network" "$ss_network"
 
 	if [ "x$protocol" != "xshadowsocks" ]; then
+		test -n "$ss_decryption" && \
+			json_add_string "decryption" "$ss_decryption"
+
 		test -n "$ss_security" && \
 			json_add_string "security" "$ss_security"
 

@@ -1,69 +1,61 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-02-19 07:53+0000\n"
+"Project-Id-Version: luci-app-omr-quota\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
 "Last-Translator: Weblate Admin <contact@openmptcprouter.com>\n"
-"Language-Team: French <http://weblate.openmptcprouter.com/projects/omr/"
-"luciapplicationsomr-quota/fr/>\n"
+"Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.6.1\n"
 
-#: luci-app-omr-quota/luasrc/view/omr-quota/cbi-select-add.htm:8
-msgid "Add"
-msgstr "Ajouter"
-
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:21
-msgid "Enable"
-msgstr "Activer"
-
-#: luci-app-omr-quota/root/usr/share/rpcd/acl.d/luci-app-omr-quota.json:3
-msgid "Grant UCI access for luci-app-omr-quota"
-msgstr "Permettre l'accès à luci-app-omr-quota"
-
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:10
-msgid "Interfaces"
-msgstr "Interfaces"
-
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:33
-msgid "Interval between check (s)"
-msgstr "Intervalle entre les essais (s)"
-
-#: luci-app-omr-quota/luasrc/view/omr-quota/cbi-select-add.htm:9
-msgid "Invalid"
-msgstr "Invalide"
-
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:8
-msgid "Monthly Quota"
-msgstr "Quota mensuel"
-
-#: luci-app-omr-quota/luasrc/controller/quota.lua:11
-#: luci-app-omr-quota/root/usr/share/luci/menu.d/luci-app-omr-quota.json:3
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+#: root/usr/share/luci/menu.d/luci-app-omr-quota.json
 msgid "Quota"
 msgstr "Quota"
 
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:27
-msgid "RX quota (kbit)"
-msgstr "Quota de réception (RX en kbit)"
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Monthly Quota"
+msgstr "Quota mensuel"
 
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:8
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
 msgid "Set monthly quota, when quota is reached interface state is set to down"
-msgstr ""
-"Configurer le quota mensuel, quand le quota est atteint l'interface est "
-"désactivée"
+msgstr "Configurer le quota mensuel, quand le quota est atteint l'interface est désactivée"
 
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:24
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Interfaces"
+msgstr "Interfaces"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Add interface…"
+msgstr "Ajouter une interface…"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "-- select interface --"
+msgstr "-- sélectionner une interface --"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Enable"
+msgstr "Activer"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
 msgid "TX quota (kbit)"
 msgstr "Quota de transmission (TX en kbit)"
 
-#: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:30
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "RX quota (kbit)"
+msgstr "Quota de réception (RX en kbit)"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
 msgid "TX+RX quota (kbit)"
 msgstr "Quota de transmission+réception (TX+RX en kbit)"
 
-#~ msgid "Set quota, when quota is reached interface state is set to down"
-#~ msgstr ""
-#~ "Configurer le quota, quand le quota est atteint l'interface est désactivée"
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Interval between check (s)"
+msgstr "Intervalle entre les vérifications (s)"
+
+#: root/usr/share/rpcd/acl.d/luci-app-omr-quota.json
+msgid "Grant UCI access for luci-app-omr-quota"
+msgstr "Permettre l'accès UCI pour luci-app-omr-quota"

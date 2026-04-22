@@ -1,0 +1,13 @@
+{
+	"admin/services/bpftune": {
+		"title": "bpftune",
+		"order": 90,
+		"action": {
+			"type": "view",
+			"path": "services/bpftune"
+		},
+		"depends": {
+			"acl": [ "luci-app-bpftune" ]
+		}
+	}
+}

@@ -16,7 +16,7 @@ PKG_SOURCE_URL:=https://github.com/oracle/bpftune.git
 PKG_SOURCE_VERSION:=0.4-2
 PKG_MIRROR_HASH:=skip
 
-PKG_MAINTAINER:=Yannick Chabanis <contact@openmptcprouter.com>
+PKG_MAINTAINER:=Yannick Chabanois <contact@openmptcprouter.com>
 PKG_LICENSE:=GPL-2.0-only WITH Linux-syscall-note
 PKG_LICENSE_FILES:=LICENSE.txt
 
@@ -91,26 +91,6 @@ endef
 
 define Package/bpftune/conffiles
 /etc/config/bpftune
-endef
-
-define Package/bpftune/postinst
-#!/bin/sh
-[ -n "$${IPKG_INSTROOT}" ] || {
-    echo "Enabling bpftune service..."
-    /etc/init.d/bpftune enable
-    echo "To start bpftune, run: /etc/init.d/bpftune start"
-}
-exit 0
-endef
-
-define Package/bpftune/prerm
-#!/bin/sh
-[ -n "$${IPKG_INSTROOT}" ] || {
-    echo "Stopping bpftune service..."
-    /etc/init.d/bpftune stop
-    /etc/init.d/bpftune disable
-}
-exit 0
 endef
 
 $(eval $(call BuildPackage,bpftune))

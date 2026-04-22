@@ -1,0 +1,196 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-mqvpn\n"
+"POT-Creation-Date: 2026-04-10 00:00+0000\n"
+"PO-Revision-Date: 2026-04-10 00:00+0000\n"
+"Last-Translator: Ycarus (Yannick Chabanois) <ycarus@zugaina.org>\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "MQVPN"
+msgstr "MQVPN"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "QUIC-based VPN tunnel"
+msgstr "Tunnel VPN basé sur QUIC"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "General"
+msgstr "Général"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Enabled"
+msgstr "Activé"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server"
+msgstr "Serveur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server IP"
+msgstr "IP du serveur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "IPv4 or IPv6 address of the MQVPN server"
+msgstr "Adresse IPv4 ou IPv6 du serveur MQVPN"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server port"
+msgstr "Port du serveur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Insecure TLS"
+msgstr "TLS non sécurisé"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip TLS certificate verification"
+msgstr "Ignorer la vérification du certificat TLS"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Authentication"
+msgstr "Authentification"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "User"
+msgstr "Utilisateur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Key"
+msgstr "Clé"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Interface"
+msgstr "Interface"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Tunnel name"
+msgstr "Nom du tunnel"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Log level"
+msgstr "Niveau de journalisation"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Debug"
+msgstr "Débogage"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Info"
+msgstr "Info"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Warning"
+msgstr "Avertissement"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Error"
+msgstr "Erreur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Kill switch"
+msgstr "Coupe-circuit"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Block all traffic if the VPN tunnel goes down"
+msgstr "Bloquer tout le trafic si le tunnel VPN tombe"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect"
+msgstr "Reconnexion"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically reconnect on failure"
+msgstr "Se reconnecter automatiquement en cas d'échec"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect interval"
+msgstr "Intervalle de reconnexion"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Seconds between reconnection attempts"
+msgstr "Secondes entre les tentatives de reconnexion"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Route via server"
+msgstr "Router via le serveur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Add a host route to the server IP before setting the default route"
+msgstr "Ajouter une route hôte vers l'IP du serveur avant de définir la route par défaut"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "No automatic routes"
+msgstr "Pas de routes automatiques"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip all automatic route setup and manage routes manually"
+msgstr "Ignorer toute configuration automatique des routes et les gérer manuellement"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "DNS servers"
+msgstr "Serveurs DNS"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Control API"
+msgstr "API de contrôle"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Port"
+msgstr "Port"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "TCP port for the JSON control API (leave empty to disable)"
+msgstr "Port TCP pour l'API de contrôle JSON (laisser vide pour désactiver)"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Bind address"
+msgstr "Adresse d'écoute"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Address to bind the control API (default: 127.0.0.1)"
+msgstr "Adresse d'écoute de l'API de contrôle (défaut : 127.0.0.1)"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Multipath"
+msgstr "Multichemin"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Scheduler"
+msgstr "Ordonnanceur"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Weighted Load Balancing"
+msgstr "Équilibrage de charge pondéré"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Minimum RTT"
+msgstr "RTT minimum"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Auto WAN"
+msgstr "WAN automatique"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically add WAN interfaces as multipath paths. If disabled, use the paths defined below."
+msgstr "Ajouter automatiquement les interfaces WAN comme chemins multipath. Si désactivé, utiliser les chemins définis ci-dessous."
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Paths"
+msgstr "Chemins"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as multipath paths"
+msgstr "Interfaces réseau à utiliser comme chemins multipath"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Backup paths"
+msgstr "Chemins de secours"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as backup multipath paths"
+msgstr "Interfaces réseau à utiliser comme chemins multipath de secours"

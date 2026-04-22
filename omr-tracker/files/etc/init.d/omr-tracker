@@ -92,7 +92,7 @@ _launch_tracker() {
 	_validate_section_hosts "hosts_defaults" "$country"
 
 
-	local ifname ip4table
+	local ifname="" ip4table
 	#network_get_device ifname $1
 	#[ -z "$ifname" ] && network_get_physdev ifname $1
 	[ -z "$ifname" ] && ifname=$(ifstatus "$1" | jsonfilter -q -e '@["l3_device"]')
@@ -218,9 +218,9 @@ _initialize_shadowsocks_tracker() {
 	local redir_tcp server tracker_server
 	server=$1
 	
-	[ -n "$(echo $server | grep sss)" ] || return
 	[ -z "$server" ] && return
-	
+	[ -n "$(echo $server | grep sss)" ] || return
+
 	#redir_tcp=$(uci -q get shadowsocks-libev.ss_rules.redir_tcp)
 	#config_get tracker_server ss_rules server
 	config_get ss_disabled $server disabled 0
@@ -259,9 +259,9 @@ _initialize_shadowsocks_rust_tracker() {
 	local redir_tcp server tracker_server
 	server=$1
 	
-	[ -n "$(echo $server | grep sss)" ] || return
 	[ -z "$server" ] && return
-	
+	[ -n "$(echo $server | grep sss)" ] || return
+
 	#redir_tcp=$(uci -q get shadowsocks-libev.ss_rules.redir_tcp)
 	#config_get tracker_server ss_rules server
 	config_get ss_rust_disabled $server disabled 0
@@ -303,7 +303,7 @@ _launch_shadowsocks_tracker() {
 	config_get disabled "$1" disabled 0
 	config_get server "$1" server
 	#echo "enabled: $enabled - disabled: $disabled - host: $hosts"
-	[ "$enabled" = "0" ] || [ "$disabled" = "1" ] || [ -z "$hosts" ] && return
+	{ [ "$enabled" = "0" ] || [ "$disabled" = "1" ] || [ -z "$hosts" ]; } && return
 	[ -z "$server" ] && return
 	[ "$(uci -q get shadowsocks-libev.${server}.disabled)" = "1" ] && return
 	redir_status=false
@@ -346,7 +346,7 @@ _launch_shadowsocks_rust_tracker() {
 	config_get disabled "$1" disabled 0
 	config_get server "$1" server
 
-	[ "$enabled" = "0" ] || [ "$disabled" = "1" ] || [ -z "$hosts" ] && return
+	{ [ "$enabled" = "0" ] || [ "$disabled" = "1" ] || [ -z "$hosts" ]; } && return
 	[ -z "$server" ] && return
 	[ "$(uci -q get shadowsocks-rust.${server}.disabled)" = "1" ] && return
 	redir_status=false
@@ -360,6 +360,7 @@ _launch_shadowsocks_rust_tracker() {
 	# shellcheck disable=SC2086
 	procd_set_param command /bin/omr-tracker-ss "$1"
 	procd_append_param env "OMR_TRACKER_HOSTS=$hosts"
+	procd_append_param env "OMR_TRACKER_HOSTS6=$hosts6"
 	procd_append_param env "OMR_TRACKER_TIMEOUT=$timeout"
 	procd_append_param env "OMR_TRACKER_TRIES=$tries"
 	procd_append_param env "OMR_TRACKER_INTERVAL=$interval"
@@ -381,7 +382,7 @@ _launch_v2ray_tracker() {
 	[ -z "$country" ] && country="world_proxy"
 	_validate_section_hosts "hosts_proxy" "$country"
 
-	[ "$enabled" = "0" ] || [ -z "$hosts" ] && return
+	{ [ "$enabled" = "0" ] || [ -z "$hosts" ]; } && return
 
 	procd_open_instance
 	# shellcheck disable=SC2086
@@ -405,7 +406,7 @@ _launch_xray_tracker() {
 	_validate_section "proxy" "proxy"
 	[ -z "$country" ] && country="world_proxy"
 	_validate_section_hosts "hosts_proxy" "$country"
-	[ "$enabled" = "0" ] || [ -z "$hosts" ] && return
+	{ [ "$enabled" = "0" ] || [ -z "$hosts" ]; } && return
 
 	procd_open_instance
 	# shellcheck disable=SC2086

@@ -1686,6 +1686,305 @@ msgstr ""
 msgid "Disable HTTP test on Server API in status page"
 msgstr "Disabilitare il test HTTP sulle API Server nella pagina di stato"
 
+msgid "65 often solves LTE tethering detection."
+msgstr "65 spesso risolve il rilevamento del tethering LTE."
+
+msgid "AES instruction set detected."
+msgstr "Set di istruzioni AES rilevato."
+
+msgid "Anonymize public IPs"
+msgstr "Anonimizza gli IP pubblici"
+
+msgid "API returned unexpected status: %s"
+msgstr "L'API ha restituito uno stato inatteso: %s"
+
+msgid "Authorize access to proxy only from LAN firewall zone"
+msgstr "Autorizza l'accesso al proxy solo dalla zona LAN del firewall"
+
+msgid "Backup available on server"
+msgstr "Backup disponibile sul server"
+
+msgid "Backup restored successfully."
+msgstr "Backup ripristinato con successo."
+
+msgid "Backup sent successfully."
+msgstr "Backup inviato con successo."
+
+msgid "Calculate speed"
+msgstr "Calcola velocita"
+
+msgid "Can't ping server"
+msgstr "Impossibile pingare il server"
+
+msgid "Clients"
+msgstr "Client"
+
+msgid "Configuration saved successfully through OpenMPTCProuter API."
+msgstr "Configurazione salvata con successo tramite API OpenMPTCProuter."
+
+msgid "Custom"
+msgstr "Personalizzato"
+
+msgid "Direct Output"
+msgstr "Output diretto"
+
+msgid "Disable 6in4"
+msgstr "Disabilita 6in4"
+
+msgid "Disable if server doesn't provide IPv6."
+msgstr "Disabilita se il server non fornisce IPv6."
+
+msgid "Disable multipath test"
+msgstr "Disabilita test multipath"
+
+msgid "Disable multipath test display in status page"
+msgstr "Disabilita visualizzazione test multipath nella pagina stato"
+
+msgid "Disable OpenVPN multi clients"
+msgstr "Disabilita client multipli OpenVPN"
+
+msgid ""
+"Disable OpenVPN multi clients to distribute connections and use more CPU "
+"cores"
+msgstr ""
+"Disabilita client multipli OpenVPN per distribuire connessioni e usare piu "
+"core CPU"
+
+msgid "DNS issue: can't resolve hostname"
+msgstr "Problema DNS: impossibile risolvere il nome host"
+
+msgid "Enable Fast Path offloading for connections"
+msgstr "Abilita offloading Fast Path per le connessioni"
+
+msgid "Enable if host supports NAT64."
+msgstr "Abilita se l'host supporta NAT64."
+
+msgid "Error: "
+msgstr "Errore: "
+
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Failed to restore backup: "
+msgstr "Ripristino backup non riuscito: "
+
+msgid "Failed to save settings: "
+msgstr "Salvataggio impostazioni non riuscito: "
+
+msgid "Failed to send backup: "
+msgstr "Invio backup non riuscito: "
+
+msgid "Force TCP failback in compatible applications"
+msgstr "Forza failback TCP nelle applicazioni compatibili"
+
+msgid "Force TCP failback in Zoom, Microsoft Teams and Google Net"
+msgstr "Forza failback TCP in Zoom, Microsoft Teams e Google Net"
+
+msgid "For China: accessible DNS and disable DNSSEC."
+msgstr "Per la Cina: DNS accessibili e DNSSEC disabilitato."
+
+msgid "gateway:"
+msgstr "gateway:"
+
+msgid "General"
+msgstr "Generale"
+
+msgid "IPv4 TCP retries1"
+msgstr "IPv4 TCP retries1"
+
+msgid "IPv4 TCP retries2"
+msgstr "IPv4 TCP retries2"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Kernel:"
+msgstr "Kernel:"
+
+msgid "Key to configure and retrieve others keys from Server."
+msgstr "Chiave per configurare e recuperare altre chiavi dal server."
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "LAN interfaces"
+msgstr "Interfacce LAN"
+
+msgid "Last available backup on server"
+msgstr "Ultimo backup disponibile sul server"
+
+msgid "MacVLAN master"
+msgstr "Master MacVLAN"
+
+msgid "Minimum RTT"
+msgstr "RTT minimo"
+
+msgid "MQVPN key"
+msgstr "Chiave MQVPN"
+
+msgid "MQVPN scheduler"
+msgstr "Scheduler MQVPN"
+
+msgid "Network"
+msgstr "Rete"
+
+msgid "Next"
+msgstr "Avanti"
+
+msgid "No AES instruction set, you should use chacha20."
+msgstr "Nessun set di istruzioni AES, dovresti usare chacha20."
+
+msgid "No WAN with multipath enabled"
+msgstr "Nessuna WAN con multipath abilitato"
+
+msgid "number:"
+msgstr "numero:"
+
+msgid "Obfuscation"
+msgstr "Offuscamento"
+
+msgid "Only one server can be master."
+msgstr "Solo un server puo essere master."
+
+msgid "OpenMPTCProuter Wizard"
+msgstr "Wizard OpenMPTCProuter"
+
+msgid "Optional"
+msgstr "Opzionale"
+
+msgid "Previous"
+msgstr "Indietro"
+
+msgid "Proxy"
+msgstr "Proxy"
+
+msgid "Proxy:"
+msgstr "Proxy:"
+
+msgid "Proxy for TCP (and UDP for V2Ray/XRay)."
+msgstr "Proxy per TCP (e UDP per V2Ray/XRay)."
+
+msgid "Public IPv6 prefix only with one server."
+msgstr "Prefisso IPv6 pubblico solo con un server."
+
+msgid "Qualcomm SFE"
+msgstr "Qualcomm SFE"
+
+msgid "Restrict proxy to LAN zone"
+msgstr "Limita il proxy alla zona LAN"
+
+msgid "Reveal proxy, VPN, IPv6 and country settings."
+msgstr "Mostra impostazioni proxy, VPN, IPv6 e paese."
+
+msgid "Run an automatic speedtest."
+msgstr "Esegui uno speedtest automatico."
+
+msgid "Saved through openmptcprouter ubus API (%s)."
+msgstr "Salvato tramite API ubus openmptcprouter (%s)."
+
+msgid "Save error: "
+msgstr "Errore di salvataggio: "
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Settings saved and applied successfully."
+msgstr "Impostazioni salvate e applicate con successo."
+
+msgid "ShadowSocks 2022 key"
+msgstr "Chiave ShadowSocks 2022"
+
+msgid "Shadowsocks UDP"
+msgstr "Shadowsocks UDP"
+
+msgid "SoftEther VPN password"
+msgstr "Password SoftEther VPN"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "System is restarting services. This may take a few moments..."
+msgstr ""
+"Il sistema sta riavviando i servizi. Potrebbe richiedere qualche istante..."
+
+msgid ""
+"The length of time an orphaned connection will remain in the FIN_WAIT_2 "
+"state before it is aborted at the local end."
+msgstr ""
+"Tempo durante il quale una connessione orfana rimane nello stato FIN_WAIT_2 "
+"prima di essere chiusa localmente."
+
+msgid "Timeout for retrieving Whois WANs IP on status pages"
+msgstr "Timeout per recuperare gli IP WAN Whois nelle pagine di stato"
+
+msgid "Trigger update"
+msgstr "Avvia aggiornamento"
+
+msgid "Update remotely to latest version and reboot. (Beta)"
+msgstr "Aggiorna da remoto all'ultima versione e riavvia. (Beta)"
+
+msgid "Update started."
+msgstr "Aggiornamento avviato."
+
+msgid "USA"
+msgstr "USA"
+
+msgid "Used for Shadowsocks, V2Ray/XRay, Glorytun and OpenVPN."
+msgstr "Usato per Shadowsocks, V2Ray/XRay, Glorytun e OpenVPN."
+
+msgid "Use V2Ray/XRay for UDP too"
+msgstr "Usa V2Ray/XRay anche per UDP"
+
+msgid "Use when MPTCP is blocked by your ISP."
+msgstr "Usa quando MPTCP e bloccato dal tuo ISP."
+
+msgid "V2Ray/XRay UDP"
+msgstr "V2Ray/XRay UDP"
+
+msgid "Validation errors exist in the form. Please check all fields."
+msgstr "Ci sono errori di validazione nel modulo. Controlla tutti i campi."
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "VPN:"
+msgstr "VPN:"
+
+msgid "VPN for ICMP (and UDP with Shadowsocks proxy)."
+msgstr "VPN per ICMP (e UDP con proxy Shadowsocks)."
+
+msgid "WAN"
+msgstr "WAN"
+
+msgid "WAN interfaces"
+msgstr "Interfacce WAN"
+
+msgid "Weighted Load Balancing"
+msgstr "Bilanciamento di carico pesato"
+
+msgid ""
+"When enabled, checks are done on external sites to get each WAN IP and the "
+"IP used to go outside."
+msgstr ""
+"Quando abilitato, vengono eseguiti controlli su siti esterni per ottenere "
+"ogni IP WAN e l'IP usato per uscire."
+
+msgid "When proxy V2Ray/XRay VLESS, VMESS or Trojan is used, use it for UDP"
+msgstr ""
+"Quando si usa il proxy V2Ray/XRay VLESS, VMESS o Trojan, usalo anche per UDP"
+
+msgid "Whois WAN IPs retrieve timeout"
+msgstr "Timeout recupero IP WAN Whois"
+
+msgid "XRay Transport"
+msgstr "Trasporto XRay"
+
+msgid "XRay user id"
+msgstr "ID utente XRay"
+
 #~ msgid "Common server settings"
 #~ msgstr "Impostazioni comuni del server"
 
