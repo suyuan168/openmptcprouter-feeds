@@ -1,0 +1,448 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-omr-metrics\n"
+"POT-Creation-Date: 2026-05-13 00:00+0000\n"
+"PO-Revision-Date: 2026-05-13 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+#: root/usr/share/luci/menu.d/luci-app-omr-metrics.json
+msgid "WAN Metrics"
+msgstr "Метрики WAN"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Live per-interface metrics collected by omr-tracker. Refreshes every %d seconds."
+msgstr "Метрики в реальном времени для каждого интерфейса, собираемые omr-tracker. Обновляется каждые %d секунд."
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "No metrics available yet. Waiting for omr-tracker to run…"
+msgstr "Метрики ещё недоступны. Ожидание запуска omr-tracker…"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Up"
+msgstr "Доступен"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Down"
+msgstr "Недоступен"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Connectivity"
+msgstr "Подключение"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Quality"
+msgstr "Качество"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Signal"
+msgstr "Сигнал"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Traffic Control"
+msgstr "Управление трафиком"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "BBR"
+msgstr "BBR"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Updated: "
+msgstr "Обновлено: "
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Logical UCI interface name"
+msgstr "Логическое имя UCI-интерфейса"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Device"
+msgstr "Устройство"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Physical network device (e.g. eth0, ppp0)"
+msgstr "Физическое сетевое устройство (напр. eth0, ppp0)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Status"
+msgstr "Состояние"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Link state as detected by omr-tracker"
+msgstr "Состояние канала по данным omr-tracker"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Message"
+msgstr "Сообщение"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Status detail from the last probe check"
+msgstr "Подробности статуса последней проверки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv4"
+msgstr "IPv4"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv4 address assigned to this interface"
+msgstr "IPv4-адрес, назначенный этому интерфейсу"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv6"
+msgstr "IPv6"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv6 address assigned to this interface"
+msgstr "IPv6-адрес, назначенный этому интерфейсу"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Gateway"
+msgstr "Шлюз"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv4 default gateway for this interface"
+msgstr "Шлюз IPv4 по умолчанию для этого интерфейса"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Gateway6"
+msgstr "Шлюз IPv6"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "IPv6 default gateway for this interface"
+msgstr "Шлюз IPv6 по умолчанию для этого интерфейса"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Latency"
+msgstr "Задержка"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Average round-trip time to the probe target in the last measurement"
+msgstr "Среднее время приёма-передачи до цели зондирования при последнем измерении"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "RTT min"
+msgstr "RTT мин"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Lowest round-trip time ever seen — baseline for bufferbloat detection"
+msgstr "Наименьшее зафиксированное время приёма-передачи — базовый уровень для обнаружения буферного раздувания"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "RTT max"
+msgstr "RTT макс"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Highest round-trip time seen in the last measurement"
+msgstr "Наибольшее время приёма-передачи при последнем измерении"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Jitter"
+msgstr "Джиттер"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Variation in round-trip time — high values indicate an unstable link"
+msgstr "Вариация времени приёма-передачи — высокие значения указывают на нестабильный канал"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Loss"
+msgstr "Потери"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Percentage of probe packets lost in the last measurement"
+msgstr "Процент потерянных зондирующих пакетов при последнем измерении"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Congestion"
+msgstr "Перегрузка"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Composite score (0–100) computed from latency, loss, jitter, queue depth and signal quality"
+msgstr "Составной показатель (0–100), вычисленный по задержке, потерям, джиттеру, глубине очереди и качеству сигнала"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "None"
+msgstr "Нет"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Low"
+msgstr "Низкая"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Moderate"
+msgstr "Умеренная"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "High"
+msgstr "Высокая"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Severe"
+msgstr "Критическая"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Type"
+msgstr "Тип"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Signal source type (WiFi or cellular)"
+msgstr "Тип источника сигнала (WiFi или сотовая сеть)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "SSID"
+msgstr "SSID"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Wi-Fi network name"
+msgstr "Имя сети Wi-Fi"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "BSSID"
+msgstr "BSSID"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Access point MAC address"
+msgstr "MAC-адрес точки доступа"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Channel"
+msgstr "Канал"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Wi-Fi channel in use"
+msgstr "Используемый канал Wi-Fi"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Mode"
+msgstr "Режим"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Wi-Fi operating mode (e.g. Master, Client)"
+msgstr "Режим работы Wi-Fi (напр. Master, Client)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Received signal strength in dBm — less negative is better"
+msgstr "Уровень принимаемого сигнала в дБм — чем меньше отрицательное значение, тем лучше"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Noise"
+msgstr "Шум"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Background noise floor in dBm"
+msgstr "Уровень фонового шума в дБм"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Bit rate"
+msgstr "Скорость передачи"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Current negotiated radio transmission rate"
+msgstr "Текущая согласованная скорость радиопередачи"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Link quality as a percentage of the maximum"
+msgstr "Качество канала в процентах от максимального"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Operator"
+msgstr "Оператор"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Mobile network operator name"
+msgstr "Имя оператора мобильной сети"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "State"
+msgstr "Состояние"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Connection state reported by the modem"
+msgstr "Состояние соединения, сообщённое модемом"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Signal quality percentage reported by the modem"
+msgstr "Процент качества сигнала, сообщённый модемом"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "RSSI"
+msgstr "RSSI"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Received Signal Strength Indicator (dBm) — less negative is better"
+msgstr "Индикатор уровня принимаемого сигнала (дБм) — чем меньше отрицательное значение, тем лучше"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "RSRP"
+msgstr "RSRP"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Reference Signal Received Power (dBm, LTE) — less negative is better"
+msgstr "Мощность принимаемого опорного сигнала (дБм, LTE) — чем меньше отрицательное значение, тем лучше"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "RSRQ"
+msgstr "RSRQ"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Reference Signal Received Quality (dB, LTE) — less negative is better"
+msgstr "Качество принимаемого опорного сигнала (дБ, LTE) — чем меньше отрицательное значение, тем лучше"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "SINR"
+msgstr "SINR"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Signal to Interference and Noise Ratio (dB) — higher is better"
+msgstr "Отношение сигнала к помехам и шуму (дБ) — чем выше, тем лучше"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Qdisc"
+msgstr "Qdisc"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Active queuing discipline (e.g. fq, cake, fq_codel)"
+msgstr "Активная дисциплина очереди (напр. fq, cake, fq_codel)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Sent"
+msgstr "Отправлено"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Total bytes and packets sent since the qdisc was created"
+msgstr "Всего байт и пакетов, отправленных с момента создания qdisc"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Dropped"
+msgstr "Отброшено"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Packets discarded by the qdisc — high values indicate congestion"
+msgstr "Пакеты, отброшенные qdisc — высокие значения указывают на перегрузку"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Overlimits"
+msgstr "Превышения"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Times the interface rate limit was exceeded"
+msgstr "Количество превышений ограничения скорости интерфейса"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Backlog"
+msgstr "Очередь"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Bytes and packets currently waiting in the queue to be sent"
+msgstr "Байты и пакеты, ожидающие в очереди на отправку"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "ECN mark"
+msgstr "Метка ECN"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Packets marked for Explicit Congestion Notification instead of being dropped"
+msgstr "Пакеты, помеченные для явного уведомления о перегрузке вместо отбрасывания"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Drop overlimit"
+msgstr "Сброс лимита"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Packets dropped because the queue length limit was exceeded"
+msgstr "Пакеты, сброшенные из-за превышения лимита длины очереди"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Flows"
+msgstr "Потоки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Number of active fair-queue flows"
+msgstr "Количество активных потоков в равноправной очереди"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Throttled"
+msgstr "Ограничено"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Flows currently paused by the scheduler"
+msgstr "Потоки, временно приостановленные планировщиком"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Flows plimit"
+msgstr "Потоки (лимит)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Flows dropped because the per-flow packet limit was reached"
+msgstr "Потоки, сброшенные из-за достижения лимита пакетов на поток"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "New flows"
+msgstr "Новые потоки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "New flows opened since the last measurement"
+msgstr "Новые потоки, открытые с момента последнего измерения"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Bandwidth"
+msgstr "Пропускная способность"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "BBR's estimated bottleneck bandwidth (filtered maximum delivery rate from active TCP connections)"
+msgstr "Оценочная пропускная способность узкого места по BBR (фильтрованная максимальная скорость доставки активных TCP-соединений)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Pacing rate"
+msgstr "Темп отправки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Rate at which BBR paces packets — set to bandwidth × pacing gain during probing"
+msgstr "Темп, с которым BBR отправляет пакеты — устанавливается как пропускная способность × коэффициент темпа во время зондирования"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Delivery rate"
+msgstr "Скорость доставки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Actual measured data delivery rate to the receiver across active TCP connections"
+msgstr "Фактическая измеренная скорость доставки данных получателю по активным TCP-соединениям"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Cwnd"
+msgstr "Окно перегрузки"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Average TCP congestion window in segments across active connections"
+msgstr "Среднее окно перегрузки TCP в сегментах по активным соединениям"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Min RTT"
+msgstr "Мин. RTT (BBR)"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Minimum round-trip time observed by BBR — used as the propagation delay baseline"
+msgstr "Минимальное время приёма-передачи, наблюдаемое BBR — используется как базовый уровень задержки распространения"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Retrans"
+msgstr "Ретрансмиссии"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "Total retransmissions across active TCP connections — any non-zero value indicates packet loss"
+msgstr "Суммарные повторные передачи по активным TCP-соединениям — любое ненулевое значение указывает на потерю пакетов"
+
+#: htdocs/luci-static/resources/view/omr-metrics/metrics.js
+msgid "segs"
+msgstr "сег."
+
+#: root/usr/share/rpcd/acl.d/luci-app-omr-metrics.json
+msgid "Grant access to OpenMPTCProuter WAN Metrics"
+msgstr "Предоставить доступ к метрикам WAN OpenMPTCProuter"

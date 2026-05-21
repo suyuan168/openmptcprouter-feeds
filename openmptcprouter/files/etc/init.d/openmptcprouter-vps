@@ -2,7 +2,7 @@
 # Copyright (C) 2018-2026 Ycarus (Yannick Chabanois) <ycarus@zugaina.org>
 # Released under GPL 3. See LICENSE for the full terms.
 
-START=99
+START=85
 
 USE_PROCD=1
 
@@ -1668,7 +1668,7 @@ _set_openvpn_server() {
 
 
 _set_config_from_vps() {
-	local shadowsocks_disabled vpn glorytun_state redirect shorewall_redirect mlvpn_key openvpn_key dsvpn_key mqvpn_key mqvpn_port mqvpn_user
+	local shadowsocks_disabled vpn glorytun_state redirect shorewall_redirect mlvpn_key openvpn_key dsvpn_key mqvpn_key mqvpn_port mqvpn_user mqvpn_cc
 	[ -z "$vps_config" ] && vps_config=$(_get_json "config")
 	[ -z "$vps_config" ] && return
 
@@ -2180,12 +2180,14 @@ _set_config_from_vps() {
 	mqvpn_key="$(echo "$vps_config" | jsonfilter -q -e '@.mqvpn.key')"
 	mqvpn_port="$(echo "$vps_config" | jsonfilter -q -e '@.mqvpn.port')"
 	[ -z "$mqvpn_port" ] && mqvpn_port="65443"
+	mqvpn_cc="$(echo "$vps_config" | jsonfilter -q -e '@.mqvpn.cc')"
 	mqvpn_user="$(uci -q get openmptcprouter.${servername}.username)"
 	if [ -f /etc/init.d/mqvpn ] && [ -n "$(uci -q get mqvpn.auth)" ] && [ -n "$mqvpn_key" ] && \
 	   ( [ "$mqvpn_key" != "$(uci -q get mqvpn.auth.key)" ] || \
 	     [ "$mqvpn_user" != "$(uci -q get mqvpn.auth.user)" ] || \
 	     [ "$(uci -q get mqvpn.server.ip)" != "$vpsip" ] || \
 	     [ "$(uci -q get mqvpn.server.port)" != "$mqvpn_port" ] || \
+	     ( [ -n "$mqvpn_cc" ] && [ "$mqvpn_cc" != "$(uci -q get mqvpn.multipath.cc)" ] ) || \
 	     ( [ "$(uci -q get openmptcprouter.settings.vpn)" = "mqvpn" ] && [ "$(uci -q get mqvpn.settings.enable)" != "1" ] ) ); then
 		mqvpn_state=0
 		vpn="$(uci -q get openmptcprouter.settings.vpn)"
@@ -2198,6 +2200,7 @@ _set_config_from_vps() {
 			set mqvpn.settings.enable=$mqvpn_state
 			set mqvpn.server.ip="$vpsip"
 			set mqvpn.server.port="$mqvpn_port"
+			$([ -n "$mqvpn_cc" ] && echo "set mqvpn.multipath.cc=$mqvpn_cc")
 			commit mqvpn
 		EOF
 		if [ -n "$(uci -q changes mqvpn)" ]; then

@@ -37,7 +37,7 @@ while true; do
 		[ -z "$peer" ] && peer=$(ip -4 r list dev "$iface" | awk '/^default via/ {print $3; exit}')
 		[ -n "$addr" ] && [ -n "$peer" ] && {
 			#logger -t "omr6in4" "addr: $addr - peer: $peer"
-			if [ "$addr" != "$(uci -q get network.omr6in4.ipaddr)" ] || [ "$peer" != "$(uci -q get network.omr6in4.peeraddr)" ] || [ "$(ip -6 route show default dev 6in4-omr6in4 metric 1 | grep via)" = "" ]; then
+			if [ "$addr" != "$(uci -q get network.omr6in4.ipaddr)" ] || [ "$peer" != "$(uci -q get network.omr6in4.peeraddr)" ] || [ "$(ip -6 route show default dev 6in4-omr6in4 metric 1 | grep via)" = "" ] || [ "$(ip -6 route show default dev 6in4-omr6in4 table 61201 | grep via)" = "" ]; then
 				logger -t "omr6in4" "Set network for OMR 6in4 to local $addr peer $peer"
 				uci -q batch <<-EOF
 					set network.omr6in4.ipaddr=$addr
@@ -64,6 +64,8 @@ while true; do
 				[ -n "$ipv6_addr" ] && ip -6 route add "${ipv6_gw}" dev 6in4-omr6in4 > /dev/null 2>&1
 				[ -n "$ipv6_addr" ] && ip -6 route add 2002::/16 dev 6in4-omr6in4 > /dev/null 2>&1
 				[ -n "$ipv6_addr" ] && ip -6 route replace default via "${ipv6_gw}" dev 6in4-omr6in4 metric 1 > /dev/null 2>&1
+				[ -n "$ipv6_addr" ] && ip -6 route replace default via "${ipv6_gw}" dev 6in4-omr6in4 table 61201 > /dev/null 2>&1
+				[ -z "$(ip -6 rule show pref 0 table 61201 oif 6in4-omr6in4)" ] && ip -6 rule add oif 6in4-omr6in4 table 61201 pref 0 > /dev/null 2>&1
 				# Resolve LAN device from firewall lan zone to support custom network section names.
 				lan_dev=""
 				lan_ip6assign=""

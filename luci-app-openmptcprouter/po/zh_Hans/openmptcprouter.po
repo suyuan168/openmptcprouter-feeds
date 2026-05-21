@@ -1335,6 +1335,291 @@ msgstr "IPV6互联网地址 :"
 msgid "whois:"
 msgstr "whois查询 :"
 
+msgid "65 often solves LTE tethering detection."
+msgstr "设置为 65 通常可解决 LTE 热点检测问题。"
+
+msgid "AES instruction set detected."
+msgstr "检测到 AES 指令集。"
+
+msgid "Anonymize public IPs"
+msgstr "匿名化公网 IP"
+
+msgid "API returned unexpected status: %s"
+msgstr "API 返回了意外状态：%s"
+
+msgid "Authorize access to proxy only from LAN firewall zone"
+msgstr "仅允许来自 LAN 防火墙区域的代理访问"
+
+msgid "Backup available on server"
+msgstr "服务器上有可用备份"
+
+msgid "Backup restored successfully."
+msgstr "备份恢复成功。"
+
+msgid "Backup sent successfully."
+msgstr "备份发送成功。"
+
+msgid "Calculate speed"
+msgstr "计算速度"
+
+msgid "Can't ping server"
+msgstr "无法 ping 服务器"
+
+msgid "Clients"
+msgstr "客户端"
+
+msgid "Configuration saved successfully through OpenMPTCProuter API."
+msgstr "配置已通过 OpenMPTCProuter API 成功保存。"
+
+msgid "Custom"
+msgstr "自定义"
+
+msgid "Direct Output"
+msgstr "直接输出"
+
+msgid "Disable 6in4"
+msgstr "禁用 6in4"
+
+msgid "Disable if server doesn't provide IPv6."
+msgstr "若服务器不提供 IPv6，请禁用。"
+
+msgid "Disable multipath test"
+msgstr "禁用多路径测试"
+
+msgid "Disable multipath test display in status page"
+msgstr "在状态页面中禁用多路径测试显示"
+
+msgid "Disable OpenVPN multi clients"
+msgstr "禁用 OpenVPN 多客户端"
+
+msgid "Disable OpenVPN multi clients to distribute connections and use more CPU cores"
+msgstr "禁用 OpenVPN 多客户端以分发连接并使用更多 CPU 核心"
+
+msgid "DNS issue: can't resolve hostname"
+msgstr "DNS 问题：无法解析主机名"
+
+msgid "Enable Fast Path offloading for connections"
+msgstr "为连接启用快速路径卸载"
+
+msgid "Enable if host supports NAT64."
+msgstr "若主机支持 NAT64，请启用。"
+
+msgid "Error: "
+msgstr "错误: "
+
+msgid "Europe"
+msgstr "欧洲"
+
+msgid "Failed to restore backup: "
+msgstr "恢复备份失败: "
+
+msgid "Failed to save settings: "
+msgstr "保存设置失败: "
+
+msgid "Failed to send backup: "
+msgstr "发送备份失败: "
+
+msgid "Force TCP failback in compatible applications"
+msgstr "在兼容应用程序中强制 TCP 回退"
+
+msgid "Force TCP failback in Zoom, Microsoft Teams and Google Net"
+msgstr "在 Zoom、Microsoft Teams 和 Google Net 中强制 TCP 回退"
+
+msgid "For China: accessible DNS and disable DNSSEC."
+msgstr "中国用户：使用可访问的 DNS 并禁用 DNSSEC。"
+
+msgid "gateway:"
+msgstr "网关:"
+
+msgid "General"
+msgstr "常规"
+
+msgid "IPv4 TCP retries1"
+msgstr "IPv4 TCP 重试1"
+
+msgid "IPv4 TCP retries2"
+msgstr "IPv4 TCP 重试2"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "Kernel:"
+msgstr "内核:"
+
+msgid "Key to configure and retrieve others keys from Server."
+msgstr "用于从服务器配置和获取其他密钥的密钥。"
+
+msgid "LAN"
+msgstr "局域网"
+
+msgid "LAN interfaces"
+msgstr "局域网接口"
+
+msgid "Last available backup on server"
+msgstr "服务器上的最新可用备份"
+
+msgid "MacVLAN master"
+msgstr "MacVLAN 主接口"
+
+msgid "Minimum RTT"
+msgstr "最小 RTT"
+
+msgid "MQVPN key"
+msgstr "MQVPN 密钥"
+
+msgid "MQVPN scheduler"
+msgstr "MQVPN 调度器"
+
+msgid "Network"
+msgstr "网络"
+
+msgid "Next"
+msgstr "下一步"
+
+msgid "No AES instruction set, you should use chacha20."
+msgstr "未检测到 AES 指令集，建议使用 chacha20。"
+
+msgid "No WAN with multipath enabled"
+msgstr "没有启用多路径的 WAN"
+
+msgid "number:"
+msgstr "号码:"
+
+msgid "Obfuscation"
+msgstr "混淆"
+
+msgid "Only one server can be master."
+msgstr "只能有一台服务器为主服务器。"
+
+msgid "OpenMPTCProuter Wizard"
+msgstr "OpenMPTCProuter 向导"
+
+msgid "Optional"
+msgstr "可选"
+
+msgid "Previous"
+msgstr "上一步"
+
+msgid "Proxy"
+msgstr "代理"
+
+msgid "Proxy:"
+msgstr "代理:"
+
+msgid "Proxy for TCP (and UDP for V2Ray/XRay)."
+msgstr "TCP 代理（V2Ray/XRay 时也代理 UDP）。"
+
+msgid "Public IPv6 prefix only with one server."
+msgstr "公共 IPv6 前缀仅在单服务器配置下可用。"
+
+msgid "Qualcomm SFE"
+msgstr "Qualcomm SFE"
+
+msgid "Restrict proxy to LAN zone"
+msgstr "将代理限制在 LAN 区域"
+
+msgid "Reveal proxy, VPN, IPv6 and country settings."
+msgstr "显示代理、VPN、IPv6 和国家/地区设置。"
+
+msgid "Run an automatic speedtest."
+msgstr "运行自动速度测试。"
+
+msgid "Saved through openmptcprouter ubus API (%s)."
+msgstr "已通过 openmptcprouter ubus API 保存（%s）。"
+
+msgid "Save error: "
+msgstr "保存错误: "
+
+msgid "Server"
+msgstr "服务器"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Settings saved and applied successfully."
+msgstr "设置已成功保存并应用。"
+
+msgid "ShadowSocks 2022 key"
+msgstr "ShadowSocks 2022 密钥"
+
+msgid "Shadowsocks UDP"
+msgstr "Shadowsocks UDP"
+
+msgid "SoftEther VPN password"
+msgstr "SoftEther VPN 密码"
+
+msgid "System"
+msgstr "系统"
+
+msgid "System is restarting services. This may take a few moments..."
+msgstr "系统正在重启服务，这可能需要片刻时间..."
+
+msgid "The length of time an orphaned connection will remain in the FIN_WAIT_2 state before it is aborted at the local end."
+msgstr "孤立连接在本地端中断之前保持 FIN_WAIT_2 状态的时长。"
+
+msgid "Timeout for retrieving Whois WANs IP on status pages"
+msgstr "状态页面上获取 WAN IP 的 Whois 超时时间"
+
+msgid "Trigger update"
+msgstr "触发更新"
+
+msgid "Update remotely to latest version and reboot. (Beta)"
+msgstr "远程更新到最新版本并重启。（测试版）"
+
+msgid "Update started."
+msgstr "更新已开始。"
+
+msgid "USA"
+msgstr "美国"
+
+msgid "Used for Shadowsocks, V2Ray/XRay, Glorytun and OpenVPN."
+msgstr "用于 Shadowsocks、V2Ray/XRay、Glorytun 和 OpenVPN。"
+
+msgid "Use V2Ray/XRay for UDP too"
+msgstr "也为 UDP 使用 V2Ray/XRay"
+
+msgid "Use when MPTCP is blocked by your ISP."
+msgstr "当 MPTCP 被运营商屏蔽时使用。"
+
+msgid "V2Ray/XRay UDP"
+msgstr "V2Ray/XRay UDP"
+
+msgid "Validation errors exist in the form. Please check all fields."
+msgstr "表单中存在验证错误，请检查所有字段。"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "VPN:"
+msgstr "VPN:"
+
+msgid "VPN for ICMP (and UDP with Shadowsocks proxy)."
+msgstr "ICMP 的 VPN（使用 Shadowsocks 代理时也适用于 UDP）。"
+
+msgid "WAN"
+msgstr "广域网"
+
+msgid "WAN interfaces"
+msgstr "广域网接口"
+
+msgid "Weighted Load Balancing"
+msgstr "加权负载均衡"
+
+msgid "When enabled, checks are done on external sites to get each WAN IP and the IP used to go outside."
+msgstr "启用后，将在外部站点上进行检查以获取每个 WAN IP 及对外使用的 IP。"
+
+msgid "When proxy V2Ray/XRay VLESS, VMESS or Trojan is used, use it for UDP"
+msgstr "使用 V2Ray/XRay VLESS、VMESS 或 Trojan 代理时，也将其用于 UDP"
+
+msgid "Whois WAN IPs retrieve timeout"
+msgstr "Whois WAN IP 获取超时"
+
+msgid "XRay Transport"
+msgstr "XRay 传输协议"
+
+msgid "XRay user id"
+msgstr "XRay 用户 ID"
+
 #~ msgid ""
 #~ "You should disable SQM for LTE or any interfaces with variable speed."
 #~ msgstr "您应该为LTE或任何网速不稳的接口禁用SQM."

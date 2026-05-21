@@ -1141,6 +1141,16 @@ return baseclass.extend({
 		o.placeholder = dev ? dev._devstate('qlen') : '';
 		o.datatype = 'uinteger';
 
+		o = this.replaceOption(s, 'devadvanced', form.ListValue, 'qdisc', _('Queuing discipline (qdisc)'), _('Linux packet scheduler queuing discipline applied to this interface'));
+		o.value('', _('default'));
+		o.value('fq_codel', 'fq_codel');
+		o.value('cake', 'cake');
+		o.value('sfq', 'sfq');
+		o.value('fq', 'fq');
+		o.value('pfifo_fast', 'pfifo_fast');
+		o.value('noqueue', 'noqueue');
+		o.rmempty = true;
+
 		o = this.replaceOption(s, 'devadvanced', form.Flag, 'autoneg', _('Autonegociation'));
 		o.default = o.enabled;
 

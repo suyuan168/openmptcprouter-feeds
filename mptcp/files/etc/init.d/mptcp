@@ -74,11 +74,18 @@ global_multipath_settings() {
 		[ -z "$mptcp_close_timeout" ] || sysctl -qew net.mptcp.close_timeout="$mptcp_close_timeout"
 		[ -z "$mptcp_syn_retrans_before_tcp_fallback" ] || sysctl -qew net.mptcp.syn_retrans_before_tcp_fallback="$mptcp_syn_retrans_before_tcp_fallback"
 		[ -z "$mptcp_blackhole_timeout" ] || sysctl -qew net.mptcp.blackhole_timeout="$mptcp_blackhole_timeout"
-		if [ -n "$mptcp_scheduler" ] && [ -d /usr/share/bpf/scheduler ]; then
-			for scheduler in /usr/share/bpf/scheduler/*.o; do
-				[ -f "$scheduler" ] && bpftool struct_ops register "$scheduler" >/dev/null 2>&1
-			done
+		if [ -n "$mptcp_scheduler" ]; then
 			local sched="${mptcp_scheduler#mptcp_}"; sched="${sched%.o}"
+			if [ -d /usr/share/bpf/scheduler ]; then
+				local pin_dir="/sys/fs/bpf/mptcp"
+				mkdir -p "$pin_dir"
+				# Unregister any previously pinned struct_ops to avoid conflicts
+				for pin in "$pin_dir"/*; do
+					[ -e "$pin" ] && bpftool struct_ops unregister pinned "$pin" >/dev/null 2>&1 && rm -f "$pin"
+				done
+				local obj="/usr/share/bpf/scheduler/mptcp_${sched}.o"
+				[ -f "$obj" ] && bpftool struct_ops register "$obj" "$pin_dir/" >/dev/null 2>&1
+			fi
 			sysctl -qew net.mptcp.scheduler="$sched" >/dev/null 2>&1
 		fi
 	fi
@@ -130,7 +137,7 @@ interface_max_metric() {
 }
 
 interface_multipath_settings() {
-	local mode iface proto metric ip4table
+	local mode iface proto metric ip4table qdisc
 	local config="$1"
 	local intf="$2"
 	local enabled uci_route
@@ -144,6 +151,7 @@ interface_multipath_settings() {
 
 	config_get enabled "$config" auto "1"
 	config_get txqueuelen "$config" txqueuelen
+	config_get qdisc "$config" qdisc
 	case "$iface" in *@*) iface=$(ifstatus "$config" | jsonfilter -q -e '@["device"]') ;; esac
 	if [ "$(uci -q get openmptcprouter.${config}.metric)" = "" ] || [ "$(uci -q get openmptcprouter.${config}.metric)" = "1" ]; then
 		count=$((count+1))
@@ -358,6 +366,7 @@ interface_multipath_settings() {
 			#ifconfig $iface txqueuelen 1000 > /dev/null 2>&1
 			ip link set dev $iface txqueuelen 1000 > /dev/null 2>&1
 		fi
+		tc qdisc replace dev $iface root ${qdisc:-fq} > /dev/null 2>&1
 	fi
 	if [ -z "$gateway" ] && [ -n "$network" ]; then
 		if [ "$uci_route" = "1" ]; then
@@ -393,6 +402,7 @@ interface_multipath_settings() {
 			#ifconfig $iface txqueuelen 1000 > /dev/null 2>&1
 			ip link set dev $iface txqueuelen 1000 > /dev/null 2>&1
 		fi
+		tc qdisc replace dev $iface root ${qdisc:-fq} > /dev/null 2>&1
 	fi
 	if [ "$(uci -q get openmptcprouter.settings.disable_ipv6)" != "1" ] && [ "$config" != "omr6in4" ]; then
 		# IPv6 Updates:
@@ -659,6 +669,13 @@ start_service() {
 		ethtool -K eth0 rx off tx off > /dev/null 2>&1
 		ethtool -K eth1 rx off tx off > /dev/null 2>&1
 	;; esac
+}
+
+stop_service() {
+	local pin_dir="/sys/fs/bpf/mptcp"
+	for pin in "$pin_dir"/*; do
+		[ -e "$pin" ] && bpftool struct_ops unregister pinned "$pin" >/dev/null 2>&1 && rm -f "$pin"
+	done
 }
 
 reload_service() {

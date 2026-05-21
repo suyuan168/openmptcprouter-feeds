@@ -147,6 +147,13 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 	fi
 
 	if [ "$multipath_status" != "off" ] || { [ -n "$OMR_TRACKER_INTERFACE" ] && [ "$(uci -q get openmptcprouter.$OMR_TRACKER_INTERFACE.multipathvpn)" = "1" ]; }; then
+		disable_multipath_off=""
+		if [ -n "$OMR_TRACKER_INTERFACE" ]; then
+			disable_multipath_off="$(uci -q get omr-tracker.$OMR_TRACKER_INTERFACE.disable_multipath_off)"
+		fi
+		[ -z "$disable_multipath_off" ] && disable_multipath_off="$(uci -q get omr-tracker.defaults.disable_multipath_off)"
+		[ -z "$disable_multipath_off" ] && disable_multipath_off="0"
+
 		if [ "$OMR_TRACKER_STATUS_MSG" = "" ]; then
 			_log "$OMR_TRACKER_INTERFACE ($OMR_TRACKER_DEVICE) switched off (interface up status: $interface_up - Tracker status: $OMR_TRACKER_STATUS)"
 		else
@@ -156,9 +163,9 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 			uci -q set openmptcprouter.$OMR_TRACKER_INTERFACE.state='down'
 			env -i ACTION="disconnecting" INTERFACE="$OMR_TRACKER_INTERFACE" DEVICE="$OMR_TRACKER_DEVICE" /sbin/hotplug-call iface
 		fi
-		#if [ "$(sysctl -n net.mptcp.mptcp_enabled | tr -d '\n')" = "1" ]; then
-		multipath "$OMR_TRACKER_DEVICE" off > /dev/null 2>&1
-		#fi
+		if [ "$disable_multipath_off" != "1" ]; then
+			multipath "$OMR_TRACKER_DEVICE" off > /dev/null 2>&1
+		fi
 		if [ "$(uci -q get glorytun-udp.vpn.enable)" = "1" ] && [ "$OMR_TRACKER_TYPE" != "glorytun" ]; then
 			if [ -n "$OMR_TRACKER_DEVICE_IP" ]; then
 				glorytun-udp path addr "$OMR_TRACKER_DEVICE_IP" dev tun0 set down > /dev/null 2>&1
@@ -283,7 +290,7 @@ if [ "$OMR_TRACKER_STATUS" = "ERROR" ] || { [ "$OMR_TRACKER_INTERFACE" != "omrvp
 			_log "Glorytun UDP VPN down, restart it"
 			/etc/init.d/glorytun-udp restart >/dev/null 2>&1
 		fi
-		if [ "$(uci -q get openvpn.omr.enabled)" = "1" ]; then
+		if [ "$(uci -q get openvpn.omr.enabled)" = "1" ] && [ "$(uci -q get openmptcprouter.settings.vpn)" != "none" ]; then
 			_log "OpenVPN down, restart it"
 			/etc/init.d/openvpn restart omr >/dev/null 2>&1
 		fi

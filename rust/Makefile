@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rust
-PKG_VERSION:=1.91.1
+PKG_VERSION:=1.95.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=rustc-$(PKG_VERSION)-src.tar.gz
 PKG_SOURCE_URL:=https://static.rust-lang.org/dist/
-PKG_HASH:=38dce205d39f61571261f0444237a1ce9efecb970e760d8ec4d957af5b445723
+PKG_HASH:=ea9b82a83e46967537c3569ce9d6fa16811c043a96e651376c349e70241ca515
 HOST_BUILD_DIR:=$(BUILD_DIR)/host/rustc-$(PKG_VERSION)-src
 
 PKG_MAINTAINER:=Luca Barbato <lu_zero@luminem.org>
@@ -75,9 +75,11 @@ HOST_CONFIGURE_ARGS = \
 	--dist-compression-formats=gz \
 	--disable-sanitizers \
 	--release-channel=stable \
+	--set=rust.omit-git-hash=true \
 	--enable-cargo-native-static \
 	--bootstrap-cache-path=$(DL_DIR)/rustc \
-	--set=llvm.download-ci-llvm=true \
+	--set=llvm.download-ci-llvm=false \
+	--set=llvm.build-config.LLVM_APPEND_VC_REV=OFF \
 	$(TARGET_CONFIGURE_ARGS)
 
 define Host/Uninstall

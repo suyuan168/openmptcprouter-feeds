@@ -51,6 +51,18 @@ msgid "Skip TLS certificate verification"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "TLS"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Cipher suites"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Colon-separated list of TLS cipher suites (leave empty for defaults)"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
 msgid "Authentication"
 msgstr ""
 
@@ -176,6 +188,58 @@ msgstr ""
 
 #: htdocs/luci-static/resources/view/services/mqvpn.js
 msgid "Automatically add WAN interfaces as multipath paths. If disabled, use the paths defined below."
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reinjection control"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Enable reinjection control"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reinjection mode"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Default"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Deadline"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Datagram"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "FEC"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Enable Forward Error Correction"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "FEC scheme"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Galois Calculation"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Packet Mask"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reed-Solomon"
+msgstr ""
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "XOR"
 msgstr ""
 
 #: htdocs/luci-static/resources/view/services/mqvpn.js

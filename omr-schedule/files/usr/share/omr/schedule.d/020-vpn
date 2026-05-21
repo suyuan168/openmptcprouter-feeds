@@ -8,7 +8,29 @@
 # This script ensures only the VPN set in openmptcprouter.settings.vpn is enabled
 
 configured_vpn="$(uci -q get openmptcprouter.settings.vpn)"
-[ -z "$configured_vpn" ] && exit 0
+if [ -z "$configured_vpn" ]; then
+	if [ "$(uci -q get glorytun.vpn.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/glorytun ]; then
+		configured_vpn="glorytun_tcp"
+	elif [ "$(uci -q get glorytun-udp.vpn.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/glorytun-udp ]; then
+		configured_vpn="glorytun_udp"
+	elif [ "$(uci -q get mlvpn.general.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/mlvpn ]; then
+		configured_vpn="mlvpn"
+	elif [ "$(uci -q get mqvpn.settings.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/mqvpn ]; then
+		configured_vpn="mqvpn"
+	elif [ "$(uci -q get dsvpn.vpn.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/dsvpn ]; then
+		configured_vpn="dsvpn"
+	elif [ "$(uci -q get softethervpn.openmptcprouter.enable 2>/dev/null)" = "1" ] && [ -f /etc/init.d/softethervpnclient ]; then
+		configured_vpn="softethervpn"
+	elif [ "$(uci -q get openvpn.omr.enabled 2>/dev/null)" = "1" ] && [ -f /etc/init.d/openvpn ]; then
+		configured_vpn="openvpn"
+	else
+		configured_vpn="none"
+	fi
+	uci -q set "openmptcprouter.settings.vpn=${configured_vpn}"
+	uci -q commit openmptcprouter
+fi
+
+changed=0
 
 _set_vpn_state() {
 	local vpn_name="$1"   # internal name (e.g. glorytun_tcp)
@@ -35,8 +57,9 @@ _set_vpn_state() {
 	if [ "$want" = "1" ]; then
 		/etc/init.d/${init} restart >/dev/null 2>&1
 	else
-		/etc/init.d/${init} stop >/dev/null 2>&1
+		/etc/init.d/${init} running 2>/dev/null && /etc/init.d/${init} stop >/dev/null 2>&1
 	fi
+	changed=1
 }
 
 _set_openvpn_state() {
@@ -59,8 +82,9 @@ _set_openvpn_state() {
 	if [ "$want" = "1" ]; then
 		/etc/init.d/openvpn restart >/dev/null 2>&1
 	else
-		/etc/init.d/openvpn stop >/dev/null 2>&1
+		/etc/init.d/openvpn running 2>/dev/null && /etc/init.d/openvpn stop >/dev/null 2>&1
 	fi
+	changed=1
 }
 
 _set_vpn_state "glorytun_tcp"  glorytun     vpn              enable  glorytun
@@ -70,4 +94,6 @@ _set_vpn_state "mqvpn"         mqvpn        settings         enable  mqvpn
 _set_vpn_state "dsvpn"         dsvpn        vpn              enable  dsvpn
 _set_vpn_state "softethervpn"  softethervpn openmptcprouter  enable  softethervpnclient
 _set_openvpn_state
+
+[ "$changed" = "1" ] && /etc/init.d/omr-tracker restart >/dev/null 2>&1
 exit 0

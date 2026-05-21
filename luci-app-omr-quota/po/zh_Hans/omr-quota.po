@@ -58,3 +58,11 @@ msgstr "发送配额 (kbit)"
 #: luci-app-omr-quota/luasrc/model/cbi/quota/quota.lua:30
 msgid "TX+RX quota (kbit)"
 msgstr "发送+接收配额 (kbit)"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "Add interface…"
+msgstr "添加接口…"
+
+#: htdocs/luci-static/resources/view/omr-quota/quota.js
+msgid "-- select interface --"
+msgstr "-- 选择接口 --"

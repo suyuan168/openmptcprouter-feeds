@@ -16,6 +16,7 @@ LIST_SEP="
 
 UCI_STARTED=
 UCI_DISABLED=
+UCI_DISABLED_NAMES=
 
 version_over_5_4() {
 	MAJOR_VERSION=$(uname -r | awk -F '.' '{print $1}')
@@ -202,6 +203,7 @@ start_uci_instance() {
 
 	section_enabled "$s" || {
 		append UCI_DISABLED "$config" "$LIST_SEP"
+		append UCI_DISABLED_NAMES "$s" "$LIST_SEP"
 		return 1
 	}
 
@@ -265,6 +267,10 @@ start_path_instance() {
 	# don't start configs which are set to disabled in uci
 	if echo "$UCI_DISABLED" | grep -qxF "$path"; then
 		logger -t openvpn "$name.conf is disabled in /etc/config/openvpn"
+		return
+	fi
+	if echo "$UCI_DISABLED_NAMES" | grep -qxF "$name"; then
+		logger -t openvpn "$name is disabled in /etc/config/openvpn"
 		return
 	fi
 

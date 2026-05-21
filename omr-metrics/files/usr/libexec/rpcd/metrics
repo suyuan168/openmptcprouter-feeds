@@ -1,0 +1,67 @@
+#!/bin/sh
+# /usr/libexec/rpcd/metrics
+# rpcd plugin exposing omr-tracker metrics via ubus
+#
+# Usage:
+#   ubus call metrics get_status '{"interface":"wan1"}'
+#   ubus call metrics get_all
+#   ubus call metrics get_interfaces
+
+METRICS_DIR="/tmp/metrics"
+
+case "$1" in
+	list)
+		# Declare available methods and their parameter signatures
+		echo '{'
+		echo '  "get_status": { "interface": "str" },'
+		echo '  "get_all": {},'
+		echo '  "get_interfaces": {}'
+		echo '}'
+		;;
+	call)
+		case "$2" in
+			get_status)
+				# Read JSON input to get interface name
+				input=$(cat)
+				iface=$(echo "$input" | jsonfilter -q -e '@.interface')
+				if [ -z "$iface" ]; then
+					echo '{"error": "missing interface parameter"}'
+					exit 1
+				fi
+				metrics_file="${METRICS_DIR}/${iface}.json"
+				if [ -f "$metrics_file" ]; then
+					cat "$metrics_file"
+				else
+					echo "{\"interface\": \"${iface}\", \"error\": \"no data available\"}"
+				fi
+				;;
+			get_all)
+				# Return metrics for all tracked interfaces
+				echo '{"interfaces": ['
+				first=1
+				for f in "${METRICS_DIR}"/*.json; do
+					[ -f "$f" ] || continue
+					[ "$first" = "1" ] && first=0 || echo ','
+					cat "$f"
+				done
+				echo ']}'
+				;;
+			get_interfaces)
+				# Return list of tracked interface names
+				echo '{"interfaces": ['
+				first=1
+				for f in "${METRICS_DIR}"/*.json; do
+					[ -f "$f" ] || continue
+					iface_name=$(basename "$f" .json)
+					[ "$first" = "1" ] && first=0 || echo ','
+					echo "\"${iface_name}\""
+				done
+				echo ']}'
+				;;
+			*)
+				echo '{"error": "unknown method"}'
+				exit 1
+				;;
+		esac
+		;;
+esac

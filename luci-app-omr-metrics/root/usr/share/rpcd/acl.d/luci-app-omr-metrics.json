@@ -1,0 +1,14 @@
+{
+    "luci-app-omr-metrics": {
+        "description": "Grant access to OpenMPTCProuter WAN Metrics",
+        "read": {
+            "ubus": {
+                "metrics": [
+                    "get_all",
+                    "get_interfaces",
+                    "get_status"
+                ]
+            }
+        }
+    }
+}

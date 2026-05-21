@@ -6,10 +6,12 @@ if [ -z "$(uci -q get firewall.omr_dst_udp_banip_v4)" ]; then
 		set firewall.omr_dst_udp_banip_v4.name='omr_dst_udp_banip_v4'
 		set firewall.omr_dst_udp_banip_v4.family='ipv4'
 		set firewall.omr_dst_udp_banip_v4.loadfile='/etc/luci-uploads/banudpipv4.list'
+		set firewall.omr_dst_udp_banip_v4.match='dest_net dest_port'
 		set firewall.omr_dst_udp_banip_v6=ipset
 		set firewall.omr_dst_udp_banip_v6.name='omr_dst_udp_banip_v6'
 		set firewall.omr_dst_udp_banip_v6.family='ipv6'
 		set firewall.omr_dst_udp_banip_v6.loadfile='/etc/luci-uploads/banudpipv6.list'
+		set firewall.omr_dst_udp_banip_v6.match='dest_net dest_port'
 		set firewall.omr_dst_udp_banip_rule_v4=rule
 		set firewall.omr_dst_udp_banip_rule_v4.name='omr_dst_udp_banip_rule_v4'
 		set firewall.omr_dst_udp_banip_rule_v4.family='ipv4'
@@ -18,7 +20,7 @@ if [ -z "$(uci -q get firewall.omr_dst_udp_banip_v4)" ]; then
 		set firewall.omr_dst_udp_banip_rule_v4.ipset='omr_dst_udp_banip_v4'
 		set firewall.omr_dst_udp_banip_rule_v4.dest='*'
 		set firewall.omr_dst_udp_banip_rule_v4.target='REJECT'
-		set firewall.omr_dst_udp_banip_rule_v4.enabled='1'
+		set firewall.omr_dst_udp_banip_rule_v4.enabled='0'
 		set firewall.omr_dst_udp_banip_rule_v6=rule
 		set firewall.omr_dst_udp_banip_rule_v6.name='omr_dst_udp_banip_rule_v6'
 		set firewall.omr_dst_udp_banip_rule_v6.family='ipv6'
@@ -27,24 +29,24 @@ if [ -z "$(uci -q get firewall.omr_dst_udp_banip_v4)" ]; then
 		set firewall.omr_dst_udp_banip_rule_v6.ipset='omr_dst_udp_banip_v6'
 		set firewall.omr_dst_udp_banip_rule_v6.dest='*'
 		set firewall.omr_dst_udp_banip_rule_v6.target='REJECT'
-		set firewall.omr_dst_udp_banip_rule_v6.enabled='1'
+		set firewall.omr_dst_udp_banip_rule_v6.enabled='0'
 		commit firewall
 	EOF
 fi
 
-if [ "$(uci -q get firewall.omr_dst_udp_banip_v4.match)" != "dest_net dest_port" ]; then
+# Migrate: match was incorrectly stored as a UCI list; fw4 requires a single string value
+if [ "$(uci -q get firewall.omr_dst_udp_banip_v4.match)" != "dest_net dest_port" ] || \
+   uci show firewall.omr_dst_udp_banip_v4.match 2>/dev/null | grep -qF "'dest_net' 'dest_port'"; then
 	uci -q batch <<-EOF >/dev/null
 		delete firewall.omr_dst_udp_banip_v4.storage
 		delete firewall.omr_dst_udp_banip_v6.storage
 		delete firewall.omr_dst_udp_banip_v4.match
-		add_list firewall.omr_dst_udp_banip_v4.match='dest_net'
-		add_list firewall.omr_dst_udp_banip_v4.match='dest_port'
+		set firewall.omr_dst_udp_banip_v4.match='dest_net dest_port'
 		delete firewall.omr_dst_udp_banip_v6.match
-		add_list firewall.omr_dst_udp_banip_v6.match='dest_net'
-		add_list firewall.omr_dst_udp_banip_v6.match='dest_port'
+		set firewall.omr_dst_udp_banip_v6.match='dest_net dest_port'
 		commit firewall
 	EOF
-	if [ -n "$(nft list ruleset)" ]; then
+	if [ -n "$(nft list ruleset 2>/dev/null)" ]; then
 		/sbin/fw4 -q stop >/dev/null 2>&1 || true
 		sleep 2
 		/sbin/fw4 -q flush >/dev/null 2>&1 || true
@@ -52,8 +54,8 @@ if [ "$(uci -q get firewall.omr_dst_udp_banip_v4.match)" != "dest_net dest_port"
 	fi
 fi
 
-if [ -z "$(grep banudpipv4 | /etc/crontabs/root)" ]; then
-	echo '0 1 * * * /usr/bin/wget -O /etc/luci-uploads/banudpipv4.list https://files-update.openmptcprouter.com/banudpipv4.list' > /etc/crontabs/root
-	echo '1 1 * * * /usr/bin/wget -O /etc/luci-uploads/banudpipv6.list https://files-update.openmptcprouter.com/banudpipv6.list && /etc/init.d/firewall reload' > /etc/crontabs/root
+if [ -z "$(grep banudpipv4 /etc/crontabs/root 2>/dev/null)" ]; then
+	echo '0 1 * * * /usr/bin/wget -O /etc/luci-uploads/banudpipv4.list https://files-update.openmptcprouter.com/banudpipv4.list' >> /etc/crontabs/root
+	echo '1 1 * * * /usr/bin/wget -O /etc/luci-uploads/banudpipv6.list https://files-update.openmptcprouter.com/banudpipv6.list && /etc/init.d/firewall reload' >> /etc/crontabs/root
 	rm -f /etc/crontab
 fi

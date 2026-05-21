@@ -55,6 +55,7 @@ function remove_server(serverdel)
 	ucic:commit("openmptcprouter")
 	ucic:save("network")
 	ucic:commit("network")
+	os.execute("ubus call network reload 2>&1 >/dev/null")
 end
 
 function add_interface(add_interface_ifname)
@@ -242,6 +243,8 @@ function set_interface(intf,proto,ipaddr,netmask,gateway,sqmenabled,downloadspee
 end
 
 function default_vpn(default_vpn)
+	-- Stop all VPN services before switching to avoid stale tunnels.
+	force_stop_vpn("all")
 	-- Get VPN set by default
 	local vpn_port = ""
 	local vpn_intf = ""
@@ -250,9 +253,8 @@ function default_vpn(default_vpn)
 		vpn_intf = "tun0"
 		ucic:set("network","omrvpn","proto","none")
 		if default_vpn == "glorytun_udp" then
-			ucic:set("glorytun","vpn","proto","udp")
-			ucic:set("glorytun","vpn","localip","10.255.254.2")
-			ucic:set("glorytun","vpn","remoteip","10.255.254.1")
+			ucic:set("glorytun-udp","vpn","localip","10.255.254.2")
+			ucic:set("glorytun-udp","vpn","remoteip","10.255.254.1")
 			ucic:set("network","omr6in4","ipaddr","10.255.254.2")
 			ucic:set("network","omr6in4","peeraddr","10.255.254.1")
 		else
@@ -282,6 +284,8 @@ function default_vpn(default_vpn)
 		vpn_port = 65443
 		vpn_intf = "tun0"
 		ucic:set("network","omrvpn","proto","dhcp")
+	elseif default_vpn == "softethervpn" or default_vpn == "softether" then
+		ucic:set("network","omrvpn","proto","dhcp")
 	end
 	if vpn_intf ~= "" then
 		ucic:set("network","omrvpn","device",vpn_intf)
@@ -289,11 +293,8 @@ function default_vpn(default_vpn)
 		ucic:commit("network")
 	end
 	-- Set Glorytun settings
-	if default_vpn:match("^glorytun.*") then
-		ucic:set("glorytun","vpn","enable",1)
-	else
-		ucic:set("glorytun","vpn","enable",0)
-	end
+	ucic:set("glorytun","vpn","enable",default_vpn == "glorytun_tcp" and 1 or 0)
+	ucic:set("glorytun-udp","vpn","enable",default_vpn == "glorytun_udp" and 1 or 0)
 	-- Set A Dead Simple VPN settings
 	if default_vpn == "dsvpn" then
 		ucic:set("dsvpn","vpn","enable",1)
@@ -318,9 +319,16 @@ function default_vpn(default_vpn)
 	else
 		ucic:set("mqvpn","settings","enable",0)
 	end
+	if default_vpn == "softethervpn" or default_vpn == "softether" then
+		ucic:set("softethervpn","openmptcprouter","enable",1)
+	else
+		ucic:set("softethervpn","openmptcprouter","enable",0)
+	end
 	ucic:set("openmptcprouter","settings","vpn",default_vpn)
 	ucic:save("glorytun")
 	ucic:commit("glorytun")
+	ucic:save("glorytun-udp")
+	ucic:commit("glorytun-udp")
 	ucic:save("mlvpn")
 	ucic:commit("mlvpn")
 	ucic:save("dsvpn")
@@ -329,13 +337,22 @@ function default_vpn(default_vpn)
 	ucic:commit("openvpn")
 	ucic:save("mqvpn")
 	ucic:commit("mqvpn")
+	ucic:save("softethervpn")
+	ucic:commit("softethervpn")
 	ucic:save("openmptcprouter")
 	ucic:commit("openmptcprouter")
 	ucic:save("network")
 	ucic:commit("network")
+	-- Start the newly selected VPN
+	force_start_vpn(default_vpn)
 end
 
 function default_proxy(proxy)
+	-- Stop the currently active proxy before switching
+	local prev_proxy = ucic:get("openmptcprouter","settings","proxy") or ""
+	if prev_proxy ~= "" and prev_proxy ~= proxy then
+		force_stop_proxy(prev_proxy)
+	end
 	-- Enable/disable proxy services based on selection
 	local is_ss_libev  = (proxy == "shadowsocks")
 	local is_ss_rust   = (proxy == "shadowsocks-rust" or proxy == "shadowsocks-go")
@@ -378,12 +395,19 @@ function default_proxy(proxy)
 	ucic:set("openmptcprouter","settings","proxy",proxy)
 	ucic:save("openmptcprouter")
 	ucic:commit("openmptcprouter")
+	-- Start the newly selected proxy
+	force_start_proxy(proxy)
 end
 
-function server_settings(server,server_ip,openmptcprouter_vps_key)
+function server_settings(server,server_ip,openmptcprouter_vps_key,openmptcprouter_vps_username)
 	-- OpenMPTCProuter VPS
+	if openmptcprouter_vps_username == nil or tostring(openmptcprouter_vps_username) == "" then
+		openmptcprouter_vps_username = "openmptcprouter"
+	else
+		openmptcprouter_vps_username = tostring(openmptcprouter_vps_username)
+	end
 	ucic:set("openmptcprouter",server,"server")
-	ucic:set("openmptcprouter",server,"username","openmptcprouter")
+	ucic:set("openmptcprouter",server,"username",openmptcprouter_vps_username)
 	ucic:set("openmptcprouter",server,"password",openmptcprouter_vps_key)
 	ucic:set("openmptcprouter",server,"ip",{server_ip})
 	ucic:set("openmptcprouter",server,"port","65500")
@@ -392,6 +416,7 @@ function server_settings(server,server_ip,openmptcprouter_vps_key)
 		ucic:set("shadowsocks-libev","sss0","server",server_ip)
 		ucic:set("shadowsocks-rust","sss0","server",server_ip)
 		ucic:set("glorytun","vpn","host",server_ip)
+		ucic:set("glorytun-udp","vpn","host",server_ip)
 		ucic:set("dsvpn","vpn","host",server_ip)
 		ucic:set("mlvpn","general","host",server_ip)
 		local mqvpn_port = "65443"
@@ -421,6 +446,8 @@ function server_settings(server,server_ip,openmptcprouter_vps_key)
 		ucic:commit("xray")
 		ucic:save("glorytun")
 		ucic:commit("glorytun")
+		ucic:save("glorytun-udp")
+		ucic:commit("glorytun-udp")
 		ucic:save("mqvpn")
 		ucic:commit("mqvpn")
 		ucic:save("shadowsocks-libev")
@@ -449,8 +476,12 @@ function set_glorytun(glorytun_key)
 	ucic:set("glorytun","vpn","key",glorytun_key)
 	ucic:set("glorytun","vpn","mptcp",1)
 	ucic:set("glorytun","vpn","chacha20",1)
+	ucic:set("glorytun-udp","vpn","port","65001")
+	ucic:set("glorytun-udp","vpn","key",glorytun_key)
 	ucic:save("glorytun")
 	ucic:commit("glorytun")
+	ucic:save("glorytun-udp")
+	ucic:commit("glorytun-udp")
 end
 
 function set_dsvpn(dsvpn_key)
@@ -553,6 +584,30 @@ local function _unique_string_list(values)
 	end
 
 	return list
+end
+
+local function _first_nonempty_string(value)
+	if type(value) == "table" then
+		for _, item in ipairs(value) do
+			local s = _as_string(item, "")
+			if s ~= "" then
+				return s
+			end
+		end
+		return ""
+	end
+	return _as_string(value, "")
+end
+
+local function _as_string_list(value)
+	if type(value) == "table" then
+		return _unique_string_list(value)
+	end
+	local item = _as_string(value, "")
+	if item == "" then
+		return {}
+	end
+	return { item }
 end
 
 local function valid_ipv4(ip)
@@ -679,7 +734,10 @@ function wizard_add(args)
 
 				_set_or_delete("network", name, "type", _as_string(itf.type, ""))
 				_set_or_delete("network", name, "masterintf", _as_string(itf.masterintf, ""))
-				_set_or_delete("network", name, "device", _as_string(itf.ifname, ""))
+				local _vlan = _as_string(itf.vlan, "")
+				local _dev = _as_string(itf.ifname, "")
+				if _vlan ~= "" then _dev = _dev .. "." .. _vlan end
+				_set_or_delete("network", name, "device", _dev)
 				_set_or_delete("network", name, "ip6addr", _as_string(itf.ip6addr, ""))
 				_set_or_delete("network", name, "ip6gw", _as_string(itf.ip6gw, ""))
 				_set_or_delete("network", name, "ipv6", _as_string(itf.ipv6, "0"))
@@ -735,6 +793,7 @@ function wizard_add(args)
 
 	local master_ip = ""
 	local master_key = ""
+	local master_username = "openmptcprouter"
 	local master_iplist = {}
 	for _, srv in ipairs(servers) do
 		if type(srv) == "table" then
@@ -759,13 +818,14 @@ function wizard_add(args)
 
 				if sid == master then
 					master_key = _as_string(srv.password, "")
+					master_username = _as_string(srv.username, "openmptcprouter")
 				end
 			end
 		end
 	end
 
 	if master ~= "" and master_ip ~= "" then
-		server_settings(master, master_ip, master_key)
+		server_settings(master, master_ip, master_key, master_username)
 		-- server_settings sets ip to {master_ip}; restore the full list when there
 		-- are multiple IPs so config_list_foreach can reach all of them.
 		if #master_iplist > 1 then
@@ -823,7 +883,9 @@ function settings_add(args)
 		sys.exec("sed -i 's:^net.ipv4.ip_default_ttl=[0-9]*:net.ipv4.ip_default_ttl=%s:' /etc/sysctl.d/zzz_openmptcprouter.conf" % _as_string(args.ip_default_ttl, "64"))
 	end
 
-	disableipv6(_as_string(args.disable_ipv6, "1"))
+	if args.disable_ipv6 ~= nil then
+		disableipv6(_as_string(args.disable_ipv6, "1"))
+	end
 	_set_or_delete("openmptcprouter", "settings", "disable_6in4", _to_flag(args.disable_6in4))
 	_set_or_delete("openmptcprouter", "settings", "disable_modemmanager", _to_flag(args.disable_modemmanager))
 	_set_or_delete("openmptcprouter", "settings", "external_check", _to_flag(args.externalcheck))
@@ -897,6 +959,130 @@ function settings_add(args)
 	apply_settings_async()
 
 	return { status = "reload" }
+end
+
+local function set_vpn_enabled(vpn, enabled)
+	local value = enabled and "1" or "0"
+	local configs = {}
+
+	if vpn == "all" or vpn:match("^glorytun_tcp.*") then
+		ucic:set("glorytun","vpn","enable",value)
+		configs["glorytun"] = true
+	end
+	if vpn == "all" or vpn:match("^glorytun_udp.*") then
+		ucic:set("glorytun-udp","vpn","enable",value)
+		configs["glorytun-udp"] = true
+	end
+	if vpn == "all" or vpn == "dsvpn" then
+		ucic:set("dsvpn","vpn","enable",value)
+		configs["dsvpn"] = true
+	end
+	if vpn == "all" or vpn == "mlvpn" then
+		ucic:set("mlvpn","general","enable",value)
+		configs["mlvpn"] = true
+	end
+	if vpn == "all" or vpn == "openvpn" then
+		ucic:set("openvpn","omr","enabled",value)
+		configs["openvpn"] = true
+	end
+	if vpn == "all" or vpn == "mqvpn" then
+		ucic:set("mqvpn","settings","enable",value)
+		configs["mqvpn"] = true
+	end
+	if vpn == "all" or vpn == "softethervpn" or vpn == "softether" then
+		ucic:set("softethervpn","openmptcprouter","enable",value)
+		configs["softethervpn"] = true
+	end
+
+	for config, _ in pairs(configs) do
+		ucic:save(config)
+		ucic:commit(config)
+	end
+end
+
+function force_start_vpn(vpn)
+	if vpn == nil or vpn == "" then
+		vpn = ucic:get("openmptcprouter","settings","vpn") or "glorytun_tcp"
+	end
+	set_vpn_enabled(vpn, true)
+	if vpn:match("^glorytun_tcp.*") then
+		sys.exec("/etc/init.d/glorytun start >/dev/null 2>/dev/null")
+	elseif vpn:match("^glorytun_udp.*") then
+		sys.exec("/etc/init.d/glorytun-udp start >/dev/null 2>/dev/null")
+	elseif vpn == "dsvpn" then
+		sys.exec("/etc/init.d/dsvpn start >/dev/null 2>/dev/null")
+	elseif vpn == "mlvpn" then
+		sys.exec("/etc/init.d/mlvpn start >/dev/null 2>/dev/null")
+	elseif vpn == "openvpn" then
+		sys.exec("/etc/init.d/openvpn start >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/openvpnbonding start >/dev/null 2>/dev/null")
+	elseif vpn == "mqvpn" then
+		sys.exec("/etc/init.d/mqvpn start >/dev/null 2>/dev/null")
+	elseif vpn == "softethervpn" or vpn == "softether" then
+		sys.exec("/etc/init.d/softethervpnclient start >/dev/null 2>/dev/null")
+	end
+end
+
+function force_stop_vpn(vpn)
+	if vpn == nil or vpn == "" then
+		vpn = ucic:get("openmptcprouter","settings","vpn") or "glorytun_tcp"
+	end
+	set_vpn_enabled(vpn, false)
+	if vpn == "all" then
+		sys.exec("/etc/init.d/glorytun stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/glorytun-udp stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/dsvpn stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/mlvpn stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/openvpn stop omr >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/openvpnbonding stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/mqvpn stop >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/softethervpnclient stop >/dev/null 2>/dev/null")
+	elseif vpn:match("^glorytun_tcp.*") then
+		sys.exec("/etc/init.d/glorytun stop >/dev/null 2>/dev/null")
+	elseif vpn:match("^glorytun_udp.*") then
+		sys.exec("/etc/init.d/glorytun-udp stop >/dev/null 2>/dev/null")
+	elseif vpn == "dsvpn" then
+		sys.exec("/etc/init.d/dsvpn stop >/dev/null 2>/dev/null")
+	elseif vpn == "mlvpn" then
+		sys.exec("/etc/init.d/mlvpn stop >/dev/null 2>/dev/null")
+	elseif vpn == "openvpn" then
+		sys.exec("/etc/init.d/openvpn stop omr >/dev/null 2>/dev/null")
+		sys.exec("/etc/init.d/openvpnbonding stop >/dev/null 2>/dev/null")
+	elseif vpn == "mqvpn" then
+		sys.exec("/etc/init.d/mqvpn stop >/dev/null 2>/dev/null")
+	elseif vpn == "softethervpn" or vpn == "softether" then
+		sys.exec("/etc/init.d/softethervpnclient stop >/dev/null 2>/dev/null")
+	end
+end
+
+function force_start_proxy(proxy)
+	if proxy == nil or proxy == "" then
+		proxy = ucic:get("openmptcprouter","settings","proxy") or "shadowsocks-rust"
+	end
+	if proxy == "shadowsocks" then
+		sys.exec("/etc/init.d/shadowsocks-libev start >/dev/null 2>/dev/null")
+	elseif proxy == "shadowsocks-rust" or proxy == "shadowsocks-go" then
+		sys.exec("/etc/init.d/shadowsocks-rust start >/dev/null 2>/dev/null")
+	elseif proxy:match("^v2ray.*") then
+		sys.exec("/etc/init.d/v2ray start >/dev/null 2>/dev/null")
+	elseif proxy:match("^xray.*") then
+		sys.exec("/etc/init.d/xray start >/dev/null 2>/dev/null")
+	end
+end
+
+function force_stop_proxy(proxy)
+	if proxy == nil or proxy == "" then
+		proxy = ucic:get("openmptcprouter","settings","proxy") or "shadowsocks-rust"
+	end
+	if proxy == "shadowsocks" then
+		sys.exec("/etc/init.d/shadowsocks-libev stop >/dev/null 2>/dev/null")
+	elseif proxy == "shadowsocks-rust" or proxy == "shadowsocks-go" then
+		sys.exec("/etc/init.d/shadowsocks-rust stop >/dev/null 2>/dev/null")
+	elseif proxy:match("^v2ray.*") then
+		sys.exec("/etc/init.d/v2ray stop >/dev/null 2>/dev/null")
+	elseif proxy:match("^xray.*") then
+		sys.exec("/etc/init.d/xray stop >/dev/null 2>/dev/null")
+	end
 end
 
 function restart_all()
@@ -1027,12 +1213,11 @@ end
 function update_vps()
 	sys.exec("/etc/init.d/openmptcprouter-vps restart >/dev/null 2>/dev/null")
 	ucic:foreach("openmptcprouter", "server", function(section)
-		local servername = section[".name"]
-		local serverips = section["ip"]
-		local serverip = serverips[1]
+		local serverips = _as_string_list(section["ip"])
+		local serverip = serverips[1] or ""
 		local adminport = section["port"] or "65500"
 		local token = section["token"] or ""
-		if token ~= "" then
+		if token ~= "" and serverip ~= "" then
 			sys.exec('curl -4 --max-time 20 -s -k -H "Authorization: Bearer ' .. token .. '" https://' .. serverip .. ":" .. adminport .. "/update")
 		end
 	end)
@@ -1218,7 +1403,7 @@ function interfaces_status()
 	if mArray.openmptcprouter["service_addr"] == "" or mArray.openmptcprouter["service_addr"] == "192.168.1.3" then
 		mArray.openmptcprouter["service_addr"] = ""
 		ucic:foreach("openmptcprouter", "server", function(s)
-			local serverip = uci:get("openmptcprouter",s[".name"],"ip") or ""
+			local serverip = _first_nonempty_string(uci:get("openmptcprouter",s[".name"],"ip"))
 			local disabled = uci:get("openmptcprouter",s[".name"],"disabled") or "0"
 			if serverip ~= "" and disabled ~= "1" then
 				mArray.openmptcprouter["service_addr"] = serverip
@@ -1321,10 +1506,10 @@ function interfaces_status()
 	mArray.openmptcprouter["vps_kernel"] = ""
 	local adminport = ""
 	ucic:foreach("openmptcprouter", "server", function(s)
-		local serverips = uci:get("openmptcprouter",s[".name"],"ip") or { "" }
+		local serverips = _as_string_list(uci:get("openmptcprouter",s[".name"],"ip"))
 		local master = uci:get("openmptcprouter",s[".name"],"master") or "1"
 		local current = uci:get("openmptcprouter",s[".name"],"current") or "0"
-		for key, value in pairs(serverips) do
+		for _, value in ipairs(serverips) do
 			local serverip = exec_with_timeout(2, 'resolveip -t 1 ' .. value .. ' | head -n 1 | tr -d "\\n"')
 			if serverip ~= "" and (current == "1" or mArray.openmptcprouter["wan_addr"] == serverip or mArray.openmptcprouter["wan_addr6"] == serverip) and mArray.openmptcprouter["vps_admin"] == false then
 				mArray.openmptcprouter["vps_omr_version"] = uci:get("openmptcprouter", s[".name"], "omr_version") or ""
@@ -1516,12 +1701,12 @@ function interfaces_status()
 			{"glorytun-udp", "vpn", "glorytun_udp"},
 			{"dsvpn", "vpn", "dsvpn"},
 			{"mlvpn", "general", "mlvpn"},
-			{"openvpn", "omr", "openvpn"},
+			{"openvpn", "omr", "openvpn", "enabled"},
 			{"softethervpn", "openmptcprouter", "softether"},
 			{"mqvpn", "settings", "mqvpn"}
 		}
 		for _, v in ipairs(vpn_checks) do
-			if uci:get(v[1], v[2], "enable") == "1" and current_vpn ~= v[3] then
+			if uci:get(v[1], v[2], v[4] or "enable") == "1" and current_vpn ~= v[3] then
 				mArray.openmptcprouter["multi_vpn"] = true
 				break
 			end
@@ -1762,6 +1947,9 @@ function interfaces_status()
 			gw_ping6 = "DOWN"
 			connectivity = "ERROR"
 		end
+		if gateway6 == "" and ipv6 ~= "1" and ipv6 ~= "auto" and gw_ping6 == "DOWN" then
+			gw_ping6 = "OFF"
+		end
 
 		if ifname ~= "" then
 			if proto == "qmi" then
@@ -1791,12 +1979,12 @@ function interfaces_status()
 		if ifname ~= "" and (gateway ~= "" or gateway6 ~= "") and (ipaddr ~= "" or ip6addr ~= "") then
 			if uci:get("openmptcprouter","settings","disableserverping") ~= "1" then
 				uci:foreach("openmptcprouter", "server", function(s)
-					local serverips = uci:get("openmptcprouter",s[".name"],"ip") or { "" }
+					local serverips = _as_string_list(uci:get("openmptcprouter",s[".name"],"ip"))
 					local current = uci:get("openmptcprouter",s[".name"],"current") or "0"
 					if current == "1" then
-						for key, value in pairs(serverips) do
-							server_ping = value
-							if server_ping ~= "UP" then
+						local vps_any_up = false
+						for _, value in ipairs(serverips) do
+							if not vps_any_up then
 								local serverip = gateway ~= "" and
 									exec_with_timeout(2, 'resolveip -t 1 -4 ' .. value .. ' | head -n 1') or
 									exec_with_timeout(2, 'resolveip -t 1 -6 ' .. value .. ' | head -n 1')
@@ -1808,24 +1996,27 @@ function interfaces_status()
 									local spe = ut.trim(sys.exec("echo '" .. spt .. "' | grep -i 'error'"))
 									if spe ~= "" or spr ~= "" then
 										server_ping = "DOWN"
-										if connectivity == "OK" then connectivity = "WARNING" end
 									elseif spnb ~= "" then
 										local spt2 = sys.exec("ping -w 1 -c 1 -I " .. ifname .. " " .. serverip)
 										if ut.trim(sys.exec("echo '" .. spt2 .. "' | grep '100% packet loss'")) ~= "" then
 											server_ping = "DOWN"
-											if connectivity == "OK" then connectivity = "WARNING" end
 										else
 											mArray.openmptcprouter["vps_status"] = "UP"
 											server_ping = "UP"
 											latency = ut.trim(sys.exec("echo '" .. spt2 .. "' | cut -d '/' -s -f5 | cut -d '.' -f1"))
+											vps_any_up = true
 										end
 									else
 										mArray.openmptcprouter["vps_status"] = "UP"
 										server_ping = "UP"
 										latency = ut.trim(sys.exec("echo '" .. spt .. "' | cut -d '/' -s -f5 | cut -d '.' -f1"))
+										vps_any_up = true
 									end
 								end
 							end
+						end
+						if not vps_any_up and server_ping == "DOWN" then
+							if connectivity == "OK" then connectivity = "WARNING" end
 						end
 					end
 				end)
@@ -2043,7 +2234,7 @@ function interfaces_only_status()
 	if mArray.openmptcprouter["service_addr"] == "" or mArray.openmptcprouter["service_addr"] == "192.168.1.3" then
 		mArray.openmptcprouter["service_addr"] = ""
 		ucic:foreach("openmptcprouter", "server", function(s)
-			local serverip = uci:get("openmptcprouter",s[".name"],"ip") or ""
+			local serverip = _first_nonempty_string(uci:get("openmptcprouter",s[".name"],"ip"))
 			local disabled = uci:get("openmptcprouter",s[".name"],"disabled") or "0"
 			if serverip ~= "" and disabled ~= "1" then
 				mArray.openmptcprouter["service_addr"] = serverip
@@ -2158,6 +2349,9 @@ function interfaces_only_status()
 			gw_ping = "DOWN"
 			gw_ping6 = "DOWN"
 			connectivity = "ERROR"
+		end
+		if gateway6 == "" and ipv6 ~= "1" and ipv6 ~= "auto" and gw_ping6 == "DOWN" then
+			gw_ping6 = "OFF"
 		end
 
 		if ifname ~= "" then
@@ -2444,6 +2638,30 @@ local methods = {
 	setopenvpn = {
 		args = { key = "" },
 		call = function(args) set_openvpn(args.key) end
+	},
+	setvpn = {
+		args = { vpn = "openvpn" },
+		call = function(args) default_vpn(args.vpn) end
+	},
+	setproxy = {
+		args = { proxy = "shadowsocks-rust" },
+		call = function(args) default_proxy(args.proxy) end
+	},
+	startvpn = {
+		args = { vpn = "" },
+		call = function(args) force_start_vpn(args.vpn) end
+	},
+	stopvpn = {
+		args = { vpn = "" },
+		call = function(args) force_stop_vpn(args.vpn) end
+	},
+	startproxy = {
+		args = { proxy = "" },
+		call = function(args) force_start_proxy(args.proxy) end
+	},
+	stopproxy = {
+		args = { proxy = "" },
+		call = function(args) force_stop_proxy(args.proxy) end
 	},
 	getmptcpconfig = {
 		args = { interface = "" },

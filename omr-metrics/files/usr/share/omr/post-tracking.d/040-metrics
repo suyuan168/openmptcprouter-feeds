@@ -1,0 +1,554 @@
+#!/bin/sh
+# Saves omr-tracker metrics to JSON for ubus rpcd plugin
+
+METRICS_DIR="/tmp/metrics"
+[ -d "$METRICS_DIR" ] || mkdir -p "$METRICS_DIR"
+
+# Collect modem signal quality if applicable
+_get_modem_signal() {
+	local proto device result
+	proto=$(uci -q get "network.${OMR_TRACKER_INTERFACE}.proto")
+
+	OMR_TRACKER_SIGNAL_QUALITY=""
+	SIGNAL_OPERATOR=""
+	SIGNAL_NUMBER=""
+	SIGNAL_STATE=""
+	SIGNAL_TYPE=""
+	OMR_TRACKER_SIGNAL_RSSI=""
+	OMR_TRACKER_SIGNAL_RSRP=""
+	OMR_TRACKER_SIGNAL_RSRQ=""
+	OMR_TRACKER_SIGNAL_SINR=""
+
+	if [ "$proto" = "modemmanager" ]; then
+		local device_path
+		device_path=$(uci -q get "network.${OMR_TRACKER_INTERFACE}.device")
+		[ -z "$device_path" ] && return
+
+		# "all" mode: PERCENT;OPERATOR;NUMBER;STATE;TYPE
+		result=$(/bin/omr-modemmanager "$device_path" all 2>/dev/null)
+		if [ -n "$result" ]; then
+			SIGNAL_QUALITY=$(echo "$result" | cut -d';' -f1)
+			SIGNAL_OPERATOR=$(echo "$result" | cut -d';' -f2)
+			SIGNAL_NUMBER=$(echo "$result" | cut -d';' -f3)
+			SIGNAL_STATE=$(echo "$result" | cut -d';' -f4)
+			SIGNAL_TYPE=$(echo "$result" | cut -d';' -f5)
+		fi
+
+		# "signal" mode: RSSI;RSRP;RSRQ;SINR
+		result=$(/bin/omr-modemmanager "$device_path" signal 2>/dev/null)
+		if [ -n "$result" ]; then
+			SIGNAL_RSSI=$(echo "$result" | cut -d';' -f1)
+			SIGNAL_RSRP=$(echo "$result" | cut -d';' -f2)
+			SIGNAL_RSRQ=$(echo "$result" | cut -d';' -f3)
+			SIGNAL_SINR=$(echo "$result" | cut -d';' -f4)
+		fi
+
+	elif [ "$proto" = "qmi" ]; then
+		local qmi_device
+		qmi_device=$(uci -q get "network.${OMR_TRACKER_INTERFACE}.device")
+		[ -z "$qmi_device" ] && return
+
+		# "all" mode: PERCENT;OPERATOR;NUMBER;STATE;TYPE
+		result=$(/usr/bin/omr-qmi "$qmi_device" all 2>/dev/null)
+		if [ -n "$result" ]; then
+			SIGNAL_QUALITY=$(echo "$result" | cut -d';' -f1)
+			SIGNAL_OPERATOR=$(echo "$result" | cut -d';' -f2)
+			SIGNAL_NUMBER=$(echo "$result" | cut -d';' -f3)
+			SIGNAL_STATE=$(echo "$result" | cut -d';' -f4)
+			SIGNAL_TYPE=$(echo "$result" | cut -d';' -f5)
+		fi
+
+		# "signal" mode: RSSI;RSRP;RSRQ;SINR
+		result=$(/usr/bin/omr-qmi "$qmi_device" signal 2>/dev/null)
+		if [ -n "$result" ]; then
+			SIGNAL_RSSI=$(echo "$result" | cut -d';' -f1)
+			SIGNAL_RSRP=$(echo "$result" | cut -d';' -f2)
+			SIGNAL_RSRQ=$(echo "$result" | cut -d';' -f3)
+			SIGNAL_SINR=$(echo "$result" | cut -d';' -f4)
+		fi
+
+	fi
+}
+
+
+# Collect WiFi signal via iwinfo
+_get_wifi_signal() {
+	WIFI_SIGNAL=""
+	WIFI_NOISE=""
+	WIFI_BITRATE=""
+	WIFI_SSID=""
+	WIFI_BSSID=""
+	WIFI_CHANNEL=""
+	WIFI_MODE=""
+	WIFI_QUALITY=""
+	WIFI_QUALITY_MAX=""
+
+	[ -z "$OMR_TRACKER_DEVICE" ] && return
+
+	# Check if the device is a wireless interface
+	[ -d "/sys/class/net/${OMR_TRACKER_DEVICE}/wireless" ] || return
+
+	# iwinfo available?
+	command -v iwinfo >/dev/null 2>&1 || return
+
+	local iw_out
+	iw_out=$(iwinfo "$OMR_TRACKER_DEVICE" info 2>/dev/null)
+	[ -z "$iw_out" ] && return
+
+	WIFI_SSID=$(echo "$iw_out" | awk -F'"' '/ESSID:/{print $2}')
+	WIFI_MODE=$(echo "$iw_out" | awk '/Mode:/{print $4}')
+	WIFI_CHANNEL=$(echo "$iw_out" | awk '/Channel:/{gsub(/[^0-9]/,"",$4); print $4}')
+	WIFI_SIGNAL=$(echo "$iw_out" | awk '/Signal:/{print int($2)}')
+	WIFI_NOISE=$(echo "$iw_out" | awk '/Noise:/{print int($2)}')
+	WIFI_BITRATE=$(echo "$iw_out" | awk '/Bit Rate:/{print $3}')
+	WIFI_BSSID=$(echo "$iw_out" | awk '/Access Point:/{print $3}')
+
+	# Link quality from iwinfo (e.g. "Link Quality: 50/70")
+	local lq
+	lq=$(echo "$iw_out" | awk '/Link Quality:/{print $3}')
+	if [ -n "$lq" ]; then
+		WIFI_QUALITY=$(echo "$lq" | cut -d'/' -f1)
+		WIFI_QUALITY_MAX=$(echo "$lq" | cut -d'/' -f2)
+	fi
+
+	# Compute a percentage quality if we have signal
+	if [ -n "$WIFI_QUALITY" ] && [ -n "$WIFI_QUALITY_MAX" ] && [ "$WIFI_QUALITY_MAX" -gt 0 ] 2>/dev/null; then
+		SIGNAL_QUALITY=$(( WIFI_QUALITY * 100 / WIFI_QUALITY_MAX ))
+	fi
+
+	# Map signal to RSSI for consistency
+	[ -n "$WIFI_SIGNAL" ] && SIGNAL_RSSI="$WIFI_SIGNAL"
+	SIGNAL_TYPE="wifi"
+}
+
+
+
+# Collect tc qdisc stats for congestion detection
+_get_tc_stats() {
+	TC_QDISC_TYPE=""
+	TC_SENT_BYTES=""
+	TC_SENT_PKTS=""
+	TC_DROPPED=""
+	TC_OVERLIMITS=""
+	TC_REQUEUES=""
+	TC_BACKLOG_BYTES=""
+	TC_BACKLOG_PKTS=""
+	TC_ECN_MARK=""
+	TC_DROP_OVERLIMIT=""
+	TC_FQ_FLOWS=""
+	TC_FQ_THROTTLED=""
+	TC_FQ_FLOWS_PLIMIT=""
+	TC_NEW_FLOW_COUNT=""
+
+	[ -z "$OMR_TRACKER_DEVICE" ] && return
+	command -v tc >/dev/null 2>&1 || return
+
+	local tc_out
+	tc_out=$(tc -s qdisc show dev "$OMR_TRACKER_DEVICE" 2>/dev/null)
+	[ -z "$tc_out" ] && return
+
+	TC_QDISC_TYPE=$(echo "$tc_out" | awk '/^qdisc/{print $2; exit}')
+
+	local sent_line
+	sent_line=$(echo "$tc_out" | awk '/Sent/{print; exit}')
+	TC_SENT_BYTES=$(echo "$sent_line" | awk '{print $2}')
+	TC_SENT_PKTS=$(echo "$sent_line" | awk '{print $4}')
+	TC_DROPPED=$(echo "$sent_line" | grep -o 'dropped [0-9]*' | awk '{print $2}')
+	TC_OVERLIMITS=$(echo "$sent_line" | grep -o 'overlimits [0-9]*' | awk '{print $2}')
+	TC_REQUEUES=$(echo "$sent_line" | grep -o 'requeues [0-9]*' | awk '{print $2}')
+
+	local backlog_line
+	backlog_line=$(echo "$tc_out" | awk '/backlog/{print; exit}')
+	TC_BACKLOG_BYTES=$(echo "$backlog_line" | awk '{for(i=1;i<=NF;i++) if($i~/^[0-9]+b$/) {sub(/b$/,"",$i); print $i+0; exit}}')
+	TC_BACKLOG_PKTS=$(echo "$backlog_line" | awk '{for(i=1;i<=NF;i++) if($i~/^[0-9]+p$/) {sub(/p$/,"",$i); print $i+0; exit}}')
+
+	# ecn_mark appears as "ecn_mark N" (fq_codel) or "ECN mark N" (cake); sum across all qdiscs
+	TC_ECN_MARK=$(echo "$tc_out" | awk '
+		/ecn_mark/{for(i=1;i<=NF;i++) if($i=="ecn_mark") {s+=$(i+1); break}}
+		/ECN mark/{for(i=1;i<=NF;i++) if($i=="ECN" && $(i+1)=="mark") {s+=$(i+2); break}}
+		END{print s+0}')
+	TC_DROP_OVERLIMIT=$(echo "$tc_out" | awk '
+		/drop_overlimit/{for(i=1;i<=NF;i++) if($i=="drop_overlimit") {s+=$(i+1); break}}
+		END{print s+0}')
+
+	# fq: "N flows (N inactive, N throttled)" and "N gc, N highprio, N throttled, N flows_plimit, ..."
+	TC_FQ_FLOWS=$(echo "$tc_out" | awk '/[0-9]+ flows \(/{print $1+0; exit}')
+	TC_FQ_THROTTLED=$(echo "$tc_out" | awk '/flows_plimit/{gsub(/,/,"",$0); for(i=1;i<=NF;i++) if($i=="throttled") {print $(i-1)+0; exit}}')
+	TC_FQ_FLOWS_PLIMIT=$(echo "$tc_out" | awk '/flows_plimit/{gsub(/,/,"",$0); for(i=1;i<=NF;i++) if($i=="flows_plimit") {print $(i-1)+0; exit}}')
+
+	# fq_codel: "maxpacket N drop_overlimit N new_flow_count N ecn_mark N"
+	TC_NEW_FLOW_COUNT=$(echo "$tc_out" | awk '/new_flow_count/{for(i=1;i<=NF;i++) if($i=="new_flow_count") {print $(i+1)+0; exit}}')
+}
+
+
+# Collect BBR congestion-control metrics per interface via ss -tin.
+# Averaged across all TCP connections sourced from OMR_TRACKER_DEVICE_IP.
+# Only runs when net.ipv4.tcp_congestion_control is bbr or bbr2.
+_get_bbr_stats() {
+	BBR_BW=""
+	BBR_PACING_RATE=""
+	BBR_DELIVERY_RATE=""
+	BBR_CWND=""
+	BBR_MIN_RTT=""
+	BBR_RETRANS=""
+
+	local cc
+	cc=$(sysctl -n net.ipv4.tcp_congestion_control 2>/dev/null)
+	case "$cc" in
+		bbr*) ;;
+		*) return ;;
+	esac
+
+	[ -z "$OMR_TRACKER_DEVICE_IP" ] && return
+	command -v ss >/dev/null 2>&1 || return
+
+	local ss_out
+	ss_out=$(ss -tin src "$OMR_TRACKER_DEVICE_IP" 2>/dev/null)
+	[ -z "$ss_out" ] && return
+
+	local parsed
+	parsed=$(printf '%s\n' "$ss_out" | awk '
+		function tobps(s,   v) {
+			v = s + 0
+			if (index(s, "Gbps")) return int(v * 1000000000)
+			if (index(s, "Mbps")) return int(v * 1000000)
+			if (index(s, "Kbps") || index(s, "kbps")) return int(v * 1000)
+			return int(v)
+		}
+		{
+			for (i = 1; i <= NF; i++) {
+				f = $i
+				if (f == "pacing_rate" && i < NF) { psum += tobps($(i+1)); pn++ }
+				if (f == "delivery_rate" && i < NF) { dsum += tobps($(i+1)); dn++ }
+				if (substr(f,1,5) == "cwnd:") { csum += substr(f,6)+0; cn++ }
+				if (substr(f,1,7) == "minrtt:") { v=substr(f,8)+0; if (!mn||v<mmin) { mmin=v; mn=1 } }
+				if (substr(f,1,8) == "retrans:") { split(f,a,"/"); rsum+=a[2]+0 }
+				# BBR internal block: bbr:(bw:Xbps,mrtt:N.N,pacing_gain:N,cwnd_gain:N)
+				if (substr(f,1,4) == "bbr:" && substr(f,5,1) == "(") {
+					content = f
+					sub(/^bbr:\(/, "", content)
+					sub(/\)$/, "", content)
+					nb = split(content, bp, ",")
+					for (j=1; j<=nb; j++) {
+						if (substr(bp[j],1,3) == "bw:") { bwsum += tobps(substr(bp[j],4)); bwn++ }
+					}
+				}
+			}
+		}
+		END {
+			if (bwn > 0) print "b=" int(bwsum/bwn)
+			if (pn > 0)  print "p=" int(psum/pn)
+			if (dn > 0)  print "d=" int(dsum/dn)
+			if (cn > 0)  print "c=" int(csum/cn)
+			if (mn)      printf "m=%.3f\n", mmin
+			if (rsum > 0) print "r=" rsum
+		}
+	')
+
+	BBR_BW=$(printf '%s\n' "$parsed" | sed -n 's/^b=//p')
+	BBR_PACING_RATE=$(printf '%s\n' "$parsed" | sed -n 's/^p=//p')
+	BBR_DELIVERY_RATE=$(printf '%s\n' "$parsed" | sed -n 's/^d=//p')
+	BBR_CWND=$(printf '%s\n' "$parsed" | sed -n 's/^c=//p')
+	BBR_MIN_RTT=$(printf '%s\n' "$parsed" | sed -n 's/^m=//p')
+	BBR_RETRANS=$(printf '%s\n' "$parsed" | sed -n 's/^r=//p')
+}
+
+
+# Measure current link bandwidth by diffing /sys/class/net stats against a
+# stored state file.  Rates are in bytes/sec; null when no prior sample exists.
+_get_bandwidth_usage() {
+	BW_RX_BYTES=""
+	BW_TX_BYTES=""
+	BW_RX_BPS=""
+	BW_TX_BPS=""
+
+	[ -z "$OMR_TRACKER_DEVICE" ] && return
+	local sys_base="/sys/class/net/${OMR_TRACKER_DEVICE}/statistics"
+	[ -d "$sys_base" ] || return
+
+	local cur_rx cur_tx cur_ts
+	cur_rx=$(cat "${sys_base}/rx_bytes" 2>/dev/null)
+	cur_tx=$(cat "${sys_base}/tx_bytes" 2>/dev/null)
+	cur_ts=$(date +%s)
+
+	[ -z "$cur_rx" ] || [ -z "$cur_tx" ] && return
+
+	BW_RX_BYTES="$cur_rx"
+	BW_TX_BYTES="$cur_tx"
+
+	local state_file="${METRICS_DIR}/.${OMR_TRACKER_INTERFACE}.bw"
+	if [ -f "$state_file" ]; then
+		local prev_rx prev_tx prev_ts
+		read -r prev_rx prev_tx prev_ts < "$state_file" 2>/dev/null
+		local elapsed=$(( cur_ts - prev_ts ))
+		if [ "$elapsed" -gt 0 ] && [ "$cur_rx" -ge "$prev_rx" ] && [ "$cur_tx" -ge "$prev_tx" ] 2>/dev/null; then
+			BW_RX_BPS=$(( (cur_rx - prev_rx) / elapsed ))
+			BW_TX_BPS=$(( (cur_tx - prev_tx) / elapsed ))
+		fi
+	fi
+
+	printf '%s %s %s\n' "$cur_rx" "$cur_tx" "$cur_ts" > "$state_file"
+}
+
+
+# Compute a congestion score (0-100) and level from all available metrics.
+# Components:
+#   bloat  (40%): (latency - rtt_min) / rtt_min — queuing delay ratio
+#                 BBR min_rtt used as baseline when it gives a worse result
+#   loss   (30%): packet loss percentage scaled to 0-100
+#                 BBR retransmissions used as floor when worse than ping loss
+#   jitter (15%): jitter / latency ratio
+#   tc     (15%): instantaneous TC backlog; ECN marks as soft floor
+#                 BBR delivery gap (bw - delivery_rate) used when worse than TC
+# Plus a wireless signal penalty (0-30) added on top.
+_compute_congestion() {
+	CONGESTION_SCORE=0
+	CONGESTION_LEVEL="none"
+
+	# ---- bufferbloat (queuing delay) ----
+	bloat_score=0
+	if [ -n "$OMR_TRACKER_RTT_MIN" ] && [ -n "$OMR_TRACKER_LATENCY" ] 2>/dev/null; then
+		if [ "$OMR_TRACKER_RTT_MIN" -gt 0 ] && [ "$OMR_TRACKER_LATENCY" -gt "$OMR_TRACKER_RTT_MIN" ] 2>/dev/null; then
+			bloat_score=$(( (OMR_TRACKER_LATENCY - OMR_TRACKER_RTT_MIN) * 50 / OMR_TRACKER_RTT_MIN ))
+			[ "$bloat_score" -gt 100 ] && bloat_score=100
+		fi
+	fi
+
+	# ---- packet loss ----
+	loss_score=0
+	if [ -n "$OMR_TRACKER_LOSS" ] && [ "$OMR_TRACKER_LOSS" -gt 0 ] 2>/dev/null; then
+		loss_score=$(( OMR_TRACKER_LOSS * 5 ))
+		[ "$loss_score" -gt 100 ] && loss_score=100
+	fi
+
+	# ---- jitter relative to latency ----
+	jitter_score=0
+	if [ -n "$OMR_TRACKER_JITTER" ] && [ -n "$OMR_TRACKER_LATENCY" ] && [ "$OMR_TRACKER_LATENCY" -gt 0 ] 2>/dev/null; then
+		jitter_int=$(printf '%s' "$OMR_TRACKER_JITTER" | cut -d'.' -f1)
+		jitter_int=${jitter_int:-0}
+		jitter_score=$(( jitter_int * 100 / OMR_TRACKER_LATENCY ))
+		[ "$jitter_score" -gt 100 ] && jitter_score=100
+	fi
+
+	# ---- TC queue depth (instantaneous) ----
+	tc_score=0
+	if [ -n "$TC_BACKLOG_PKTS" ] && [ "$TC_BACKLOG_PKTS" -gt 0 ] 2>/dev/null; then
+		tc_score=$(( TC_BACKLOG_PKTS * 2 ))
+		[ "$tc_score" -gt 60 ] && tc_score=60
+	fi
+	# ECN marks: any non-zero value acts as a soft floor
+	if [ -n "$TC_ECN_MARK" ] && [ "$TC_ECN_MARK" -gt 0 ] 2>/dev/null && [ "$tc_score" -lt 20 ]; then
+		tc_score=20
+	fi
+
+	# ---- BBR enhancements (when BBR congestion control is active) ----
+	# 1. Bloat: BBR's TCP-measured min RTT as baseline — more accurate for active flows
+	if [ -n "$BBR_MIN_RTT" ] && [ -n "$OMR_TRACKER_LATENCY" ] 2>/dev/null; then
+		bbr_rtt_int=$(printf '%s' "$BBR_MIN_RTT" | cut -d'.' -f1)
+		if [ -n "$bbr_rtt_int" ] && [ "$bbr_rtt_int" -gt 0 ] && [ "$OMR_TRACKER_LATENCY" -gt "$bbr_rtt_int" ] 2>/dev/null; then
+			bbr_bloat=$(( (OMR_TRACKER_LATENCY - bbr_rtt_int) * 50 / bbr_rtt_int ))
+			[ "$bbr_bloat" -gt 100 ] && bbr_bloat=100
+			[ "$bbr_bloat" -gt "$bloat_score" ] && bloat_score=$bbr_bloat
+		fi
+	fi
+	# 2. Loss: BBR retransmissions = actual packet loss on real TCP connections
+	if [ -n "$BBR_RETRANS" ] && [ "$BBR_RETRANS" -gt 0 ] 2>/dev/null; then
+		bbr_retrans_score=$(( BBR_RETRANS * 5 ))
+		[ "$bbr_retrans_score" -gt 50 ] && bbr_retrans_score=50
+		[ "$bbr_retrans_score" -gt "$loss_score" ] && loss_score=$bbr_retrans_score
+	fi
+	# 3. TC: delivery gap reveals how much bandwidth is being lost to congestion
+	if [ -n "$BBR_BW" ] && [ -n "$BBR_DELIVERY_RATE" ] && [ "$BBR_BW" -gt 0 ] 2>/dev/null; then
+		if [ "$BBR_DELIVERY_RATE" -lt "$BBR_BW" ] 2>/dev/null; then
+			bbr_delivery_score=$(( (BBR_BW - BBR_DELIVERY_RATE) * 100 / BBR_BW ))
+			[ "$bbr_delivery_score" -gt 60 ] && bbr_delivery_score=60
+			[ "$bbr_delivery_score" -gt "$tc_score" ] && tc_score=$bbr_delivery_score
+		fi
+	fi
+
+	# ---- wireless signal quality penalty ----
+	signal_penalty=0
+	if [ "$SIGNAL_TYPE" = "wifi" ] && [ -n "$WIFI_SIGNAL" ] && [ -n "$WIFI_NOISE" ] 2>/dev/null; then
+		snr=$(( WIFI_SIGNAL - WIFI_NOISE ))
+		if [ "$snr" -lt 10 ] 2>/dev/null; then
+			signal_penalty=30
+		elif [ "$snr" -lt 20 ] 2>/dev/null; then
+			signal_penalty=15
+		fi
+	elif [ -n "$SIGNAL_RSRQ" ] 2>/dev/null; then
+		rsrq_int=$(printf '%s' "$SIGNAL_RSRQ" | cut -d'.' -f1)
+		if [ -n "$rsrq_int" ] && [ "$rsrq_int" -lt -15 ] 2>/dev/null; then
+			signal_penalty=25
+		elif [ -n "$rsrq_int" ] && [ "$rsrq_int" -lt -10 ] 2>/dev/null; then
+			signal_penalty=10
+		fi
+	fi
+
+	# ---- composite score ----
+	CONGESTION_SCORE=$(( (bloat_score * 40 + loss_score * 30 + jitter_score * 15 + tc_score * 15) / 100 + signal_penalty ))
+	[ "$CONGESTION_SCORE" -gt 100 ] && CONGESTION_SCORE=100
+
+	if [ "$CONGESTION_SCORE" -ge 80 ]; then
+		CONGESTION_LEVEL="severe"
+	elif [ "$CONGESTION_SCORE" -ge 60 ]; then
+		CONGESTION_LEVEL="high"
+	elif [ "$CONGESTION_SCORE" -ge 40 ]; then
+		CONGESTION_LEVEL="moderate"
+	elif [ "$CONGESTION_SCORE" -ge 20 ]; then
+		CONGESTION_LEVEL="low"
+	else
+		CONGESTION_LEVEL="none"
+	fi
+}
+
+
+# Helper: output a value as JSON number or null
+_jval() {
+	if [ -n "$1" ] && [ "$1" != "--" ]; then
+		echo "$1"
+	else
+		echo "null"
+	fi
+}
+
+# Helper: output a value as JSON string or null
+_jstr() {
+	if [ -n "$1" ] && [ "$1" != "--" ]; then
+		echo "\"$1\""
+	else
+		echo "null"
+	fi
+}
+
+# Initialize signal vars
+SIGNAL_QUALITY=""
+SIGNAL_OPERATOR=""
+SIGNAL_NUMBER=""
+SIGNAL_STATE=""
+SIGNAL_TYPE=""
+SIGNAL_RSSI=""
+SIGNAL_RSRP=""
+SIGNAL_RSRQ=""
+SIGNAL_SINR=""
+
+WIFI_SIGNAL=""
+WIFI_NOISE=""
+WIFI_BITRATE=""
+WIFI_SSID=""
+WIFI_BSSID=""
+WIFI_CHANNEL=""
+WIFI_MODE=""
+WIFI_QUALITY=""
+WIFI_QUALITY_MAX=""
+
+
+TC_QDISC_TYPE=""
+TC_SENT_BYTES=""
+TC_SENT_PKTS=""
+TC_DROPPED=""
+TC_OVERLIMITS=""
+TC_REQUEUES=""
+TC_BACKLOG_BYTES=""
+TC_BACKLOG_PKTS=""
+TC_ECN_MARK=""
+TC_DROP_OVERLIMIT=""
+TC_FQ_FLOWS=""
+TC_FQ_THROTTLED=""
+TC_FQ_FLOWS_PLIMIT=""
+TC_NEW_FLOW_COUNT=""
+
+BBR_BW=""
+BBR_PACING_RATE=""
+BBR_DELIVERY_RATE=""
+BBR_CWND=""
+BBR_MIN_RTT=""
+BBR_RETRANS=""
+
+# Detect interface type and collect signal
+if [ -d "/sys/class/net/${OMR_TRACKER_DEVICE}/wireless" ]; then
+	_get_wifi_signal
+else
+	_get_modem_signal
+fi
+
+_get_tc_stats
+_get_bbr_stats
+_get_bandwidth_usage
+_compute_congestion
+
+# Write JSON atomically (write to tmp then move)
+_tmp="${METRICS_DIR}/.${OMR_TRACKER_INTERFACE}.tmp"
+cat > "$_tmp" <<EOF
+{
+	"interface": "${OMR_TRACKER_INTERFACE}",
+	"device": "${OMR_TRACKER_DEVICE}",
+	"status": "${OMR_TRACKER_STATUS}",
+	"status_msg": "${OMR_TRACKER_STATUS_MSG}",
+	"device_ip": "${OMR_TRACKER_DEVICE_IP}",
+	"device_ip6": "${OMR_TRACKER_DEVICE_IP6}",
+	"gateway": "${OMR_TRACKER_DEVICE_GATEWAY}",
+	"gateway6": "${OMR_TRACKER_DEVICE_GATEWAY6}",
+	"latency": ${OMR_TRACKER_LATENCY:-null},
+	"rtt_min": ${OMR_TRACKER_RTT_MIN:-null},
+	"rtt_max": ${OMR_TRACKER_RTT_MAX:-null},
+	"loss": ${OMR_TRACKER_LOSS:-null},
+	"jitter": ${OMR_TRACKER_JITTER:-null},
+	"signal": {
+		"quality": $(_jval "$SIGNAL_QUALITY"),
+		"operator": $(_jstr "$SIGNAL_OPERATOR"),
+		"state": $(_jstr "$SIGNAL_STATE"),
+		"type": $(_jstr "$SIGNAL_TYPE"),
+		"rssi": $(_jval "$SIGNAL_RSSI"),
+		"rsrp": $(_jval "$SIGNAL_RSRP"),
+		"rsrq": $(_jval "$SIGNAL_RSRQ"),
+		"sinr": $(_jval "$SIGNAL_SINR")
+	},
+	"wifi": {
+		"ssid": $(_jstr "$WIFI_SSID"),
+		"bssid": $(_jstr "$WIFI_BSSID"),
+		"mode": $(_jstr "$WIFI_MODE"),
+		"channel": $(_jval "$WIFI_CHANNEL"),
+		"signal": $(_jval "$WIFI_SIGNAL"),
+		"noise": $(_jval "$WIFI_NOISE"),
+		"bitrate": $(_jstr "$WIFI_BITRATE"),
+		"quality": $(_jval "$WIFI_QUALITY"),
+		"quality_max": $(_jval "$WIFI_QUALITY_MAX")
+	},
+	"tc": {
+		"qdisc": $(_jstr "$TC_QDISC_TYPE"),
+		"sent_bytes": $(_jval "$TC_SENT_BYTES"),
+		"sent_pkts": $(_jval "$TC_SENT_PKTS"),
+		"dropped": $(_jval "$TC_DROPPED"),
+		"overlimits": $(_jval "$TC_OVERLIMITS"),
+		"requeues": $(_jval "$TC_REQUEUES"),
+		"backlog_bytes": $(_jval "$TC_BACKLOG_BYTES"),
+		"backlog_pkts": $(_jval "$TC_BACKLOG_PKTS"),
+		"ecn_mark": $(_jval "$TC_ECN_MARK"),
+		"drop_overlimit": $(_jval "$TC_DROP_OVERLIMIT"),
+		"flows": $(_jval "$TC_FQ_FLOWS"),
+		"throttled": $(_jval "$TC_FQ_THROTTLED"),
+		"flows_plimit": $(_jval "$TC_FQ_FLOWS_PLIMIT"),
+		"new_flow_count": $(_jval "$TC_NEW_FLOW_COUNT")
+	},
+	"bbr": {
+		"bw": $(_jval "$BBR_BW"),
+		"pacing_rate": $(_jval "$BBR_PACING_RATE"),
+		"delivery_rate": $(_jval "$BBR_DELIVERY_RATE"),
+		"cwnd": $(_jval "$BBR_CWND"),
+		"min_rtt": $(_jval "$BBR_MIN_RTT"),
+		"retrans": $(_jval "$BBR_RETRANS")
+	},
+	"congestion": {
+		"score": $(_jval "$CONGESTION_SCORE"),
+		"level": $(_jstr "$CONGESTION_LEVEL")
+	},
+	"bandwidth": {
+		"rx_bytes": $(_jval "$BW_RX_BYTES"),
+		"tx_bytes": $(_jval "$BW_TX_BYTES"),
+		"rx_bps": $(_jval "$BW_RX_BPS"),
+		"tx_bps": $(_jval "$BW_TX_BPS")
+	},
+	"timestamp": $(date +%s)
+}
+EOF
+mv "$_tmp" "${METRICS_DIR}/${OMR_TRACKER_INTERFACE}.json"

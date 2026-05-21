@@ -43,6 +43,14 @@ export OMR_TRACKER_TYPE
 
 #dscp=56   # set DSCP CS7 (56) in outgoing packets
 
+# Kill child processes (post-tracking subshells) when this tracker is terminated,
+# so orphaned sleeps don't accumulate as duplicate-looking processes.
+_omr_exit() {
+	jobs -p | xargs -r kill 2>/dev/null
+	exit 0
+}
+trap '_omr_exit' INT TERM EXIT
+
 #initial_hosts="$OMR_TRACKER_HOSTS"
 #initial_hosts6="$OMR_TRACKER_HOSTS6"
 initial_timeout="$OMR_TRACKER_TIMEOUT"
@@ -320,6 +328,12 @@ _none() {
 	return 0
 }
 
+# Export callback functions for config_foreach
+export -f _ping_server
+export -f _ping_server_all
+export -f _httping_server
+export -f _httping_server_all
+
 _restart
 
 OMR_TRACKER_INTERFACE_PROTO="$(uci -q get network.${OMR_TRACKER_INTERFACE}.proto)"
@@ -475,7 +489,7 @@ while true; do
 						fi
 						if [ "$OMR_TRACKER_TYPE" = "httping" ]; then
 							config_load openmptcprouter
-							config_foreach _httping_server server $OMR_TRACKER_DEVICE
+							config_foreach _httping_server server $OMR_TRACKER_DEVICE_IP
 						fi
 						if [ "$serverip_ping" = false ] && [ -n "$OMR_TRACKER_HOST" ]; then
 							OMR_TRACKER_HOST=$(resolveip -4 -t 5 $OMR_TRACKER_HOST | head -n 1 | tr -d "\n")
@@ -588,7 +602,7 @@ while true; do
 						fi
 						if [ "$OMR_TRACKER_TYPE" = "httping" ]; then
 							config_load openmptcprouter
-							config_foreach _httping_server server $OMR_TRACKER_DEVICE
+							config_foreach _httping_server server $OMR_TRACKER_DEVICE_IP6
 						fi
 
 						if [ "$serverip_ping" = false ] && [ -n "$OMR_TRACKER_HOST6" ]; then

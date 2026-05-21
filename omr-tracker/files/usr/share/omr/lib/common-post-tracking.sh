@@ -176,12 +176,9 @@ _set_server_default_route_common() {
 		multipath_config_route=$(_get_multipath_config $OMR_TRACKER_INTERFACE)
 
 		if [ -n "$serverip" ] && [ -n "$gateway_var" ] && [ -n "$OMR_TRACKER_DEVICE" ] && [ "$multipath_config_route" != "off" ]; then
-			local existing_route=$($ip_cmd route show dev "$OMR_TRACKER_DEVICE" metric 1 2>/dev/null | grep "$serverip" | grep "$gateway_var")
+			local existing_route=$($ip_cmd route show "$serverip" 2>/dev/null | grep "via ${gateway_var}" | grep "dev ${OMR_TRACKER_DEVICE}")
 			if [ -z "$existing_route" ]; then
 				[ "$debug" = "true" ] && _log "Set server $server ($serverip) default route via $gateway_var"
-				if [ "$($ip_cmd r show $serverip | grep nexthop)" != "" ]; then
-					$ip_cmd r delete $serverip >/dev/null 2>&1
-				fi
 				$ip_cmd route replace $serverip via $gateway_var dev $OMR_TRACKER_DEVICE metric 1 $initcwrwnd >/dev/null 2>&1
 			fi
 		fi
@@ -437,40 +434,24 @@ _set_server_all_routes_common() {
 			local current_nbintf=$(eval "echo \$${nbintf_var}")
 			local current_nbintfb=$(eval "echo \$${nbintfb_var}")
 
-			_normalize_route_safe() {
-				echo "$1" | tr '\t ' '\n' | sed '/^$/d' | sort | tr -d '\n' || true
-			}
-
-			
 			if [ -n "$current_routes" ]; then
-				local needs_update=false
-				existing_raw_route=$($ip_cmd r show "$serverip" metric 1 2>/dev/null)
-				local existing_route=$(_normalize_route_safe "$existing_raw_route")
-				expected_raw_route="$serverip $current_routes"
-				local expected_route=$(_normalize_route_safe "$expected_raw_route")
-				[ "$existing_route" != "$expected_route" ] && needs_update=true
-				if [ "$needs_update" = true ]; then
-					# Remove existing routes
-					while [ -n "$($ip_cmd r show "$serverip" | grep -v nexthop)" ] && 
-						[ "$($ip_cmd r show "$serverip" | grep -v nexthop | sed 's/ //g' | tr -d '\n')" != "$serverip" ]; do
-						$ip_cmd r del "$serverip"
-					done
+				local existing_gws
+				existing_gws=$($ip_cmd r show "$serverip" metric 1 2>/dev/null | grep -oE 'via [^ ]+' | sort | tr '\n' ' ')
+				local expected_gws
+				expected_gws=$(echo "$current_routes" | grep -oE 'via [^ ]+' | sort | tr '\n' ' ')
+				if [ "$existing_gws" != "$expected_gws" ]; then
 					[ "$debug" = "true" ] && _log "Set server $server ($serverip) default route $serverip $current_routes"
 					$ip_cmd route replace "$serverip" scope global metric 1 $current_routes >/dev/null 2>&1
 					[ "$debug" = "true" ] && _log "New server route is $($ip_cmd r show "$serverip" metric 1 | tr -d '\t' | tr -d '\n')"
 				fi
 			fi
 
-			# Handle backup routes
 			if [ -n "$current_backup" ]; then
-				local needs_backup_update=false
-				existing_raw_backup=$($ip_cmd r show "$serverip" metric 999 2>/dev/null)
-				local existing_backup=$(_normalize_route_safe "$existing_raw_backup")
-				expected_raw_backup="$serverip $current_backup"
-				local expected_backup=$(_normalize_route_safe "$expected_raw_backup")
-				[ "$existing_backup" != "$expected_backup" ] && needs_backup_update=true
-				if [ "$needs_backup_update" = true ]; then
-					local debug_enabled=$(uci -q get "openmptcprouter.settings.debug")
+				local existing_backup_gws
+				existing_backup_gws=$($ip_cmd r show "$serverip" metric 999 2>/dev/null | grep -oE 'via [^ ]+' | sort | tr '\n' ' ')
+				local expected_backup_gws
+				expected_backup_gws=$(echo "$current_backup" | grep -oE 'via [^ ]+' | sort | tr '\n' ' ')
+				if [ "$existing_backup_gws" != "$expected_backup_gws" ]; then
 					[ "$debug" = "true" ] && _log "Set server $server ($serverip) backup default route $serverip $current_backup nbintfb $current_nbintfb $OMR_TRACKER_DEVICE"
 					$ip_cmd route replace "$serverip" scope global metric 999 $current_backup >/dev/null 2>&1
 				fi
@@ -529,7 +510,7 @@ _set_server_route_common() {
 		[ -z "$interface_current_config" ] && interface_current_config="up"
 
 		if [ -n "$serverip" ] && [ -n "$OMR_TRACKER_DEVICE" ] && [ -n "$gateway_var" ] && [ "$multipath_config_route" != "off" ] && [ "$interface_current_config" = "up" ] && [ "$interface_up" = "true" ]; then
-			local existing_route=$($ip_cmd route show dev "$OMR_TRACKER_DEVICE" metric "$metric" 2>/dev/null | grep "$serverip" | grep "$gateway_var")
+			local existing_route=$($ip_cmd route show "$serverip" 2>/dev/null | grep "via ${gateway_var}" | grep "dev ${OMR_TRACKER_DEVICE}")
 			if [ -z "$existing_route" ]; then
 				[ "$debug" = "true" ] && _log "Set server $server ($serverip) route via $gateway_var metric $metric"
 				$ip_cmd route replace "$serverip" via "$gateway_var" dev "$OMR_TRACKER_DEVICE" metric "$metric" $initcwrwnd >/dev/null 2>&1
