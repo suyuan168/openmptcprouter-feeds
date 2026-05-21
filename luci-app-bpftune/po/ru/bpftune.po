@@ -1,0 +1,123 @@
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+msgid "bpftune"
+msgstr "bpftune"
+
+msgid "BPF-based auto-tuning of Linux system parameters (TCP buffers, congestion control, neighbour tables, etc.)."
+msgstr "Автонастройка системных параметров Linux на основе BPF (буферы TCP, управление перегрузкой, таблицы соседей и т.д.)."
+
+msgid "General Settings"
+msgstr "Общие настройки"
+
+msgid "Enable"
+msgstr "Включить"
+
+msgid "Daemon mode"
+msgstr "Режим демона"
+
+msgid "Run bpftune as a background daemon."
+msgstr "Запускать bpftune как фоновый демон."
+
+msgid "Rollback on stop"
+msgstr "Откат при остановке"
+
+msgid "Revert all tuning changes when bpftune stops."
+msgstr "Отменять все изменения настройки при остановке bpftune."
+
+msgid "Force legacy BPF mode"
+msgstr "Принудительный устаревший режим BPF"
+
+msgid "Use BPF legacy mode even if modern BPF is available."
+msgstr "Использовать устаревший режим BPF даже если доступен современный."
+
+msgid "Log to stdout"
+msgstr "Вывод в stdout"
+
+msgid "Send log output to stdout (captured by procd)."
+msgstr "Отправлять вывод журнала в stdout (перехватывается procd)."
+
+msgid "Learning rate"
+msgstr "Скорость обучения"
+
+msgid "Controls the frequency of adjustments. Lower values mean less frequent changes."
+msgstr "Управляет частотой корректировок. Меньшие значения означают менее частые изменения."
+
+msgid "0 (~1%) — very slow"
+msgstr "0 (~1%) — очень медленно"
+
+msgid "1 (~6%)"
+msgstr "1 (~6%)"
+
+msgid "2 (~12%) — default"
+msgstr "2 (~12%) — по умолчанию"
+
+msgid "3 (~18%)"
+msgstr "3 (~18%)"
+
+msgid "4 (~25%) — fast"
+msgstr "4 (~25%) — быстро"
+
+msgid "cgroup directory"
+msgstr "Каталог cgroup"
+
+msgid "Path to the cgroup directory. Leave empty to use the system default."
+msgstr "Путь к каталогу cgroup. Оставьте пустым для использования системного значения по умолчанию."
+
+msgid "default"
+msgstr "по умолчанию"
+
+msgid "Tuner library directory"
+msgstr "Каталог библиотек настройщика"
+
+msgid "Path to the bpftune tuner shared libraries."
+msgstr "Путь к разделяемым библиотекам настройщика bpftune."
+
+msgid "Tuner Selection"
+msgstr "Выбор настройщика"
+
+msgid "Available tuners: tcp_buffer, tcp_conn, ip_frag, neigh, sysctl, net_buffer, netns, udp_buffer."
+msgstr "Доступные настройщики: tcp_buffer, tcp_conn, ip_frag, neigh, sysctl, net_buffer, netns, udp_buffer."
+
+msgid "Disabled tuners"
+msgstr "Отключённые настройщики"
+
+msgid "Space-separated list of tuners to disable. Leave empty to enable all."
+msgstr "Список настройщиков для отключения, разделённых пробелами. Оставьте пустым для включения всех."
+
+msgid "Allowed tuners (allowlist)"
+msgstr "Разрешённые настройщики (белый список)"
+
+msgid "Space-separated list. When set, only these tuners are active and all others are disabled."
+msgstr "Список, разделённый пробелами. При установке активны только эти настройщики, все остальные отключены."
+
+msgid "Respawn Settings"
+msgstr "Настройки перезапуска"
+
+msgid "procd respawn parameters controlling automatic restart behaviour."
+msgstr "Параметры перезапуска procd, управляющие автоматическим перезапуском."
+
+msgid "Threshold (seconds)"
+msgstr "Порог (секунды)"
+
+msgid "Time window in which crash counts are evaluated."
+msgstr "Временное окно, в котором оцениваются счётчики сбоев."
+
+msgid "Timeout (seconds)"
+msgstr "Таймаут (секунды)"
+
+msgid "Delay before restarting after a crash."
+msgstr "Задержка перед перезапуском после сбоя."
+
+msgid "Max retries"
+msgstr "Максимальное количество попыток"
+
+msgid "Maximum number of respawn attempts within the threshold window. 0 means unlimited."
+msgstr "Максимальное количество попыток перезапуска в пределах порогового окна. 0 — без ограничений."

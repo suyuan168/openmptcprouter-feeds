@@ -35,6 +35,14 @@ return L.view.extend({
 		o.description = _('Skip TLS certificate verification');
 		o.default = o.enabled;
 
+		s = m.section(form.NamedSection, 'tls', 'tls', _('TLS'));
+		s.addremove = false;
+
+		o = s.option(form.Value, 'cipher', _('Cipher suites'));
+		o.description = _('Colon-separated list of TLS cipher suites (leave empty for defaults)');
+		o.placeholder = 'TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256';
+		o.rmempty = true;
+
 		s = m.section(form.NamedSection, 'auth', 'auth', _('Authentication'));
 		s.addremove = false;
 
@@ -108,9 +116,44 @@ return L.view.extend({
 		o.value('minrtt', _('Minimum RTT'));
 		o.default = 'wlb';
 
+		o = s.option(form.ListValue, 'cc', _('Congestion control'));
+		o.value('bbr2',      _('BBR2'));
+		o.value('bbr',       _('BBR'));
+		o.value('cubic',     _('CUBIC'));
+		o.value('new_reno',  _('New Reno'));
+		o.value('copa',      _('Copa'));
+		o.value('unlimited', _('Unlimited'));
+		o.default = 'bbr2';
+		o.rmempty = true;
+
 		o = s.option(form.Flag, 'auto_wan', _('Auto WAN'));
 		o.description = _('Automatically add WAN interfaces as multipath paths. If disabled, use the paths defined below.');
 		o.default = o.enabled;
+
+		o = s.option(form.Flag, 'reinjection_control', _('Reinjection control'));
+		o.description = _('Enable reinjection control');
+		o.default = o.disabled;
+
+		o = s.option(form.ListValue, 'reinjection_mode', _('Reinjection mode'));
+		o.value('', _('Default'));
+		o.value('default', _('Default'));
+		o.value('deadline', _('Deadline'));
+		o.value('dgram', _('Datagram'));
+		o.rmempty = true;
+		o.depends('reinjection_control', '1');
+
+		o = s.option(form.Flag, 'fec_enable', _('FEC'));
+		o.description = _('Enable Forward Error Correction');
+		o.default = o.disabled;
+
+		o = s.option(form.ListValue, 'fec_scheme', _('FEC scheme'));
+		o.value('galois_calculation', _('Galois Calculation'));
+		o.value('packet_mask',        _('Packet Mask'));
+		o.value('reed_solomon',       _('Reed-Solomon'));
+		o.value('xor',                _('XOR'));
+		o.default = 'reed_solomon';
+		o.rmempty = true;
+		o.depends('fec_enable', '1');
 
 		o = s.option(form.DynamicList, 'path', _('Paths'));
 		o.description = _('Network interfaces to use as multipath paths');

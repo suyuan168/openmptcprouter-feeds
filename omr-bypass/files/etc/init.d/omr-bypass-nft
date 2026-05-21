@@ -1319,7 +1319,7 @@ start_service() {
 		[ -n "$RELOAD" ] && fw4 -q reload
 	}
 
-	[ -z "$RELOAD" ] && [ "$add_domains" = "true" ] && {
+	[ -z "$RELOAD" ] && {
 		logger -t "omr-bypass" "Restart dnsmasq..."
 		/etc/init.d/dnsmasq restart
 	}

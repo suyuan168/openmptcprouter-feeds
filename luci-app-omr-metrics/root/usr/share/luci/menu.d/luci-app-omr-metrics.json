@@ -1,0 +1,13 @@
+{
+    "admin/services/omr-tracker/metrics": {
+        "title": "WAN Metrics",
+        "order": 40,
+        "action": {
+            "type": "view",
+            "path": "omr-metrics/metrics"
+        },
+        "depends": {
+            "acl": ["luci-app-omr-metrics"]
+        }
+    }
+}

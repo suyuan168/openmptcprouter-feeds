@@ -18,8 +18,9 @@ _bool() { [ "$1" = "1" ] && echo "true" || echo "false"; }
 generate_config() {
 	local enable address ip port server_address insecure key user
 	local tun_name log_level kill_switch reconnect reconnect_interval route_via_server no_routes
+	local cipher
 	local control_port control_addr
-	local scheduler auto_wan
+	local scheduler cc auto_wan reinjection_control reinjection_mode fec_enable fec_scheme
 	local dns_csv
 
 	config_get_bool enable settings enable 0
@@ -61,6 +62,8 @@ generate_config() {
 		*:* ) server_address="[$ip]:$port" ;;
 	esac
 
+	config_get cipher tls cipher ''
+
 	config_get key auth key
 	config_get user auth user
 
@@ -76,7 +79,12 @@ generate_config() {
 	config_get control_addr control control_addr '127.0.0.1'
 
 	config_get scheduler multipath scheduler 'wlb'
+	config_get cc multipath cc ''
 	config_get_bool auto_wan multipath auto_wan 1
+	config_get_bool reinjection_control multipath reinjection_control 0
+	config_get reinjection_mode multipath reinjection_mode ''
+	config_get_bool fec_enable multipath fec_enable 0
+	config_get fec_scheme multipath fec_scheme ''
 
 	dns_csv=''
 	config_list_foreach interface dns _append_dns_csv
@@ -90,6 +98,11 @@ generate_config() {
 		echo '[Server]'
 		echo "Address = $server_address"
 		echo "Insecure = $(_bool "$insecure")"
+		if [ -n "$cipher" ]; then
+			echo ''
+			echo '[TLS]'
+			echo "Cipher = $cipher"
+		fi
 		echo ''
 		echo '[Auth]'
 		echo "Key = $key"
@@ -114,6 +127,11 @@ generate_config() {
 		echo ''
 		echo '[Multipath]'
 		echo "Scheduler = $scheduler"
+		[ -n "$cc" ] && echo "CC = $cc"
+		[ "$reinjection_control" = "1" ] && echo "ReinjectionControl = true"
+		[ -n "$reinjection_mode" ] && echo "ReinjectionMode = $reinjection_mode"
+		[ "$fec_enable" = "1" ] && echo "FecEnable = true"
+		[ -n "$fec_scheme" ] && echo "FecScheme = $fec_scheme"
 
 		if [ "$auto_wan" = "1" ]; then
 			config_load network

@@ -109,13 +109,6 @@ if [ "$(uci -q get glorytun-udp.vpn.key)" = "" ] && [ "$(uci -q get glorytun.vpn
 		set glorytun-udp.vpn.key=$(uci -q get glorytun.vpn.key)
 		set glorytun-udp.vpn.host=$(uci -q get glorytun.vpn.host)
 	EOF
-	if [ "$(uci -q get glorytun.vpn.proto)" = "udp" ]; then
-		uci -q batch <<-EOF >/dev/null
-			set glorytun-udp.vpn.enable=1
-			set glorytun.vpn.enable=0
-			commit glorytun
-		EOF
-	fi
 	uci -q commit glorytun-udp
 fi
 
@@ -131,9 +124,7 @@ fi
 # Set the default VPN
 if [ "$(uci -q get openmptcprouter.settings.vpn)" = "" ]; then
 	uci -q batch <<-EOF >/dev/null
-		set openmptcprouter.settings.vpn='openvpn'
-		set glorytun.vpn.enable='1'
-		commit glorytun
+		set openmptcprouter.settings.vpn='mqvpn'
 		commit openmptcprouter
 	EOF
 fi

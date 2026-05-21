@@ -187,6 +187,7 @@ if [ "$(uci -q get firewall.blockquicproxy)" = "" ]; then
 		set firewall.blockquicproxy.dest_port='443'
 		set firewall.blockquicproxy.target='DROP'
 		set firewall.blockquicproxy.src='lan'
+		set firewall.blockquicproxy.enabled='0'
 		set firewall.blockquicall=rule
 		set firewall.blockquicall.name='Block QUIC All'
 		set firewall.blockquicall.proto='udp'
@@ -194,6 +195,7 @@ if [ "$(uci -q get firewall.blockquicproxy)" = "" ]; then
 		set firewall.blockquicall.dest='*'
 		set firewall.blockquicall.dest_port='443'
 		set firewall.blockquicall.target='DROP'
+		set firewall.blockquicall.enabled='0'
 		commit firewall
 	EOF
 fi

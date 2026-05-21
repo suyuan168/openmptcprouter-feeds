@@ -6,6 +6,9 @@ config server 'server'
 	option port '443'
 	option insecure '1'
 
+config tls 'tls'
+#	option cipher 'TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256'
+
 config auth 'auth'
 	option key 'mPyVpoQWcp/5gr404xvS19aRC03o0XS2mrb2tZJ1Ii4='
 
@@ -25,7 +28,11 @@ config control 'control'
 	option control_addr '127.0.0.1'
 
 config multipath 'multipath'
-	option scheduler 'wlb'
+	option scheduler 'minrtt'
 	option auto_wan '1'
+#	option reinjection_control '1'
+#	option reinjection_mode 'default'
+#	option fec_enable '1'
+#	option fec_scheme 'reed_solomon'
 #	list path 'eth0'
 #	list backup_path 'lte0'

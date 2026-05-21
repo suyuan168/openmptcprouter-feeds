@@ -1,0 +1,193 @@
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "MQVPN"
+msgstr "MQVPN"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "QUIC-based VPN tunnel"
+msgstr "VPN-туннель на основе QUIC"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "General"
+msgstr "Основные"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Enabled"
+msgstr "Включено"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server"
+msgstr "Сервер"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server IP"
+msgstr "IP сервера"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "IPv4 or IPv6 address of the MQVPN server"
+msgstr "IPv4 или IPv6 адрес сервера MQVPN"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Server port"
+msgstr "Порт сервера"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Insecure TLS"
+msgstr "Небезопасный TLS"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip TLS certificate verification"
+msgstr "Пропустить проверку TLS-сертификата"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Authentication"
+msgstr "Аутентификация"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "User"
+msgstr "Пользователь"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Key"
+msgstr "Ключ"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Tunnel name"
+msgstr "Имя туннеля"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Log level"
+msgstr "Уровень журналирования"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Debug"
+msgstr "Отладка"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Info"
+msgstr "Информация"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Warning"
+msgstr "Предупреждение"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Error"
+msgstr "Ошибка"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Kill switch"
+msgstr "Аварийное отключение"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Block all traffic if the VPN tunnel goes down"
+msgstr "Блокировать весь трафик при падении VPN-туннеля"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect"
+msgstr "Переподключение"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically reconnect on failure"
+msgstr "Автоматически переподключаться при сбое"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Reconnect interval"
+msgstr "Интервал переподключения"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Seconds between reconnection attempts"
+msgstr "Секунды между попытками переподключения"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Route via server"
+msgstr "Маршрутизировать через сервер"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Add a host route to the server IP before setting the default route"
+msgstr "Добавить маршрут хоста к IP сервера перед установкой маршрута по умолчанию"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "No automatic routes"
+msgstr "Без автоматических маршрутов"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Skip all automatic route setup and manage routes manually"
+msgstr "Пропустить автоматическую настройку маршрутов и управлять ими вручную"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "DNS servers"
+msgstr "DNS-серверы"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Control API"
+msgstr "API управления"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Port"
+msgstr "Порт"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "TCP port for the JSON control API (leave empty to disable)"
+msgstr "TCP-порт для JSON API управления (оставьте пустым для отключения)"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Bind address"
+msgstr "Адрес привязки"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Address to bind the control API (default: 127.0.0.1)"
+msgstr "Адрес для привязки API управления (по умолчанию: 127.0.0.1)"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Multipath"
+msgstr "Многопутевая маршрутизация"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Scheduler"
+msgstr "Планировщик"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Weighted Load Balancing"
+msgstr "Взвешенная балансировка нагрузки"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Minimum RTT"
+msgstr "Минимальный RTT"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Auto WAN"
+msgstr "Авто WAN"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Automatically add WAN interfaces as multipath paths. If disabled, use the paths defined below."
+msgstr "Автоматически добавлять WAN-интерфейсы как пути многопутевой маршрутизации. При отключении использовать пути, определённые ниже."
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Paths"
+msgstr "Пути"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as multipath paths"
+msgstr "Сетевые интерфейсы для использования в качестве путей многопутевой маршрутизации"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Backup paths"
+msgstr "Резервные пути"
+
+#: htdocs/luci-static/resources/view/services/mqvpn.js
+msgid "Network interfaces to use as backup multipath paths"
+msgstr "Сетевые интерфейсы для использования в качестве резервных путей многопутевой маршрутизации"

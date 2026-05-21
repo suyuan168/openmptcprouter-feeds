@@ -1,0 +1,18 @@
+Source: mptcp-bpf-red
+Section: net
+Priority: optional
+Maintainer: Yannick Chabanois <contact@openmptcprouter.com>
+Build-Depends: debhelper-compat (= 13), clang, libbpf-dev
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: mptcp-bpf-red
+Architecture: any
+Depends: ${misc:Depends}, libbpf0 | libbpf1
+Description: MPTCP BPF Redundant Scheduler
+ BPF implementation of the MPTCP redundant scheduler.
+ This scheduler marks all available subflows as scheduled,
+ effectively sending data redundantly over all paths.
+ .
+ The compiled BPF object is installed into /usr/share/bpf/scheduler/
+ and can be loaded with mptcpd or iproute2.

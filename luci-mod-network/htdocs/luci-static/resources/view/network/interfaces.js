@@ -1221,6 +1221,10 @@ return view.extend({
 				o.datatype = 'uinteger';
 				o.placeholder = '0';
 
+				o = nettools.replaceOption(s, 'advanced', form.Value, 'weight', _('Weight'), _('A weight >100 makes it more attractive, a weight <100 makes it less attractive. Max 256'));
+				o.datatype = 'uinteger';
+				o.placeholder = '100';
+
 				o = nettools.replaceOption(s,'advanced', form.ListValue, 'multipath', _('Multipath setting'), _('Only one interface must be set as Master.'));
 				o.value('on',_('Enabled'));
 				o.value('off',_('Disabled'));
