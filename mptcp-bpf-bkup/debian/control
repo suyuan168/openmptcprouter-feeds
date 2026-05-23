@@ -1,0 +1,18 @@
+Source: mptcp-bpf-bkup
+Section: net
+Priority: optional
+Maintainer: Yannick Chabanois <contact@openmptcprouter.com>
+Build-Depends: debhelper-compat (= 13), clang, libbpf-dev
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: mptcp-bpf-bkup
+Architecture: any
+Depends: ${misc:Depends}, libbpf0 | libbpf1
+Description: MPTCP BPF Backup Scheduler
+ BPF implementation of the MPTCP backup scheduler.
+ This scheduler uses backup subflows only when the primary
+ subflow is unavailable.
+ .
+ The compiled BPF object is installed into /usr/share/bpf/scheduler/
+ and can be loaded with mptcpd or iproute2.
