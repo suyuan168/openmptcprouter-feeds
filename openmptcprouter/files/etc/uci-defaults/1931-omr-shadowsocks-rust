@@ -3,12 +3,12 @@
 
 [ ! -f /etc/init.d/shadowsocks-rust ] && exit 0
 
-if [ -z "$(uci -q get shadowsocks-rust.hi1.keep_alive)" ]; then
+if [ "$(uci -q get shadowsocks-rust.hi1.keep_alive)" != "10" ]; then
 	uci -q batch <<-EOF > /dev/null
-		set shadowsocks-rust.hi1.keep_alive=15
+		set shadowsocks-rust.hi1.keep_alive=10
 		set shadowsocks-rust.hi1.no_delay=1
 		set shadowsocks-rust.hi1.fast_open=0
-		set shadowsocks-rust.hi2.keep_alive=15
+		set shadowsocks-rust.hi2.keep_alive=10
 		set shadowsocks-rust.hi2.no_delay=1
 		set shadowsocks-rust.hi2.fast_open=0
 		commit shadowsocks-rust
@@ -30,6 +30,11 @@ if [ "$(uci -q get shadowsocks-rust.hi1.fast_open)" = "1" ]; then
 		commit shadowsocks-rust
 	EOF
 fi
+uci -q batch <<-EOF > /dev/null
+	set shadowsocks-rust.hi1.timeout="200"
+	set shadowsocks-rust.hi2.timeout="200"
+	commit shadowsocks-rust
+EOF
 
 
 rm -f /tmp/luci-indexcache

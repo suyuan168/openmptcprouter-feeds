@@ -1,0 +1,55 @@
+name: Build mptcp-bpf-first Debian package
+
+on:
+  push:
+    branches: [develop, master]
+    paths:
+      - 'mptcp-bpf-first/**'
+  workflow_dispatch:
+
+jobs:
+  build-deb:
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential debhelper devscripts clang libbpf-dev
+
+      - name: Build .deb
+        working-directory: mptcp-bpf-first
+        run: dpkg-buildpackage -us -uc -b
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mptcp-bpf-first_${{ matrix.arch }}
+          path: mptcp-bpf-first_*.deb
+
+  release:
+    name: Create release
+    needs: build-deb
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/mptcp-bpf-first-v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mptcp-bpf-first_*
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: "*.deb"

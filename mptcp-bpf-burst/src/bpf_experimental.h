@@ -454,6 +454,12 @@ l_true:												\
 		     , [as]"i"((dst_as << 16) | src_as));
 #endif
 
+#ifndef bpf_core_cast
+extern void *bpf_rdonly_cast(const void *obj__ign, __u32 btf_id__k) __ksym __weak;
+#define bpf_core_cast(ptr, type) \
+	((typeof(type) *)(void *)bpf_rdonly_cast(ptr, bpf_core_type_id_kernel(type)))
+#endif
+
 void bpf_preempt_disable(void) __weak __ksym;
 void bpf_preempt_enable(void) __weak __ksym;
 
