@@ -1041,6 +1041,10 @@ _set_mptcp_vps() {
 	syn_retries_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.syn_retries')"
 	congestion_control_current="$(echo "$vps_config" | jsonfilter -q -e '@.network.congestion_control')"
 	mptcp_version_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.version')"
+	close_timeout_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.close_timeout')"
+	pm_type_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.pm_type')"
+	stale_loss_cnt_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.stale_loss_cnt')"
+	syn_retrans_current="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.syn_retrans_before_tcp_fallback')"
 	mptcp_enabled="$(uci -q get network.globals.multipath)"
 	if [ "$mptcp_enabled" = "disable" ]; then
 		mptcp_enabled="0"
@@ -1053,11 +1057,15 @@ _set_mptcp_vps() {
 	syn_retries="$(uci -q get network.globals.mptcp_syn_retries)"
 	congestion="$(uci -q get network.globals.congestion)"
 	mptcp_version="$(uci -q get network.globals.mptcp_version)"
+	close_timeout="$(uci -q get network.globals.mptcp_close_timeout)"
+	pm_type="$(uci -q get network.globals.mptcp_pm_type)"
+	stale_loss_cnt="$(uci -q get network.globals.mptcp_stale_loss_cnt)"
+	syn_retrans_before_tcp_fallback="$(uci -q get network.globals.mptcp_syn_retrans_before_tcp_fallback)"
 	[ -z "$mptcp_version" ] && mptcp_version="0"
 	[ ! -f /proc/sys/net/mptcp/mptcp_enabled ] && mptcp_version="1"
 	[ -z "$congestion" ] && congestion="bbr"
-	if [ "$mptcp_enabled_current" != "$mptcp_enabled" ] || [ "$checksum_current" != "$checksum" ] || ([ "$path_manager_current" != "" ] && [ "$path_manager_current" != "$path_manager" ]) || ([ "$scheduler_current" != "" ] && [ "$scheduler_current" != "$scheduler" ]) || ([ "$syn_retries_current" != "" ] && [ "$syn_retries_current" != "$syn_retries" ]) || [ "$congestion_control_current" != "$congestion" ] || [ "$mptcp_version_current" != "$mptcp_version" ]; then
-		settings='{"enabled" : "'$mptcp_enabled'", "checksum": "'$checksum'","path_manager": "'$path_manager'","scheduler": "'$scheduler'","syn_retries": "'$syn_retries'","congestion_control": "'$congestion'","version": "'$mptcp_version'"}'
+	if [ "$mptcp_enabled_current" != "$mptcp_enabled" ] || [ "$checksum_current" != "$checksum" ] || ([ "$path_manager_current" != "" ] && [ "$path_manager_current" != "kernel" ] && [ "$path_manager_current" != "$path_manager" ]) || ([ "$scheduler_current" != "" ] && [ "$scheduler_current" != "$scheduler" ]) || ([ "$syn_retries_current" != "" ] && [ "$syn_retries_current" != "$syn_retries" ]) || [ "$congestion_control_current" != "$congestion" ] || [ "$mptcp_version_current" != "$mptcp_version" ] || ([ -n "$close_timeout_current" ] && [ "$close_timeout_current" != "0" ] && [ "$close_timeout_current" != "$close_timeout" ]) || ([ -n "$pm_type_current" ] && [ "$pm_type_current" != "0" ] && [ "$pm_type_current" != "$pm_type" ]) || ([ -n "$stale_loss_cnt_current" ] && [ "$stale_loss_cnt_current" != "0" ] && [ "$stale_loss_cnt_current" != "$stale_loss_cnt" ]) || ([ -n "$syn_retrans_current" ] && [ "$syn_retrans_current" != "0" ] && [ "$syn_retrans_current" != "$syn_retrans_before_tcp_fallback" ]); then
+		settings='{"enabled" : "'$mptcp_enabled'", "checksum": "'$checksum'","path_manager": "'$path_manager'","scheduler": "'$scheduler'","syn_retries": "'$syn_retries'","congestion_control": "'$congestion'","version": "'$mptcp_version'","close_timeout": "'$close_timeout'","pm_type": "'$pm_type'","stale_loss_cnt": "'$stale_loss_cnt'","syn_retrans_before_tcp_fallback": "'$syn_retrans_before_tcp_fallback'"}'
 		echo $(_set_json "mptcp" "$settings")
 	else
 		echo 1
@@ -2267,13 +2275,26 @@ _set_config_from_vps() {
 		set network.globals.congestion=$congestion
 		commit network
 	EOF
-	if [ "$mptcp_path_manager" != "" ] && [ "$mptcp_scheduler" != "" ] && [ "$mptcp_syn_retries" != "" ]; then
+	if [ "$mptcp_scheduler" != "" ] && [ "$mptcp_syn_retries" != "" ]; then
 		uci -q batch <<-EOF >/dev/null
-			set network.globals.mptcp_path_manager=$mptcp_path_manager
 			set network.globals.mptcp_scheduler=$mptcp_scheduler
 			set network.globals.mptcp_syn_retries=$mptcp_syn_retries
 			commit network
 		EOF
+	fi
+	if [ "$mptcp_path_manager" != "" ] && [ "$mptcp_path_manager" != "kernel" ]; then
+		uci -q set network.globals.mptcp_path_manager="$mptcp_path_manager"
+	fi
+	mptcp_close_timeout="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.close_timeout')"
+	mptcp_pm_type="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.pm_type')"
+	mptcp_stale_loss_cnt="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.stale_loss_cnt')"
+	mptcp_syn_retrans_before_tcp_fallback="$(echo "$vps_config" | jsonfilter -q -e '@.mptcp.syn_retrans_before_tcp_fallback')"
+	[ -n "$mptcp_close_timeout" ] && [ "$mptcp_close_timeout" != "0" ] && uci -q set network.globals.mptcp_close_timeout="$mptcp_close_timeout"
+	[ -n "$mptcp_pm_type" ] && [ "$mptcp_pm_type" != "0" ] && uci -q set network.globals.mptcp_pm_type="$mptcp_pm_type"
+	[ -n "$mptcp_stale_loss_cnt" ] && [ "$mptcp_stale_loss_cnt" != "0" ] && uci -q set network.globals.mptcp_stale_loss_cnt="$mptcp_stale_loss_cnt"
+	[ -n "$mptcp_syn_retrans_before_tcp_fallback" ] && [ "$mptcp_syn_retrans_before_tcp_fallback" != "0" ] && uci -q set network.globals.mptcp_syn_retrans_before_tcp_fallback="$mptcp_syn_retrans_before_tcp_fallback"
+	if [ -n "$(uci -q changes network)" ]; then
+		uci -q commit network
 	fi
 
 	# Check if server get an IPv6, if not disable IPv6 on OMR

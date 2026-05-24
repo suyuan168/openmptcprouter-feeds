@@ -119,7 +119,7 @@ out:
 	return 0;
 }
 
-SEC("struct_ops")
+SEC("struct_ops.s")
 int BPF_PROG(bpf_burst_get_retrans, struct mptcp_sock *msk)
 {
 	struct sock *backup = NULL, *pick = NULL;
