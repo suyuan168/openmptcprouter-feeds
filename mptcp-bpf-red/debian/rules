@@ -33,3 +33,6 @@ override_dh_auto_test:
 
 override_dh_auto_clean:
 	rm -f mptcp_bpf_red.o
+
+override_dh_builddeb:
+	dh_builddeb -- -Zxz
