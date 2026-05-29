@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
           - arch: arm64
             runner: ubuntu-24.04-arm
 
@@ -29,7 +29,7 @@ jobs:
 
       - name: Build .deb
         working-directory: mptcp-bpf-burst
-        run: dpkg-buildpackage -us -uc -b
+        run: dpkg-buildpackage -us -uc -b -Zxz
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -40,7 +40,7 @@ jobs:
   release:
     name: Create release
     needs: build-deb
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: startsWith(github.ref, 'refs/tags/mptcp-bpf-burst-v')
     permissions:
       contents: write

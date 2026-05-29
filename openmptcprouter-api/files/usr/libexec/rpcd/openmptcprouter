@@ -43,7 +43,78 @@ function add_server(add_server_name)
 	ucic:commit("openmptcprouter")
 end
 
+local function clear_server_vpn_proxy(ips)
+	if type(ips) ~= "table" or #ips == 0 then return end
+	local changed = {}
+	local proxy_fields = {"s_vmess_address", "s_vless_address", "s_socks_address", "s_trojan_address"}
+	for _, ip in ipairs(ips) do
+		if type(ip) == "string" and ip ~= "" then
+			if ucic:get("shadowsocks-libev", "sss0", "server") == ip then
+				ucic:delete("shadowsocks-libev", "sss0", "server")
+				changed["shadowsocks-libev"] = true
+			end
+			if ucic:get("shadowsocks-rust", "sss0", "server") == ip then
+				ucic:delete("shadowsocks-rust", "sss0", "server")
+				changed["shadowsocks-rust"] = true
+			end
+			for _, field in ipairs(proxy_fields) do
+				if ucic:get("v2ray", "omrout", field) == ip then
+					ucic:delete("v2ray", "omrout", field)
+					changed["v2ray"] = true
+				end
+				if ucic:get("xray", "omrout", field) == ip then
+					ucic:delete("xray", "omrout", field)
+					changed["xray"] = true
+				end
+			end
+			if ucic:get("glorytun", "vpn", "host") == ip then
+				ucic:delete("glorytun", "vpn", "host")
+				changed["glorytun"] = true
+			end
+			if ucic:get("glorytun-udp", "vpn", "host") == ip then
+				ucic:delete("glorytun-udp", "vpn", "host")
+				changed["glorytun-udp"] = true
+			end
+			if ucic:get("dsvpn", "vpn", "host") == ip then
+				ucic:delete("dsvpn", "vpn", "host")
+				changed["dsvpn"] = true
+			end
+			if ucic:get("mlvpn", "general", "host") == ip then
+				ucic:delete("mlvpn", "general", "host")
+				changed["mlvpn"] = true
+			end
+			if ucic:get("mqvpn", "server", "ip") == ip then
+				ucic:delete("mqvpn", "server", "ip")
+				changed["mqvpn"] = true
+			end
+			sys.exec("uci -q del_list openvpn.omr.remote=" .. ip)
+			if ucic:get("qos", "serverin", "srchost") == ip then
+				ucic:delete("qos", "serverin", "srchost")
+				changed["qos"] = true
+			end
+			if ucic:get("qos", "serverout", "dsthost") == ip then
+				ucic:delete("qos", "serverout", "dsthost")
+				changed["qos"] = true
+			end
+		end
+	end
+	sys.exec("uci -q commit openvpn")
+	for cfg, _ in pairs(changed) do
+		ucic:save(cfg)
+		ucic:commit(cfg)
+	end
+end
+
 function remove_server(serverdel)
+	-- Collect IPs before deleting so we can clean up VPN/proxy configs
+	local raw_ip = ucic:get("openmptcprouter", serverdel, "ip")
+	local server_ips = {}
+	if type(raw_ip) == "table" then
+		server_ips = raw_ip
+	elseif type(raw_ip) == "string" and raw_ip ~= "" then
+		server_ips = {raw_ip}
+	end
+
 	-- Remove existing server
 	ucic:foreach("network", "interface", function(s)
 		local sectionname = s[".name"]
@@ -55,6 +126,10 @@ function remove_server(serverdel)
 	ucic:commit("openmptcprouter")
 	ucic:save("network")
 	ucic:commit("network")
+
+	-- Remove server IPs from VPN and proxy configurations
+	clear_server_vpn_proxy(server_ips)
+
 	os.execute("ubus call network reload 2>&1 >/dev/null")
 end
 
@@ -806,6 +881,9 @@ function wizard_add(args)
 				ucic:set("openmptcprouter", sid, "master", sid == master and "1" or "0")
 
 				local iplist = _unique_string_list(srv.ips)
+				if _to_flag(srv.disabled) == "1" then
+					clear_server_vpn_proxy(iplist)
+				end
 				if #iplist > 0 then
 					ucic:set("openmptcprouter", sid, "ip", iplist)
 					if sid == master then
